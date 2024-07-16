@@ -106,21 +106,10 @@ ipython_config.py
 #pdm.lock
 #   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
 #   in version control.
-<<<<<<< HEAD
-<<<<<<< HEAD
-#   https://pdm.fming.dev/#use-with-ide
-.pdm.toml
-=======
-=======
->>>>>>> 2a319e524bbde84493ed4277129b811821652f77
 #   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
 .pdm.toml
 .pdm-python
 .pdm-build/
-<<<<<<< HEAD
->>>>>>> 2a319e524bbde84493ed4277129b811821652f77
-=======
->>>>>>> 2a319e524bbde84493ed4277129b811821652f77
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
