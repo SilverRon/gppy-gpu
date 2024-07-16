@@ -1,0 +1,44 @@
+key val newval
+#	Image type
+IMAGETYP 'Light' object
+IMAGETYP 'zero' bias
+IMAGETYP 'Dark' dark
+IMAGETYP 'Flat Field' flat
+#
+IMAGETYP 'Light Frame' object
+IMAGETYP 'Bias Frame' bias 
+IMAGETYP 'Dark Frame' dark
+IMAGETYP OBJECT object
+#
+IMAGETYP 'LIGHT' object
+IMAGETYP 'BIAS' bias
+IMAGETYP 'DARK' dark
+IMAGETYP 'FLAT' flat
+#
+IMAGETYP 'Light' object
+IMAGETYP 'Bias' bias
+IMAGETYP 'Dark' dark
+IMAGETYP 'Flat' flat
+#
+FILTER U101 U
+FILTER B102 B
+FILTER V103 V
+FILTER R104 R
+FILTER I105 I
+#
+FILTER Y y
+FILTER Z z
+#
+FILTER '0' R
+FILTER '1' U
+FILTER '2' B
+FILTER '3' V
+FILTER '4' R
+FILTER '5' I
+#
+OBJECT SDSSJ1430 SDSSJ1430+2303
+#
+FILTER 'sloan_g' g
+FILTER 'sloan_r' r
+FILTER 'sloan_i' i
+FILTER 'sloan_z' z

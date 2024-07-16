@@ -1,0 +1,23 @@
+object                note
+UDS                   blank
+NGC0253               blank
+NGC1566               blank
+NGC7293               blank
+NGC6514               blank
+NGC7469               blank
+Q2237+030             blank
+SPT-CL_J20            blank
+NGC7496               blank
+IC5332                blank
+NGC1365               blank
+NGC0685               blank
+NGC1637               blank
+NGC1809               blank
+IC1954                blank
+NGC1433               blank
+NGC1511               blank
+NGC1599               blank
+# NGC6514               blank
+WASP-74b              Exoplanet
+WASP-178b             Exoplanet
+
