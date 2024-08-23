@@ -296,6 +296,7 @@ except:
 try:
     darkexptimelist = sorted(list(set(ic1.filter(imagetyp='dark').summary['exptime'])))
     darknumb = len(darkexptimelist)
+    print(f"{darknumb} Dark Frames Found")
 except:
     darknumb = 0
 #------------------------------------------------------------
