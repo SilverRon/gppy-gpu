@@ -76,7 +76,7 @@ def inputlist_gen():
     from glob import glob
     from pathlib import Path
 
-    datadir = Path("/data3/dhhyun/7DTStackCode/mytest/data/NGC0253/7DT01/m650")
+    datadir = Path("/data3/dhhyun/7DTStackCode/mytest/data/NGC3511/7DT01/m650")
     filelist = glob(str(datadir / "calib*0.fits"))
     with open(datadir / "inputlist.txt", "w") as f:
         f.write("file\n")
@@ -524,19 +524,41 @@ class SwarpCom:
 
 
 #   Example
-"""
+def process_image_list(image_list_file):
+    SwarpCom(image_list_file).run()
+
 if __name__ == "__main__":
+    # 이미지 리스트 파일들의 경로를 리스트로 저장
+    image_lists = [
+        #   Broad
+        # "/large_data/Commission/NGC3511/u/select_median.txt",
+        # "/large_data/Commission/NGC3511/g/select_median.txt",
+        # "/large_data/Commission/NGC3511/r/select_median.txt",
+        # "/large_data/Commission/NGC3511/i/select_median.txt",
+        # "/large_data/Commission/NGC3511/z/select_median.txt",
+        #   Medium
+        "/large_data/Commission/NGC3511/m400/select_median.txt",
+        "/large_data/Commission/NGC3511/m425/select_median.txt",
+        "/large_data/Commission/NGC3511/m450/select_median.txt",
+        "/large_data/Commission/NGC3511/m475/select_median.txt",
+        "/large_data/Commission/NGC3511/m500/select_median.txt",
+        "/large_data/Commission/NGC3511/m525/select_median.txt",
+        "/large_data/Commission/NGC3511/m550/select_median.txt",
+        "/large_data/Commission/NGC3511/m575/select_median.txt",
+        "/large_data/Commission/NGC3511/m600/select_median.txt",
+        "/large_data/Commission/NGC3511/m625/select_median.txt",
+        "/large_data/Commission/NGC3511/m650/select_median.txt",
+        "/large_data/Commission/NGC3511/m675/select_median.txt",
+        "/large_data/Commission/NGC3511/m700/select_median.txt",
+        "/large_data/Commission/NGC3511/m725/select_median.txt",
+        "/large_data/Commission/NGC3511/m750/select_median.txt",
+        "/large_data/Commission/NGC3511/m775/select_median.txt",
+        "/large_data/Commission/NGC3511/m800/select_median.txt",
+        "/large_data/Commission/NGC3511/m825/select_median.txt",
+        "/large_data/Commission/NGC3511/m850/select_median.txt",
+        "/large_data/Commission/NGC3511/m875/select_median.txt",
+    ]
 
-    imagelist_file_to_stack = (
-        "/large_data/Commission/UDS/T01_m400_filelist.dat"
-    )
-
-    # if the path is not given, you will be prompted to give one
-    SwarpCom(imagelist_file_to_stack).run()
-    # imcom = SwarpCom(imagelist_file_to_stack)
-    # imcom.run()
-"""
-
-# imagelist_file_to_stack = sys.argv[1]
-imagelist_file_to_stack = input("Image File List:")
-SwarpCom(imagelist_file_to_stack).run()
+    # 각 이미지 리스트 파일에 대해 SwarpCom 클래스를 실행
+    for image_list in image_lists:
+        process_image_list(image_list)

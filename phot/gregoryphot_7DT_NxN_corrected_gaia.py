@@ -133,7 +133,7 @@ def phot_routine(inim):
 	# refmagkey = f"{hdr['FILTER']}_mag"
 	# refmagerkey = f"{hdr['FILTER']}_magerr"
 	# refsnrkey = f"{hdr['FILTER']}_snr"
-	refmagkey = f"mag_{hdr['FILTER']}"
+	refmagkey = f"mag_{hdr['FILTER']}_5"
 	refmagerkey = f"magerr_{hdr['FILTER']}"
 	refsnrkey = f"snr_{hdr['FILTER']}"
 	#------------------------------------------------------------
@@ -211,7 +211,7 @@ def phot_routine(inim):
 	#	DATE-OBS, JD
 	#------------------------------------------------------------
 	ref_gaiaxp_cat = f'{path_refcat}/XP_CONTINUOUS_RAW_{obj}.csv'
-	ref_gaiaxp_synphot_cat = f'{path_refcat}/gaiaxp_dr3_synphot_{obj}.csv'
+	ref_gaiaxp_synphot_cat = f'{path_refcat}/cor_gaiaxp_dr3_synphot_{obj}.csv'
 	if not os.path.exists(ref_gaiaxp_synphot_cat):
 		reftbl = query.merge_catalogs(
 			target_coord=SkyCoord(racent, decent, unit='deg'),
@@ -495,8 +495,10 @@ def phot_routine(inim):
 		# (mtbl[f'{refmagkey}']>refmaglower) &
 		# (mtbl[f'{refmagerkey}']<refmaglower)
 		#
-		(mtbl[refmagkey]>11.75) &
-		(mtbl[refmagkey]<18.0)
+		# (mtbl[refmagkey]>11.75) &
+		# (mtbl[refmagkey]<18.0)
+		(mtbl[refmagkey]>refmaglower) &
+		(mtbl[refmagkey]<refmagupper)
 	)
 
 	zptbl = mtbl[indx_star4zp]
@@ -569,21 +571,6 @@ def phot_routine(inim):
 		print(f"{inmagkey} ZP: {zp:.3f}+/-{zperr:.3f}")
 
 		#	Plot
-
-		# plt.close()
-		# # plt.errorbar(zptbl[refmagkey], zparr, xerr=zptbl[refmagerkey], yerr=zperrarr, ls='none', c='grey', alpha=0.5)
-		# plt.errorbar(zptbl[refmagkey], zparr, xerr=0, yerr=zperrarr, ls='none', c='grey', alpha=0.5)
-		# plt.plot(zptbl_alive[refmagkey], zptbl_alive[refmagkey]-zptbl_alive[inmagkey], '.', c='dodgerblue', alpha=0.75, zorder=999, label=f'{len(zptbl_alive)}')
-		# plt.plot(zptbl_exile[refmagkey], zptbl_exile[refmagkey]-zptbl_exile[inmagkey], 'x', c='tomato', alpha=0.75, label=f'{len(zptbl_exile)}')
-		# plt.axhline(y=zp, ls='-', lw=1, c='grey', zorder=1, label=f"ZP: {zp:.3f}+/-{zperr:.3f}")
-		# plt.axhspan(ymin=zp-zperr, ymax=zp+zperr, color='silver', alpha=0.5, zorder=0)
-		# plt.xlabel(refmagkey)
-		# plt.xlim([8, 16])
-		# plt.ylim([zp-0.25, zp+0.25])
-		# plt.ylabel(f'ZP_{inmagkey}')
-		# plt.legend(loc='upper center', ncol=3)
-		# plt.tight_layout()
-		# plt.savefig(f"{head}.{inmagkey}.png", dpi=100)
 
 		plt.close()
 		# plt.errorbar(zptbl[refmagkey], zparr, xerr=zptbl[refmagerkey], yerr=zperrarr, ls='none', c='grey', alpha=0.5)
