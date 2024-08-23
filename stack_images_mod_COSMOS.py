@@ -524,19 +524,89 @@ class SwarpCom:
 
 
 #   Example
-"""
+def process_image_list(image_list_file):
+    SwarpCom(image_list_file).run()
+
 if __name__ == "__main__":
+    # 이미지 리스트 파일들의 경로를 리스트로 저장
+    image_lists = [
+        "/large_data/Commission/COSMOS_1/i/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m400/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m425/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m450/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m475/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m500/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m525/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m550/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m575/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m600/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m625/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m650/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m675/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m700/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m725/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m750/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m775/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m800/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m825/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m850/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_1/m875/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m400/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m425/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m450/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m475/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m500/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m525/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m550/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m575/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m600/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m625/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m700/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m725/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m750/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m775/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m800/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m825/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m850/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_2/m875/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m400/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m425/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m450/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m475/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m500/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m525/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m550/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m575/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m600/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m625/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m700/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m725/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m750/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m775/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m800/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m825/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m850/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_3/m875/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m400/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m425/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m450/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m475/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m500/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m525/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m550/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m575/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m600/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m625/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m700/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m725/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m750/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m775/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m800/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m825/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m850/select_1sigma.txt",
+        "/large_data/Commission/COSMOS_4/m875/select_1sigma.txt",
+    ]
 
-    imagelist_file_to_stack = (
-        "/large_data/Commission/UDS/T01_m400_filelist.dat"
-    )
-
-    # if the path is not given, you will be prompted to give one
-    SwarpCom(imagelist_file_to_stack).run()
-    # imcom = SwarpCom(imagelist_file_to_stack)
-    # imcom.run()
-"""
-
-# imagelist_file_to_stack = sys.argv[1]
-imagelist_file_to_stack = input("Image File List:")
-SwarpCom(imagelist_file_to_stack).run()
+    # 각 이미지 리스트 파일에 대해 SwarpCom 클래스를 실행
+    for image_list in image_lists:
+        process_image_list(image_list)
