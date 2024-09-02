@@ -7,26 +7,32 @@
 #	REVISED AND ORGANIZED BY GREGORY S.H. PAEK
 #	UPDATE : 20.01.03
 #============================================================
-from __future__ import print_function
+# from __future__ import print_function
 
+import os
+import sys
+import glob
+from pathlib import Path
+import numpy as np
+import astropy.units as u
 from astropy.io import fits
 from astropy.io import ascii
-import glob, os
-# from imsng import tool
-# from imsng import phot_tbd
-import sys
-sys.path.append('..')
-from util import tool
-from phot import gpphot
-import numpy as np
-from astropy.coordinates import Angle
-import astropy.units as u
 import astropy.coordinates as coord
 from astropy.coordinates import SkyCoord
+from astropy.coordinates import Angle
 from astropy.table import Table
 from astropy.table import hstack
 from astropy.table import vstack
 from astropy.table import unique
+
+path_thisfile = Path(__file__).resolve()
+path_root = path_thisfile.parent.parent.parent
+sys.path.append(str(path_root / 'src'))
+# sys.path.append('..')
+from util import tool
+from phot import gpphot
+# from imsng import tool
+# from imsng import phot_tbd
 #============================================================
 def geturl(ra, dec, size=240, output_size=None, filters="grizy", format="jpg", color=False):
 	"""
@@ -965,7 +971,8 @@ def query_gaiaxp_continuous_raw(radeg, decdeg, query_radius, fname, mode='defaul
 
 	return ids.to_pandas()
 #-------------------------------------------------------------------------#
-path_to_filterset = '/home/gp/gppy/config/filterset'
+# path_to_filterset = '/home/gp/gppy/config/filterset'
+path_to_filterset = str(path_root / 'config/filterset')
 PhotometricSystem = load_additional_systems(path_to_filterset)
 #-------------------------------------------------------------------------#
 def convert_gaiaxp_to_7DT_synphot(fname, metadf,):
