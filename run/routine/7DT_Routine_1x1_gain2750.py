@@ -7,19 +7,18 @@
 #	Library
 #------------------------------------------------------------
 # Built-in packages
-from __future__ import print_function, division, absolute_import
 import os
 import sys
-import glob
-import subprocess
-from pathlib import Path
 import re
+import time
+import glob
+from pathlib import Path
 from datetime import datetime, timezone, timedelta
+from itertools import repeat
+import subprocess
+import multiprocessing
 import warnings
 warnings.filterwarnings(action='ignore')
-from itertools import repeat
-import multiprocessing
-import time
 #------------------------------------------------------------
 # Third-party packages
 import numpy as np

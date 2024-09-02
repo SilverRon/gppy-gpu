@@ -2,6 +2,7 @@
 #	CREATED	2020.12.10	Gregory S.H. Paek
 #============================================================
 import os, glob, sys, subprocess
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -26,12 +27,15 @@ warnings.filterwarnings('ignore', message="Warning: 'partition' will ignore the 
 
 # from astropy.utils.exceptions import FITSFixedWarning
 # warnings.filterwarnings('ignore', category=FITSFixedWarning, append=True)
-from datetime import date
+from datetime import date, datetime
 import time
 import multiprocessing
 #	gpPy
-sys.path.append('..')
-sys.path.append('/home/gp/gppy')
+# sys.path.append('..')
+# sys.path.append('/home/gp/gppy')
+path_thisfile = Path(__file__).resolve()
+path_root = path_thisfile.parent.parent.parent
+sys.path.append(str(path_root / 'src'))
 from phot import gpphot
 from util import query
 from util import tool
@@ -267,7 +271,11 @@ def phot_routine(inim):
 	precat = f"{head}.pre.cat"
 	presexcom = f"source-extractor -c {conf_simple} {inim} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PARAMETERS_NAME {param_simple} -CATALOG_NAME {precat}"
 	print(presexcom)
-	os.system(presexcom)
+	# Redirect SE output to a tmp log
+	timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+	sexlog = str(path_root / f"sex_{timestamp}.log")
+	# os.system(presexcom)
+	os.system(f"{presexcom} > {sexlog} 2>&1")  # stderr is logged with stdout
 	pretbl = Table.read(precat, format='ascii.sextractor')
 	#
 	pretbl['within_ellipse'] = is_within_ellipse(pretbl['X_IMAGE'], pretbl['Y_IMAGE'], xcent, ycent, frac*hdr['NAXIS1']/2, frac*hdr['NAXIS2']/2)
@@ -717,7 +725,7 @@ except:
 	path_base = '.'
 
 path_refcat	= f'/large_data/factory/ref_cat'
-path_config = '/home/gp/gppy/config'
+path_config = str(path_root / 'config')  # '/home/gp/gppy/config'
 path_to_filterset = f"{path_config}/filterset"
 path_obs = f'{path_config}/obs.dat'
 # path_target = './transient.dat'
