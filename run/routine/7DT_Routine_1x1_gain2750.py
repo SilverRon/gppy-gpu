@@ -6,26 +6,14 @@
 #------------------------------------------------------------
 #	Library
 #------------------------------------------------------------
+# Built-in packages
 from __future__ import print_function, division, absolute_import
 import os
 import sys
 import glob
 import subprocess
+from pathlib import Path
 import re
-import numpy as np
-import astropy.io.ascii as ascii
-import matplotlib.pyplot as plt
-plt.ioff()
-from preprocess import calib
-from util import tool
-#	Astropy
-from astropy.io import fits
-from astropy import units as u
-from astropy.table import Table, vstack, hstack
-from astropy.coordinates import SkyCoord
-from astropy.time import Time
-#------------------------------------------------------------
-from ccdproc import ImageFileCollection
 from datetime import datetime, timezone, timedelta
 import warnings
 warnings.filterwarnings(action='ignore')
@@ -33,21 +21,42 @@ from itertools import repeat
 import multiprocessing
 import time
 #------------------------------------------------------------
-os.environ['TZ'] = 'Asia/Seoul'
-time.tzset()
-start_localtime = time.strftime('%Y-%m-%d_%H:%M:%S_(%Z)', time.localtime())
-#------------------------------------------------------------
-#	plot setting
-#------------------------------------------------------------
+# Third-party packages
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from IPython.core.interactiveshell import InteractiveShell
+from ccdproc import ImageFileCollection
+#	Astropy
+from astropy.io import fits
+import astropy.io.ascii as ascii
+from astropy import units as u
+from astropy.table import Table, vstack, hstack
+from astropy.coordinates import SkyCoord
+from astropy.time import Time
+#------------------------------------------------------------
+# Custom Packages
+path_thisfile = Path(__file__).resolve()
+# ABSOLUTE path of gppy-gpu
+path_root = path_thisfile.parent.parent.parent  # Careful! not a str
+# sys.path.append('../../src')  # Deprecated
+sys.path.append(str(path_root / 'src'))  # path for all custom packages
+from preprocess import calib
+from util import tool
+#------------------------------------------------------------
+#	plot setting
+#------------------------------------------------------------
+plt.ioff()
 InteractiveShell.ast_node_interactivity = "last_expr"
 #------------------------------------------------------------
 mpl.rcParams["axes.titlesize"] = 14
 mpl.rcParams["axes.labelsize"] = 20
 plt.rcParams['savefig.dpi'] = 500
 plt.rc('font', family='serif')
+#------------------------------------------------------------
+os.environ['TZ'] = 'Asia/Seoul'
+time.tzset()
+start_localtime = time.strftime('%Y-%m-%d_%H:%M:%S_(%Z)', time.localtime())
 #------------------------------------------------------------
 #	Ready
 #------------------------------------------------------------
@@ -63,8 +72,7 @@ except IndexError as e:
 except Exception as e:
 	print(e)
 	print(f'Unexpected behavior. Check parameter obs')
-# For Test!#######################################################For Test!#### fmt: skip
-# obs = '7DT01'
+
 print(f'# Observatory : {obs.upper()}')
 #	N cores for Multiprocessing
 # try:
@@ -84,27 +92,27 @@ verbose_gpu = False
 #------------------------------------------------------------
 #	Path
 #------------------------------------------------------------
-path_base = '/home/snu/gppyTest_dhhyun/factory' #'/home/snu/gppyTest_dhhyun/out' #'/large_data/factory'
+path_base = '/home/snu/gppyTest_dhhyun/factory'  # '/large_data/factory'
 # path_ref = f'{path_base}/ref_frame/{obs.upper()}'
 path_ref = f'{path_base}/ref_frame'
 path_factory = f'{path_base}/{obs.lower()}'
 # path_save = f'/data6/bkgdata/{obs.upper()}'
 path_log = f'{path_base}/log/{obs.lower()}.log'
-# revision
-from pathlib import Path
-path_log_parent = Path(path_log).parent
-if not path_log_parent.exists():
-	path_log_parent.mkdir(parents=True)
 
 # revision
 if not os.path.exists(path_log):
 	print(f"Creating {path_log}")
+
+	path_log_parent = Path(path_log).parent
+	if not path_log_parent.exists():
+		path_log_parent.mkdir(parents=True)
+
 	f = open(path_log, 'w')
-	# f.write('date\n19941026')
-	f.write('date,start,end,note\n')
-	f.write('/large_data/obsdata/7DT01/1994-10-26_1x1_gain2750,1994-10-26_00:00:00_(KST),1994-10-26_00:01:00_(KST),-')
+	# columns
+	f.write('date,start,end,note\n')  # f.write('date\n19941026')
+	# example line
+	f.write('/large_data/obsdata/7DT01/1994-10-26_1x1_gain2750,1994-10-26_00:00:00_(KST),1994-10-26_00:01:00_(KST),-\n')
 	f.close()
-path_keys = f'./config'
 #------------------------------------------------------------
 # path_gal = f'{path_base}/../processed'
 # path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}'
@@ -113,18 +121,20 @@ path_refcat = f'{path_base}/ref_cat'
 # path_refcat = '/data4/gecko/factory/ref_frames/LOAO'
 #------------------------------------------------------------
 # path_config = '/home/paek/config'
-path_config = './config'
+path_config = str(path_root / 'config')  # '../../config'
+path_keys = path_config  # f'../../config'
 path_default_gphot = f'{path_config}/gphot.{obs.lower()}_{n_binning}x{n_binning}.config'
 path_mframe = f'{path_base}/master_frame_{n_binning}x{n_binning}_gain2750'
 # path_calib = f'{path_base}/calib'
 #------------------------------------------------------------
 #	Codes
 #------------------------------------------------------------
+path_src = path_root / 'src'
 # path_phot_sg = './phot/gregoryphot_2021.py'
-path_phot_mp = './phot/gregoryphot_7DT_NxN.py'
-path_phot_sub = './phot/gregorydet_7DT_NxN.py'
-path_subtraction = "./util/gregorysubt_7DT.py"
-path_find = './phot/gregoryfind_7DT.py'
+path_phot_mp = str(path_src / 'phot/gregoryphot_7DT_NxN.py')  # './phot/gregoryphot_7DT_NxN.py'
+path_phot_sub = str(path_src / 'phot/gregorydet_7DT_NxN.py')
+path_subtraction = str(path_src / "util/gregorysubt_7DT.py")
+path_find = str(path_src / 'phot/gregoryfind_7DT.py')
 #------------------------------------------------------------
 path_obsdata = f'{path_base}/../obsdata'
 path_raw = f'{path_obsdata}/{obs.upper()}'
@@ -133,7 +143,7 @@ rawlist = sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))
 path_obs = f'{path_config}/obs.dat'
 path_changehdr = f'{path_config}/changehdr.dat'
 path_alltarget = f'{path_config}/alltarget.dat'
-path_skygrid = "./data/skygrid/7DT"
+path_skygrid = str(path_root / "data/skygrid/7DT")  # "../../data/skygrid/7DT"
 skygrid_table = Table.read(f"{path_skygrid}/skygrid.fits")
 tile_name_pattern = r"T\d{5}$"
 # skygrid_table = Table.read(f"{path_skygrid}/displaycenter.txt", format='ascii')
@@ -163,7 +173,7 @@ for imagetyp in ['zero', 'flat', 'dark']:
 #------------------------------------------------------------
 #	Table
 #------------------------------------------------------------
-logtbl = ascii.read(path_log)
+logtbl = ascii.read(path_log)#, delimiter=',', format='csv')
 datalist = np.copy(logtbl['date'])
 obstbl = ascii.read(path_obs)
 hdrtbl = ascii.read(path_changehdr)
@@ -1668,6 +1678,7 @@ for ss, (inim, refim, inmask_image, refmask_image, allmask_image) in enumerate(z
 delt_transient_searh = time.time() - t0_transient_searh
 timetbl['status'][timetbl['process']=='transient_searh'] = True
 timetbl['time'][timetbl['process']=='transient_searh'] = delt_transient_searh
+# %%
 #======================================================================
 #	Clean the data
 #======================================================================
@@ -1693,183 +1704,184 @@ for file_to_remove_pattern in file_to_remove_pattern_list:
 	rmcom = f'rm {path_data}/{file_to_remove_pattern}'
 	print(rmcom)
 	os.system(rmcom)
-# #======================================================================
-# #	File Transfer
-# #======================================================================
-# t0_data_transfer = time.time()
+# %%
+#======================================================================
+#	File Transfer
+#======================================================================
+t0_data_transfer = time.time()
 
-# from concurrent.futures import ThreadPoolExecutor
-# import shutil
-# from functools import partial
+from concurrent.futures import ThreadPoolExecutor
+import shutil
+from functools import partial
 
-# # def move_file(file_path, destination_folder):
-# #     file_name = os.path.basename(file_path)
-# #     shutil.move(file_path, f"{destination_folder}/{file_name}")
 # def move_file(file_path, destination_folder):
 #     file_name = os.path.basename(file_path)
-#     destination_path = os.path.join(destination_folder, file_name)
-#     shutil.move(file_path, destination_path)
-#     print(f"Moved {file_path} to {destination_path}")
-# #----------------------------------------------------------------------
-# ic_all = ImageFileCollection(path_data, glob_include='calib*.fits', keywords=['object', 'filter',])
+#     shutil.move(file_path, f"{destination_folder}/{file_name}")
+def move_file(file_path, destination_folder):
+    file_name = os.path.basename(file_path)
+    destination_path = os.path.join(destination_folder, file_name)
+    shutil.move(file_path, destination_path)
+    print(f"Moved {file_path} to {destination_path}")
+#----------------------------------------------------------------------
+ic_all = ImageFileCollection(path_data, glob_include='calib*.fits', keywords=['object', 'filter',])
 
-# objarr = np.unique(ic_all.summary['object'][~ic_all.summary['object'].mask])
-# print(f"OBJECT Numbers: {len(objarr)}")
+objarr = np.unique(ic_all.summary['object'][~ic_all.summary['object'].mask])
+print(f"OBJECT Numbers: {len(objarr)}")
 
-# #	Transient Candidates
-# for oo, obj in enumerate(objarr):
-# 	print("-"*60)
-# 	print(f"[{oo:>4}/{len(objarr):>4}] OBJECT: {obj}")
-# 	_filterarr = list(np.unique(ic_all.filter(object=obj).summary['filter']))
-# 	print(f"FILTER: {_filterarr} ({len(_filterarr)})")
-# 	#	Filter
-# 	for filte in _filterarr:
-# 		#	Path to Destination
-# 		path_destination = f'{path_gal}/{obj}/{obs}/{filte}'
-# 		path_phot = f"{path_destination}/phot"
-# 		path_transient = f"{path_destination}/transient"
-# 		path_transient_cand_png = f"{path_transient}/png_image"
-# 		path_transient_cand_fits = f"{path_transient}/fits_image"
+#	Transient Candidates
+for oo, obj in enumerate(objarr):
+	print("-"*60)
+	print(f"[{oo:>4}/{len(objarr):>4}] OBJECT: {obj}")
+	_filterarr = list(np.unique(ic_all.filter(object=obj).summary['filter']))
+	print(f"FILTER: {_filterarr} ({len(_filterarr)})")
+	#	Filter
+	for filte in _filterarr:
+		#	Path to Destination
+		path_destination = f'{path_gal}/{obj}/{obs}/{filte}'
+		path_phot = f"{path_destination}/phot"
+		path_transient = f"{path_destination}/transient"
+		path_transient_cand_png = f"{path_transient}/png_image"
+		path_transient_cand_fits = f"{path_transient}/fits_image"
 
-# 		#	Check save path
-# 		paths = [path_destination, path_phot, path_transient, path_transient_cand_png, path_transient_cand_fits]
-# 		for path in paths:
-# 			if not os.path.exists(path):
-# 				os.makedirs(path)
-# 		#------------------------------------------------------------
-# 		#	Files
-# 		#------------------------------------------------------------
-# 		#	Single Frames
-# 		#------------------------------------------------------------
-# 		#	calib_7DT01_T09373_20240423_032804_r_120.fits
-# 		# single_frames = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.fits"))
-# 		single_frames = sorted([f for f in glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.fits") if not re.search(r'\.com\.', f)])
-# 		print(f"Single Frames: {len(single_frames)}")
-# 		# single_phot_catalogs = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.phot.cat"))
-# 		single_phot_catalogs = sorted([f for f in glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.phot.cat") if not re.search(r'\.com\.', f)])
-# 		print(f"Phot Catalogs (single): {len(single_phot_catalogs)}")
-# 		single_phot_pngs = sorted([f for f in glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*MAG_*.png") if not re.search(r'\.com\.', f)])
-# 		print(f"Phot PNGs (single): {len(single_phot_pngs)}")
-# 		#------------------------------------------------------------
-# 		#	Stacked Frames
-# 		#------------------------------------------------------------
-# 		stack_frames = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.fits"))
-# 		print(f"Stack Frames: {len(stack_frames)}")
-# 		stack_phot_catalogs = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.phot.cat"))
-# 		print(f"Phot Catalogs (stack): {len(stack_phot_catalogs)}")
-# 		stack_phot_pngs = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.MAG_*.png"))
-# 		print(f"Phot PNGs (stack): {len(stack_phot_pngs)}")
-# 		#------------------------------------------------------------
-# 		#	Subtracted Frames
-# 		#------------------------------------------------------------
-# 		#	ref_PS1_T09373_00000000_000000_r_0.conv.fits
-# 		convolved_ref_frames = sorted(glob.glob(f"{path_data}/ref_*_{obj}_*_*_{filte}_*.conv.fits"))
-# 		print(f"Convolved Ref Frames: {len(convolved_ref_frames)}")
-# 		subt_frames = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.subt.fits"))
-# 		print(f"Subt Frames: {len(subt_frames)}")
-# 		subt_phot_catalogs = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.subt.phot.cat"))
-# 		print(f"Phot Subt Catalogs: {len(subt_phot_catalogs)}")
+		#	Check save path
+		paths = [path_destination, path_phot, path_transient, path_transient_cand_png, path_transient_cand_fits]
+		for path in paths:
+			if not os.path.exists(path):
+				os.makedirs(path)
+		#------------------------------------------------------------
+		#	Files
+		#------------------------------------------------------------
+		#	Single Frames
+		#------------------------------------------------------------
+		#	calib_7DT01_T09373_20240423_032804_r_120.fits
+		# single_frames = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.fits"))
+		single_frames = sorted([f for f in glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.fits") if not re.search(r'\.com\.', f)])
+		print(f"Single Frames: {len(single_frames)}")
+		# single_phot_catalogs = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.phot.cat"))
+		single_phot_catalogs = sorted([f for f in glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.phot.cat") if not re.search(r'\.com\.', f)])
+		print(f"Phot Catalogs (single): {len(single_phot_catalogs)}")
+		single_phot_pngs = sorted([f for f in glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*MAG_*.png") if not re.search(r'\.com\.', f)])
+		print(f"Phot PNGs (single): {len(single_phot_pngs)}")
+		#------------------------------------------------------------
+		#	Stacked Frames
+		#------------------------------------------------------------
+		stack_frames = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.fits"))
+		print(f"Stack Frames: {len(stack_frames)}")
+		stack_phot_catalogs = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.phot.cat"))
+		print(f"Phot Catalogs (stack): {len(stack_phot_catalogs)}")
+		stack_phot_pngs = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.MAG_*.png"))
+		print(f"Phot PNGs (stack): {len(stack_phot_pngs)}")
+		#------------------------------------------------------------
+		#	Subtracted Frames
+		#------------------------------------------------------------
+		#	ref_PS1_T09373_00000000_000000_r_0.conv.fits
+		convolved_ref_frames = sorted(glob.glob(f"{path_data}/ref_*_{obj}_*_*_{filte}_*.conv.fits"))
+		print(f"Convolved Ref Frames: {len(convolved_ref_frames)}")
+		subt_frames = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.subt.fits"))
+		print(f"Subt Frames: {len(subt_frames)}")
+		subt_phot_catalogs = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.subt.phot.cat"))
+		print(f"Phot Subt Catalogs: {len(subt_phot_catalogs)}")
 
-# 		ssf_regions = sorted(glob.glob(f"{path_data}/*com.ssf.reg"))
-# 		print(f"SSF Regions: {len(ssf_regions)}")
-# 		ssf_catalogs = sorted(glob.glob(f"{path_data}/*com.ssf.txt"))
-# 		print(f"SSF Catalogs: {len(ssf_catalogs)}")
-# 		#------------------------------------------------------------
-# 		#	Transient Candidates
-# 		#------------------------------------------------------------
-# 		#	calib_7DT01_T12936_20240423_034610_r_360.com.437.sci.fits
-# 		sci_snapshots = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.*.sci.fits"))
-# 		#	ref_PS1_T12936_00000000_000000_r_0.conv.437.ref.fits
-# 		ref_snapshots = sorted(glob.glob(f"{path_data}/ref_*_{obj}_*_*_{filte}_*.conv.*.ref.fits"))
-# 		#	calib_7DT01_T12936_20240423_034610_r_360.com.subt.437.sub.fits
-# 		sub_snapshots = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.subt.*.sub.fits"))
-# 		print(f"Snapshots (fits): {len(sci_snapshots)}, {len(ref_snapshots)}, {len(sub_snapshots)}")
+		ssf_regions = sorted(glob.glob(f"{path_data}/*com.ssf.reg"))
+		print(f"SSF Regions: {len(ssf_regions)}")
+		ssf_catalogs = sorted(glob.glob(f"{path_data}/*com.ssf.txt"))
+		print(f"SSF Catalogs: {len(ssf_catalogs)}")
+		#------------------------------------------------------------
+		#	Transient Candidates
+		#------------------------------------------------------------
+		#	calib_7DT01_T12936_20240423_034610_r_360.com.437.sci.fits
+		sci_snapshots = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.*.sci.fits"))
+		#	ref_PS1_T12936_00000000_000000_r_0.conv.437.ref.fits
+		ref_snapshots = sorted(glob.glob(f"{path_data}/ref_*_{obj}_*_*_{filte}_*.conv.*.ref.fits"))
+		#	calib_7DT01_T12936_20240423_034610_r_360.com.subt.437.sub.fits
+		sub_snapshots = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.subt.*.sub.fits"))
+		print(f"Snapshots (fits): {len(sci_snapshots)}, {len(ref_snapshots)}, {len(sub_snapshots)}")
 
-# 		sci_png_snapshots = sorted(glob.glob(f"{path_data}/*.sci.png"))
-# 		ref_png_snapshots = sorted(glob.glob(f"{path_data}/*.ref.png"))
-# 		sub_png_snapshots = sorted(glob.glob(f"{path_data}/*.sub.png"))
-# 		print(f"Snapshots (png): {len(sci_png_snapshots)}, {len(ref_png_snapshots)}, {len(sub_png_snapshots)}")
+		sci_png_snapshots = sorted(glob.glob(f"{path_data}/*.sci.png"))
+		ref_png_snapshots = sorted(glob.glob(f"{path_data}/*.ref.png"))
+		sub_png_snapshots = sorted(glob.glob(f"{path_data}/*.sub.png"))
+		print(f"Snapshots (png): {len(sci_png_snapshots)}, {len(ref_png_snapshots)}, {len(sub_png_snapshots)}")
 
-# 		#	calib_7DT01_T09373_20240423_033207_r_360.com.subt.flag.summary.csv
-# 		flag_tables = sorted(glob.glob(f"{path_data}//calib_*_{obj}_*_*_{filte}_*.subt.flag.summary.csv"))
-# 		print(f"Flag Summary Tables: {flag_tables}")
-# 		#	calib_7DT01_T12931_20240423_031935_r_360.com.subt.transient.cat
-# 		transient_catalogs = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.subt.transient.cat"))
-# 		print(f"Transient Catalogs: {len(transient_catalogs)}")
-# 		transient_regions = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.subt.transient.reg"))
-# 		print(f"Transient Regions: {len(transient_regions)}")
+		#	calib_7DT01_T09373_20240423_033207_r_360.com.subt.flag.summary.csv
+		flag_tables = sorted(glob.glob(f"{path_data}//calib_*_{obj}_*_*_{filte}_*.subt.flag.summary.csv"))
+		print(f"Flag Summary Tables: {flag_tables}")
+		#	calib_7DT01_T12931_20240423_031935_r_360.com.subt.transient.cat
+		transient_catalogs = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.subt.transient.cat"))
+		print(f"Transient Catalogs: {len(transient_catalogs)}")
+		transient_regions = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.subt.transient.reg"))
+		print(f"Transient Regions: {len(transient_regions)}")
 
-# 		#	Grouping files
-# 		files_to_base = single_frames + stack_frames
-# 		files_to_phot = single_phot_catalogs + single_phot_pngs \
-# 			+ stack_phot_catalogs + stack_phot_pngs
-# 		files_to_transient = convolved_ref_frames + subt_frames + subt_phot_catalogs \
-# 			+ ssf_regions + ssf_catalogs \
-# 			+ transient_catalogs + transient_regions + flag_tables
-# 		files_to_candidate_fits = sci_snapshots + ref_snapshots + sub_snapshots
-# 		files_to_candidate_png = sci_png_snapshots + ref_png_snapshots + sub_png_snapshots		
+		#	Grouping files
+		files_to_base = single_frames + stack_frames
+		files_to_phot = single_phot_catalogs + single_phot_pngs \
+			+ stack_phot_catalogs + stack_phot_pngs
+		files_to_transient = convolved_ref_frames + subt_frames + subt_phot_catalogs \
+			+ ssf_regions + ssf_catalogs \
+			+ transient_catalogs + transient_regions + flag_tables
+		files_to_candidate_fits = sci_snapshots + ref_snapshots + sub_snapshots
+		files_to_candidate_png = sci_png_snapshots + ref_png_snapshots + sub_png_snapshots		
 		
-# 		destination_paths = [
-# 			path_destination, 
-# 			path_phot,
-# 			path_transient, 
-# 			path_transient_cand_fits, 
-# 			path_transient_cand_png
-# 			]
+		destination_paths = [
+			path_destination, 
+			path_phot,
+			path_transient, 
+			path_transient_cand_fits, 
+			path_transient_cand_png
+			]
 
-# 		all_files = [
-# 			files_to_base, 
-# 			files_to_phot,
-# 			files_to_transient, 
-# 			files_to_candidate_fits, 
-# 			files_to_candidate_png
-# 			]
-# 		#	Move
-# 		# with ThreadPoolExecutor(max_workers=ncore) as executor:
-# 		# 	for files, destination in zip(all_files, destination_paths):
-# 		# 		executor.map(lambda file_path: move_file(file_path, destination), files)
-# 		# print("Done")
+		all_files = [
+			files_to_base, 
+			files_to_phot,
+			files_to_transient, 
+			files_to_candidate_fits, 
+			files_to_candidate_png
+			]
+		#	Move
+		# with ThreadPoolExecutor(max_workers=ncore) as executor:
+		# 	for files, destination in zip(all_files, destination_paths):
+		# 		executor.map(lambda file_path: move_file(file_path, destination), files)
+		# print("Done")
 
-# 		with ThreadPoolExecutor(max_workers=ncore) as executor:
-# 			for files, destination in zip(all_files, destination_paths):
-# 				# move_file 함수를 partial을 이용해 목적지 경로를 고정합니다.
-# 				move_func = partial(move_file, destination_folder=destination)
-# 				executor.map(move_func, files)
+		with ThreadPoolExecutor(max_workers=ncore) as executor:
+			for files, destination in zip(all_files, destination_paths):
+				# move_file 함수를 partial을 이용해 목적지 경로를 고정합니다.
+				move_func = partial(move_file, destination_folder=destination)
+				executor.map(move_func, files)
 
-# delt_data_transfer = time.time() - t0_data_transfer
-# timetbl['status'][timetbl['process']=='data_transfer'] = True
-# timetbl['time'][timetbl['process']=='data_transfer'] = delt_data_transfer
-# #======================================================================
-# #	Report the LOG
-# #======================================================================
-# end_localtime = time.strftime('%Y-%m-%d_%H:%M:%S_(%Z)', time.localtime())
-# note = "-"
-# log_text = f"{path_new},{start_localtime},{end_localtime},{note}\n"
+delt_data_transfer = time.time() - t0_data_transfer
+timetbl['status'][timetbl['process']=='data_transfer'] = True
+timetbl['time'][timetbl['process']=='data_transfer'] = delt_data_transfer
+#======================================================================
+#	Report the LOG
+#======================================================================
+end_localtime = time.strftime('%Y-%m-%d_%H:%M:%S_(%Z)', time.localtime())
+note = "-"
+log_text = f"{path_new},{start_localtime},{end_localtime},{note}\n"
 
-# with open(path_log, 'a') as file:
-# 	file.write(f"{log_text}")
+with open(path_log, 'a') as file:
+	file.write(f"{log_text}")
 
-# objtbl.write(f"{path_data}/data_processing.log", format='csv')
+objtbl.write(f"{path_data}/data_processing.log", format='csv')
 
-# #======================================================================
-# #	Slack message
-# #======================================================================
-# # delt_total = round(timetbl['time'][timetbl['process']=='total'].item()/60., 1)
-# delt_total = (time.time() - starttime)
-# timetbl['status'][timetbl['process']=='total'] = True
-# timetbl['time'][timetbl['process']=='total'] = delt_total
-# #   Time Table
-# timetbl['time'].format = '1.3f'
-# timetbl.write(f'{path_data}/obs.summary.log', format='csv', overwrite=True)
+#======================================================================
+#	Slack message
+#======================================================================
+# delt_total = round(timetbl['time'][timetbl['process']=='total'].item()/60., 1)
+delt_total = (time.time() - starttime)
+timetbl['status'][timetbl['process']=='total'] = True
+timetbl['time'][timetbl['process']=='total'] = delt_total
+#   Time Table
+timetbl['time'].format = '1.3f'
+timetbl.write(f'{path_data}/obs.summary.log', format='csv', overwrite=True)
 
-# channel = '#pipeline'
-# text = f'[`gpPy`+GPU/{project}-{obsmode}] Processing Complete {obs} {os.path.basename(path_new)} Data ({nobj} objects) with {ncore} cores taking {delt_total/60.:.1f} mins'
+channel = '#pipeline'
+text = f'[`gpPy`+GPU/{project}-{obsmode}] Processing Complete {obs} {os.path.basename(path_new)} Data ({nobj} objects) with {ncore} cores taking {delt_total/60.:.1f} mins'
 
-# param_slack = dict(
-# 	token = OAuth_Token,
-# 	channel = channel,
-# 	text = text,
-# )
+param_slack = dict(
+	token = OAuth_Token,
+	channel = channel,
+	text = text,
+)
 
-# tool.slack_bot(**param_slack)
+tool.slack_bot(**param_slack)
 # %%
