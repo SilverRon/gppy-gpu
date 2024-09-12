@@ -12,6 +12,7 @@ import sys
 import re
 import time
 import glob
+import json
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from itertools import repeat
@@ -39,7 +40,9 @@ path_thisfile = Path(__file__).resolve()
 # ABSOLUTE path of gppy-gpu
 path_root = path_thisfile.parent.parent.parent  # Careful! not a str
 # sys.path.append('../../src')  # Deprecated
-sys.path.append(str(path_root / 'src'))  # path for all custom packages
+path_src = path_root / 'src'
+if path_src not in map(Path, sys.path):
+	sys.path.append(str(path_src)) 
 from preprocess import calib
 from util import tool
 #------------------------------------------------------------
@@ -56,6 +59,14 @@ plt.rc('font', family='serif')
 os.environ['TZ'] = 'Asia/Seoul'
 time.tzset()
 start_localtime = time.strftime('%Y-%m-%d_%H:%M:%S_(%Z)', time.localtime())
+
+#------------------------------------------------------------
+#	*Core Variables*
+#------------------------------------------------------------
+# n_binning = 2
+n_binning = 1
+verbose_gpu = False
+
 #------------------------------------------------------------
 #	Ready
 #------------------------------------------------------------
@@ -66,13 +77,14 @@ try:
 	if not bool(re.match(r"7DT\d{2}", obs)):
 		raise IndexError("The input is not 7DT##. Switching to Manual Input")
 except IndexError as e:
-	print(e)
+	print('No telescope arg given. Switching to Manual Input') # print(e)
 	obs = input(f"7DT## (e.g. 7DT01):").upper()
 except Exception as e:
 	print(e)
 	print(f'Unexpected behavior. Check parameter obs')
 
 print(f'# Observatory : {obs.upper()}')
+
 #	N cores for Multiprocessing
 # try:
 # 	ncore = int(sys.argv[2])
@@ -80,45 +92,30 @@ print(f'# Observatory : {obs.upper()}')
 # 	ncore = 2
 ncore = 4
 print(f"- Number of Cores: {ncore}")
-#------------------------------------------------------------
-#	*Core Variable*
-#------------------------------------------------------------
-# n_binning = 2
-n_binning = 1
-#------------------------------------------------------------
-verbose_gpu = False
 #%%
 #------------------------------------------------------------
 #	Path
 #------------------------------------------------------------
-path_base = '/home/snu/gppyTest_dhhyun/factory'  # '/large_data/factory'
+#   Main Paths from path.json
+with open(path_thisfile.parent / 'path.json', 'r') as jsonfile:
+    upaths = json.load(jsonfile)
+
+path_base = upaths['path_base']  # '/home/snu/gppyTest_dhhyun/factory'  # '/large_data/factory'
+path_obsdata = f'{path_base}/../obsdata' if upaths['path_obsdata'] == '' else upaths['path_obsdata']
+path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}_gain2750' if upaths['path_gal'] == '' else upaths['path_gal']
+path_refcat = f'{path_base}/ref_cat' if upaths['path_refcat'] == '' else upaths['path_refcat']
+
+# path_gal = f'{path_base}/../processed'
+# path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}'
+# path_refcat = '/data4/gecko/factory/ref_frames/LOAO'
+#------------------------------------------------------------
+
 # path_ref = f'{path_base}/ref_frame/{obs.upper()}'
 path_ref = f'{path_base}/ref_frame'
 path_factory = f'{path_base}/{obs.lower()}'
 # path_save = f'/data6/bkgdata/{obs.upper()}'
 path_log = f'{path_base}/log/{obs.lower()}.log'
 
-# revision
-if not os.path.exists(path_log):
-	print(f"Creating {path_log}")
-
-	path_log_parent = Path(path_log).parent
-	if not path_log_parent.exists():
-		path_log_parent.mkdir(parents=True)
-
-	f = open(path_log, 'w')
-	# columns
-	f.write('date,start,end,note\n')  # f.write('date\n19941026')
-	# example line
-	f.write('/large_data/obsdata/7DT01/1994-10-26_1x1_gain2750,1994-10-26_00:00:00_(KST),1994-10-26_00:01:00_(KST),-\n')
-	f.close()
-#------------------------------------------------------------
-# path_gal = f'{path_base}/../processed'
-# path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}'
-path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}_gain2750'
-path_refcat = f'{path_base}/ref_cat'
-# path_refcat = '/data4/gecko/factory/ref_frames/LOAO'
-#------------------------------------------------------------
 # path_config = '/home/paek/config'
 path_config = str(path_root / 'config')  # '../../config'
 path_keys = path_config  # f'../../config'
@@ -128,14 +125,12 @@ path_mframe = f'{path_base}/master_frame_{n_binning}x{n_binning}_gain2750'
 #------------------------------------------------------------
 #	Codes
 #------------------------------------------------------------
-path_src = path_root / 'src'
 # path_phot_sg = './phot/gregoryphot_2021.py'
 path_phot_mp = str(path_src / 'phot/gregoryphot_7DT_NxN.py')  # './phot/gregoryphot_7DT_NxN.py'
 path_phot_sub = str(path_src / 'phot/gregorydet_7DT_NxN.py')
 path_subtraction = str(path_src / "util/gregorysubt_7DT.py")
 path_find = str(path_src / 'phot/gregoryfind_7DT.py')
 #------------------------------------------------------------
-path_obsdata = f'{path_base}/../obsdata'
 path_raw = f'{path_obsdata}/{obs.upper()}'
 rawlist = sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))
 #------------------------------------------------------------
@@ -169,6 +164,22 @@ for imagetyp in ['zero', 'flat', 'dark']:
 	if not os.path.exists(path_mframe_imagetyp):
 		print(f"mkdir {path_mframe_imagetyp}")
 		os.makedirs(path_mframe_imagetyp)
+
+# revision
+if not os.path.exists(path_log):
+	print(f"Creating {path_log}")
+
+	path_log_parent = Path(path_log).parent
+	if not path_log_parent.exists():
+		path_log_parent.mkdir(parents=True)
+
+	f = open(path_log, 'w')
+	# columns
+	f.write('date,start,end,note\n')  # f.write('date\n19941026')
+	# example line
+	f.write('/large_data/obsdata/7DT01/1994-10-26_1x1_gain2750,1994-10-26_00:00:00_(KST),1994-10-26_00:01:00_(KST),-\n')
+	f.close()
+#------------------------------------------------------------
 #------------------------------------------------------------
 #	Table
 #------------------------------------------------------------
@@ -235,6 +246,7 @@ else:
 	if len(sys.argv) < 3:
 		for ff, folder in enumerate(newlist):
 			print(f"[{ff:0>2}] {folder}")
+#%%
 """
 # path = newlist[-1]
 # path = newlist[3]
@@ -339,7 +351,7 @@ try:
 	print(f"Filters: {filterlist}")
 	flatnumb = len(filterlist)
 except:
-	print(f"There is no flat frames")
+	print(f"There is no flat frame")
 	flatnumb = 0
 #------------------------------------------------------------
 # ### Marking the `GECKO` data
