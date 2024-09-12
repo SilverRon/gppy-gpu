@@ -7,6 +7,7 @@
 #	FUNCTION
 #============================================================
 import os, glob
+from pathlib import Path
 import numpy as np
 from astropy import units as u
 from astropy.io import fits
@@ -16,7 +17,11 @@ import sys
 from astropy.nddata import CCDData
 import ccdproc
 import matplotlib.pyplot as plt
-sys.path.append('..')
+
+path_thisfile = Path(__file__).resolve()
+path_root = path_thisfile.parent.parent.parent
+sys.path.append(str(path_root / 'src'))
+# sys.path.append('..')
 from util import tool
 
 def bn_median(masked_array, axis=None):

@@ -3,6 +3,8 @@ import os
 import glob
 import sys
 import time
+import json
+from pathlib import Path
 from astropy.table import Table
 #============================================================
 #   Function
@@ -46,11 +48,22 @@ interval_monitor = 30
 #------------------------------------------------------------
 #   Path
 #------------------------------------------------------------
-path_to_obsdata = f"/large_data/obsdata"
-path_to_monitor = f"{path_to_obsdata}/{obs}"
-path_to_log = f"/large_data/factory/log"
-path_to_gppy = f"/home/gp/gppy"
-code = f"7DT_Routine_1x1_gain2750.py"
+path_thisfile = Path(__file__).resolve()
+path_root = path_thisfile.parent.parent.parent  # Careful! not a str
+with open(path_thisfile.parent / 'path.json', 'r') as jsonfile:
+    upaths = json.load(jsonfile)
+
+# paths from path.json
+path_base = upaths['path_base']  # '/large_data/factory'
+path_obsdata = f'{path_base}/../obsdata' if upaths['path_obsdata'] == '' else upaths['path_obsdata']
+# path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}_gain2750' if upaths['path_gal'] == '' else upaths['path_gal']
+path_refcat = f'{path_base}/ref_cat' if upaths['path_refcat'] == '' else upaths['path_refcat']
+# path_to_obsdata = f"/large_data/obsdata"
+path_to_monitor = str(Path(path_obsdata) / obs)  # f"{path_to_obsdata}/{obs}"
+path_to_log = str(Path(path_base) / 'log')  # f"/large_data/factory/log"
+# path_to_gppy = f"/home/gp/gppy"
+path_run = path_root / 'run' / 'routine'
+code = "7DT_Routine_1x1_gain2750.py"
 #------------------------------------------------------------
 while True:
     #------------------------------------------------------------
@@ -88,7 +101,7 @@ while True:
         print(f"="*60)
         print(f"Monitor: {data_to_monitor}")
         print(f"-"*60)
-        gpcom = f"python {path_to_gppy}/{code} {obs} {data_to_monitor}"
+        gpcom = f"python {str(path_run / code)} {obs} {data_to_monitor}"
         t0 = time.time()
         interval0 = 5
         interval = 30

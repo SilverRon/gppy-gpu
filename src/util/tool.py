@@ -16,7 +16,14 @@ from astropy.coordinates import SkyCoord
 from astropy.wcs import WCS
 from astropy.nddata import Cutout2D
 import matplotlib.pyplot as plt
-sys.path.append('..')
+
+from pathlib import Path
+path_thisfile = Path(__file__).resolve()
+# ABSOLUTE path of gppy-gpu
+path_root = path_thisfile.parent.parent.parent  # Careful! not a str
+path_src = path_root / 'src'
+if path_src not in map(Path, sys.path):
+	sys.path.append(str(path_src))
 from phot import gpphot
 # from imsng import phot_tbd
 #============================================================

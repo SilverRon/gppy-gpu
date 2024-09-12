@@ -3,7 +3,7 @@
 <VOTABLE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.ivoa.net/xml/VOTable/v1.1">
 <DESCRIPTION>produced by SWarp</DESCRIPTION>
 <!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
-<RESOURCE ID="SWarp" name="calib_7DT_NGC0253_20231124_015528_m800_4980.com.fits">
+<RESOURCE ID="SWarp" name="calib_7DT01_T04534_20240727_010354_m400_300.com.fits">
  <DESCRIPTION>Data related to SWarp</DESCRIPTION>
  <INFO name="QUERY_STATUS" value="OK" />
  <COOSYS ID="J2000" equinox="J2000" epoch="J2000" system="ICRS"/>
@@ -16,23 +16,23 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2002ASPC..281..228B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="4"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2024-08-21"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="06:42:03"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="1028.68" unit="s"/>
-  <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="gp"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2024-09-02"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="12:13:14"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="16.02" unit="s"/>
+  <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="snu"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
-  <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/gp/gppy"/>
-  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="/large_data/Commission/NGC0253/m800/calib_7DT_NGC0253_20231124_015528_m800_4980.com.fits"/>
-  <PARAM name="Weight_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="/large_data/Commission/NGC0253/m800/calib_7DT_NGC0253_20231124_015528_m800_4980.weight.fits"/>
-  <PARAM name="NOverlap_Max" datatype="int" ucd="meta.number;stat.max;obs.image" value="83"/>
-  <PARAM name="ExpTime_Max" datatype="float" ucd="time.expo;stat.max;obs.image" value="4980" unit="s"/>
-  <PARAM name="Gain_Max" datatype="float" ucd="instr.calib;stat.max;obs.image" value="20.6023" unit="photon/ADU"/>
+  <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/snu/gppyTest_dhhyun/gppy-gpu/run/routine"/>
+  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="/home/snu/gppyTest_dhhyun/factory/7dt01/2001-02-23_gain2750/calib_7DT01_T04534_20240727_010354_m400_300.com.fits"/>
+  <PARAM name="Weight_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="coadd.weight.fits"/>
+  <PARAM name="NOverlap_Max" datatype="int" ucd="meta.number;stat.max;obs.image" value="3"/>
+  <PARAM name="ExpTime_Max" datatype="float" ucd="time.expo;stat.max;obs.image" value="300" unit="s"/>
+  <PARAM name="Gain_Max" datatype="float" ucd="instr.calib;stat.max;obs.image" value="24.4507" unit="photon/ADU"/>
   <TABLE ID="Input_Image_Data" name="Input_Image_Data">
    <DESCRIPTION>Data gathered by SWarp for every FITS input image</DESCRIPTION>
    <!-- NFrames may be 0 if an error occurred early in the processing -->
-   <PARAM name="NFrames" datatype="int" ucd="meta.number;meta.dataset" value="83"/>
+   <PARAM name="NFrames" datatype="int" ucd="meta.number;meta.dataset" value="3"/>
    <!-- CurrFrame may differ from NFrames if an error occurred -->
-   <PARAM name="CurrFrame" datatype="int" ucd="meta.number;meta.dataset" value="83"/>
+   <PARAM name="CurrFrame" datatype="int" ucd="meta.number;meta.dataset" value="3"/>
    <FIELD name="Frame_Index" datatype="int" ucd="meta.record"/>
    <FIELD name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits"/>
    <FIELD name="Weight_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits"/>
@@ -67,750 +67,30 @@
    <FIELD name="COOSYS" datatype="char" arraysize="*" ucd="meta.code;pos"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>1</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231103_041121_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:25:01</TD><TD>5.00</TD>
-     <TD>-0.0158572</TD><TD>5.22901</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>1</TD><TD>/home/snu/gppyTest_dhhyun/factory/7dt01/2001-02-23_gain2750/calib_7DT01_T04534_20240727_010018_m400_100.fits</TD><TD>(null)</TD><TD>F</TD><TD>T04534</TD>
+     <TD>0</TD><TD>2024-09-02</TD><TD>12:13:01</TD><TD>3.00</TD>
+     <TD>6.41313</TD><TD>7.55797</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
      <TD>NONE</TD><TD>T</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995506</TD><TD>11.93491107 -25.32451186</TD><TD>0.505</TD><TD>2023.839628</TD><TD>2000</TD><TD>2000</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>100</TD><TD>0.0100003</TD>
+     <TD>0.995915</TD><TD>248.6327815 -50.10289573</TD><TD>0.505</TD><TD>2024.568218</TD><TD>2000</TD><TD>2000</TD>
      <TD>ICRS</TD>
     </TR>
     <TR>
-     <TD>2</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231103_041223_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:25:06</TD><TD>5.00</TD>
-     <TD>-0.0161353</TD><TD>5.22259</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>2</TD><TD>/home/snu/gppyTest_dhhyun/factory/7dt01/2001-02-23_gain2750/calib_7DT01_T04534_20240727_010206_m400_100.fits</TD><TD>(null)</TD><TD>F</TD><TD>T04534</TD>
+     <TD>0</TD><TD>2024-09-02</TD><TD>12:13:05</TD><TD>3.00</TD>
+     <TD>6.42228</TD><TD>7.54118</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
      <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995524</TD><TD>11.93491107 -25.32451186</TD><TD>0.505</TD><TD>2023.83963</TD><TD>2000</TD><TD>2000</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>100</TD><TD>0.00997615</TD>
+     <TD>0.995914</TD><TD>248.6325627 -50.10268534</TD><TD>0.505</TD><TD>2024.568222</TD><TD>2000</TD><TD>2000</TD>
      <TD>ICRS</TD>
     </TR>
     <TR>
-     <TD>3</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231103_045221_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:25:12</TD><TD>5.00</TD>
-     <TD>-0.00708778</TD><TD>5.38799</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>3</TD><TD>/home/snu/gppyTest_dhhyun/factory/7dt01/2001-02-23_gain2750/calib_7DT01_T04534_20240727_010354_m400_100.fits</TD><TD>(null)</TD><TD>F</TD><TD>T04534</TD>
+     <TD>0</TD><TD>2024-09-02</TD><TD>12:13:08</TD><TD>3.00</TD>
+     <TD>6.45961</TD><TD>7.55157</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
      <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995475</TD><TD>11.93537692 -25.32521309</TD><TD>0.505</TD><TD>2023.839706</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>4</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_022441_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:25:17</TD><TD>5.00</TD>
-     <TD>0.00667522</TD><TD>4.7154</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.99577</TD><TD>11.93700558 -25.32310839</TD><TD>0.505</TD><TD>2023.872279</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>5</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_022542_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:25:23</TD><TD>6.00</TD>
-     <TD>-0.0512423</TD><TD>4.79147</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995814</TD><TD>11.93700558 -25.32310839</TD><TD>0.505</TD><TD>2023.872281</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>6</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_022644_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:25:29</TD><TD>5.00</TD>
-     <TD>-0.0138773</TD><TD>5.01016</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995737</TD><TD>11.93692799 -25.32310842</TD><TD>0.505</TD><TD>2023.872283</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>7</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_022745_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:25:34</TD><TD>5.00</TD>
-     <TD>-0.0132623</TD><TD>4.849</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995836</TD><TD>11.93692801 -25.32317856</TD><TD>0.505</TD><TD>2023.872285</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>8</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_022847_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:25:40</TD><TD>5.00</TD>
-     <TD>-0.0272649</TD><TD>4.66633</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995817</TD><TD>11.93692801 -25.32317856</TD><TD>0.505</TD><TD>2023.872287</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>9</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_022948_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:25:45</TD><TD>5.00</TD>
-     <TD>-0.0231252</TD><TD>4.6794</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995806</TD><TD>11.93692804 -25.3232487</TD><TD>0.505</TD><TD>2023.872289</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>10</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_023050_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:25:50</TD><TD>5.00</TD>
-     <TD>-0.0243927</TD><TD>4.78886</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.99581</TD><TD>11.93685045 -25.32324872</TD><TD>0.505</TD><TD>2023.872291</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>11</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_023151_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:25:56</TD><TD>5.00</TD>
-     <TD>-0.0177275</TD><TD>4.79497</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995848</TD><TD>11.93677288 -25.32331889</TD><TD>0.505</TD><TD>2023.872293</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>12</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_023253_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:26:01</TD><TD>5.00</TD>
-     <TD>0.0164502</TD><TD>4.95524</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995816</TD><TD>11.93677288 -25.32331889</TD><TD>0.505</TD><TD>2023.872294</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>13</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_023354_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:26:07</TD><TD>5.00</TD>
-     <TD>-0.11224</TD><TD>4.81196</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.9958</TD><TD>11.93677288 -25.32331889</TD><TD>0.505</TD><TD>2023.872296</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>14</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_023456_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:26:13</TD><TD>5.00</TD>
-     <TD>0.0193296</TD><TD>4.87021</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995781</TD><TD>11.93685045 -25.32324872</TD><TD>0.505</TD><TD>2023.872298</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>15</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_023557_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:26:18</TD><TD>5.00</TD>
-     <TD>-0.0212752</TD><TD>4.82187</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995773</TD><TD>11.93685048 -25.32331886</TD><TD>0.505</TD><TD>2023.8723</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>16</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_023659_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:26:24</TD><TD>6.00</TD>
-     <TD>-0.0140626</TD><TD>4.76328</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995778</TD><TD>11.93685045 -25.32324872</TD><TD>0.505</TD><TD>2023.872302</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>17</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_023800_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:26:29</TD><TD>5.00</TD>
-     <TD>-0.00307522</TD><TD>4.69654</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995822</TD><TD>11.93685048 -25.32331886</TD><TD>0.505</TD><TD>2023.872306</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>18</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_023902_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:26:35</TD><TD>5.00</TD>
-     <TD>-0.0199904</TD><TD>4.72844</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995832</TD><TD>11.93677288 -25.32331889</TD><TD>0.505</TD><TD>2023.872308</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>19</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_024003_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:26:40</TD><TD>5.00</TD>
-     <TD>-0.0177656</TD><TD>4.75947</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995787</TD><TD>11.93677288 -25.32331889</TD><TD>0.505</TD><TD>2023.87231</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>20</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_024105_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:26:46</TD><TD>5.00</TD>
-     <TD>-0.00816678</TD><TD>4.71991</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.99582</TD><TD>11.93677288 -25.32331889</TD><TD>0.505</TD><TD>2023.872312</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>21</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_024206_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:26:51</TD><TD>5.00</TD>
-     <TD>-0.0398696</TD><TD>4.74542</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995878</TD><TD>11.93677291 -25.32338903</TD><TD>0.505</TD><TD>2023.872313</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>22</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_024308_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:26:57</TD><TD>5.00</TD>
-     <TD>-0.00847772</TD><TD>4.74039</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995819</TD><TD>11.93669531 -25.32338905</TD><TD>0.505</TD><TD>2023.872315</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>23</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231115_024409_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:27:03</TD><TD>5.00</TD>
-     <TD>0.0223979</TD><TD>4.70985</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.99584</TD><TD>11.93669534 -25.32345919</TD><TD>0.505</TD><TD>2023.872317</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>24</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_021644_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:27:08</TD><TD>4.00</TD>
-     <TD>-0.0872727</TD><TD>5.28798</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995846</TD><TD>11.92273429 -25.34436454</TD><TD>0.505</TD><TD>2023.907856</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>25</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_021746_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:27:13</TD><TD>5.00</TD>
-     <TD>-0.085532</TD><TD>5.31485</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995847</TD><TD>11.92250142 -25.34422432</TD><TD>0.505</TD><TD>2023.907858</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>26</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_021847_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:27:18</TD><TD>5.00</TD>
-     <TD>-0.0803032</TD><TD>5.34308</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995824</TD><TD>11.92257901 -25.34415416</TD><TD>0.505</TD><TD>2023.90786</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>27</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_021948_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:27:23</TD><TD>4.00</TD>
-     <TD>-0.0198262</TD><TD>5.31047</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995867</TD><TD>11.92265662 -25.34415414</TD><TD>0.505</TD><TD>2023.907862</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>28</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_022050_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:27:29</TD><TD>5.00</TD>
-     <TD>-0.0513253</TD><TD>5.32479</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995851</TD><TD>11.92265662 -25.34415414</TD><TD>0.505</TD><TD>2023.907864</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>29</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_022152_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:27:34</TD><TD>5.00</TD>
-     <TD>-0.0548074</TD><TD>5.30674</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995863</TD><TD>11.9225014 -25.34415418</TD><TD>0.505</TD><TD>2023.907866</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>30</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_022253_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:27:39</TD><TD>4.00</TD>
-     <TD>0.0126567</TD><TD>5.32954</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995803</TD><TD>11.9225014 -25.34415418</TD><TD>0.505</TD><TD>2023.907868</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>31</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_022355_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:27:44</TD><TD>4.00</TD>
-     <TD>-0.0518919</TD><TD>5.36031</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995831</TD><TD>11.92250138 -25.34408404</TD><TD>0.505</TD><TD>2023.907869</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>32</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_022456_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:27:49</TD><TD>5.00</TD>
-     <TD>-0.0893548</TD><TD>5.33383</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995822</TD><TD>11.92234619 -25.34415422</TD><TD>0.505</TD><TD>2023.907871</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>33</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_022558_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:27:54</TD><TD>5.00</TD>
-     <TD>-0.0436281</TD><TD>5.3633</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.99585</TD><TD>11.92226858 -25.34415424</TD><TD>0.505</TD><TD>2023.907873</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>34</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_022700_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:00</TD><TD>5.00</TD>
-     <TD>-0.0510023</TD><TD>5.34771</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995798</TD><TD>11.9222686 -25.34422437</TD><TD>0.505</TD><TD>2023.907877</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>35</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_022801_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:05</TD><TD>4.00</TD>
-     <TD>0.0287966</TD><TD>5.35034</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995858</TD><TD>11.92219099 -25.34422439</TD><TD>0.505</TD><TD>2023.907879</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>36</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_022903_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:10</TD><TD>5.00</TD>
-     <TD>0.0107585</TD><TD>5.4035</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995882</TD><TD>11.9222686 -25.34422437</TD><TD>0.505</TD><TD>2023.907881</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>37</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_023004_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:15</TD><TD>4.00</TD>
-     <TD>-0.0413418</TD><TD>5.40116</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995825</TD><TD>11.9222686 -25.34422437</TD><TD>0.505</TD><TD>2023.907883</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>38</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_023106_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:21</TD><TD>5.00</TD>
-     <TD>0.016071</TD><TD>5.4129</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995818</TD><TD>11.9222686 -25.34422437</TD><TD>0.505</TD><TD>2023.907885</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>39</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_023207_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:26</TD><TD>5.00</TD>
-     <TD>0.00760254</TD><TD>5.42801</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995839</TD><TD>11.92234623 -25.34429449</TD><TD>0.505</TD><TD>2023.907887</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>40</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_023309_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:31</TD><TD>5.00</TD>
-     <TD>0.00343588</TD><TD>5.49253</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995837</TD><TD>11.92226862 -25.34429451</TD><TD>0.505</TD><TD>2023.907888</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>41</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_023410_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:35</TD><TD>4.00</TD>
-     <TD>-0.00487932</TD><TD>5.49022</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995869</TD><TD>11.92226862 -25.34429451</TD><TD>0.505</TD><TD>2023.90789</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>42</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_023512_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:40</TD><TD>4.00</TD>
-     <TD>-0.0320008</TD><TD>5.45486</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995841</TD><TD>11.92242384 -25.34429448</TD><TD>0.505</TD><TD>2023.907892</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>43</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_023613_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:46</TD><TD>5.00</TD>
-     <TD>-0.0687621</TD><TD>5.49383</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995832</TD><TD>11.92250144 -25.34429446</TD><TD>0.505</TD><TD>2023.907894</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>44</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_023715_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:50</TD><TD>4.00</TD>
-     <TD>0.0545078</TD><TD>5.46273</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995854</TD><TD>11.92257905 -25.34429444</TD><TD>0.505</TD><TD>2023.907896</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>45</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_023816_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:55</TD><TD>4.00</TD>
-     <TD>-0.0368649</TD><TD>5.49801</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.99585</TD><TD>11.92265664 -25.34422428</TD><TD>0.505</TD><TD>2023.907898</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>46</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_023918_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:28:59</TD><TD>4.00</TD>
-     <TD>-0.0664863</TD><TD>5.51368</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995869</TD><TD>11.92273427 -25.3442944</TD><TD>0.505</TD><TD>2023.9079</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>47</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_024019_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:29:05</TD><TD>5.00</TD>
-     <TD>-0.0611849</TD><TD>5.50307</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995887</TD><TD>11.9228119 -25.34436452</TD><TD>0.505</TD><TD>2023.907902</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>48</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_024121_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:29:10</TD><TD>4.00</TD>
-     <TD>-0.0657983</TD><TD>5.43883</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995869</TD><TD>11.92296712 -25.34436449</TD><TD>0.505</TD><TD>2023.907904</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>49</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_024222_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:29:15</TD><TD>5.00</TD>
-     <TD>-0.0430558</TD><TD>5.44108</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995853</TD><TD>11.92296712 -25.34436449</TD><TD>0.505</TD><TD>2023.907906</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>50</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_024324_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:29:20</TD><TD>5.00</TD>
-     <TD>-0.0519163</TD><TD>5.44496</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995872</TD><TD>11.92304474 -25.34443461</TD><TD>0.505</TD><TD>2023.907907</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>51</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_024425_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:29:25</TD><TD>4.00</TD>
-     <TD>0.00361179</TD><TD>5.41934</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995859</TD><TD>11.92312237 -25.34450473</TD><TD>0.505</TD><TD>2023.907909</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>52</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_024527_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:29:30</TD><TD>4.00</TD>
-     <TD>-0.0411652</TD><TD>5.47695</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995861</TD><TD>11.92312237 -25.34450473</TD><TD>0.505</TD><TD>2023.907911</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>53</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_024629_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:29:34</TD><TD>4.00</TD>
-     <TD>-0.0520488</TD><TD>5.45876</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995865</TD><TD>11.92327759 -25.34450469</TD><TD>0.505</TD><TD>2023.907913</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>54</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_024730_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:29:39</TD><TD>4.00</TD>
-     <TD>-0.00792399</TD><TD>5.44917</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995876</TD><TD>11.92343281 -25.34450465</TD><TD>0.505</TD><TD>2023.907915</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>55</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_024832_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:29:44</TD><TD>4.00</TD>
-     <TD>-0.0248976</TD><TD>5.51309</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995897</TD><TD>11.92358807 -25.34464489</TD><TD>0.505</TD><TD>2023.907917</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>56</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_024933_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:29:50</TD><TD>5.00</TD>
-     <TD>0.00508248</TD><TD>5.40955</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995838</TD><TD>11.92374331 -25.34471499</TD><TD>0.505</TD><TD>2023.907919</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>57</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_025035_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:29:55</TD><TD>5.00</TD>
-     <TD>0.0216916</TD><TD>5.49045</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995855</TD><TD>11.92382094 -25.34478511</TD><TD>0.505</TD><TD>2023.907921</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>58</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_025136_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:00</TD><TD>5.00</TD>
-     <TD>0.0178471</TD><TD>5.44519</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995878</TD><TD>11.92389854 -25.34478509</TD><TD>0.505</TD><TD>2023.907923</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>59</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_025238_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:05</TD><TD>5.00</TD>
-     <TD>-0.0225098</TD><TD>5.45312</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995877</TD><TD>11.92405378 -25.34485519</TD><TD>0.505</TD><TD>2023.907925</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>60</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_025339_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:10</TD><TD>4.00</TD>
-     <TD>-0.015552</TD><TD>5.46738</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995891</TD><TD>11.92413141 -25.34492531</TD><TD>0.505</TD><TD>2023.907926</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>61</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_025441_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:15</TD><TD>4.00</TD>
-     <TD>-0.0587247</TD><TD>5.52732</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995866</TD><TD>11.92420904 -25.34499543</TD><TD>0.505</TD><TD>2023.907928</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>62</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_025542_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:21</TD><TD>5.00</TD>
-     <TD>-0.0605986</TD><TD>5.59909</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995876</TD><TD>11.92436426 -25.34499539</TD><TD>0.505</TD><TD>2023.90793</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>63</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_025644_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:26</TD><TD>5.00</TD>
-     <TD>-0.0330933</TD><TD>5.54967</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995873</TD><TD>11.9245195 -25.34506549</TD><TD>0.505</TD><TD>2023.907932</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>64</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_025745_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:30</TD><TD>4.00</TD>
-     <TD>-0.0348209</TD><TD>5.47775</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995884</TD><TD>11.9245195 -25.34506549</TD><TD>0.505</TD><TD>2023.907934</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>65</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_025847_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:34</TD><TD>4.00</TD>
-     <TD>-0.0223719</TD><TD>5.51442</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995872</TD><TD>11.92467472 -25.34506546</TD><TD>0.505</TD><TD>2023.907936</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>66</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_025948_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:39</TD><TD>4.00</TD>
-     <TD>-0.056301</TD><TD>5.52298</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995854</TD><TD>11.92475233 -25.34506544</TD><TD>0.505</TD><TD>2023.907938</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>67</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_030050_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:44</TD><TD>4.00</TD>
-     <TD>-0.108531</TD><TD>5.51958</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995876</TD><TD>11.92482994 -25.34506542</TD><TD>0.505</TD><TD>2023.90794</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>68</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_030151_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:49</TD><TD>5.00</TD>
-     <TD>-0.0391275</TD><TD>5.52763</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995841</TD><TD>11.92482994 -25.34506542</TD><TD>0.505</TD><TD>2023.907942</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>69</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_030253_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:53</TD><TD>4.00</TD>
-     <TD>-0.0338712</TD><TD>5.48542</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995854</TD><TD>11.92498518 -25.34513552</TD><TD>0.505</TD><TD>2023.907944</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>70</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_030355_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:30:58</TD><TD>4.00</TD>
-     <TD>-0.0336601</TD><TD>5.52005</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995854</TD><TD>11.92498518 -25.34513552</TD><TD>0.505</TD><TD>2023.907945</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>71</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_030456_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:02</TD><TD>4.00</TD>
-     <TD>-0.0127408</TD><TD>5.50933</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995858</TD><TD>11.92498515 -25.34506538</TD><TD>0.505</TD><TD>2023.907947</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>72</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_030558_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:07</TD><TD>4.00</TD>
-     <TD>-0.00120782</TD><TD>5.47611</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995821</TD><TD>11.92506276 -25.34506536</TD><TD>0.505</TD><TD>2023.907949</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>73</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_030659_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:11</TD><TD>4.00</TD>
-     <TD>-0.0224091</TD><TD>5.4789</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995815</TD><TD>11.92506276 -25.34506536</TD><TD>0.505</TD><TD>2023.907951</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>74</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_030801_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:16</TD><TD>5.00</TD>
-     <TD>0.0346981</TD><TD>5.53364</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995823</TD><TD>11.92514037 -25.34506534</TD><TD>0.505</TD><TD>2023.907955</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>75</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_030902_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:21</TD><TD>4.00</TD>
-     <TD>0.0142449</TD><TD>5.60126</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995824</TD><TD>11.92521798 -25.34506532</TD><TD>0.505</TD><TD>2023.907957</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>76</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_031004_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:26</TD><TD>5.00</TD>
-     <TD>-0.0292192</TD><TD>5.58803</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995827</TD><TD>11.92529559 -25.3450653</TD><TD>0.505</TD><TD>2023.907959</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>77</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_031105_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:30</TD><TD>4.00</TD>
-     <TD>-0.0352121</TD><TD>5.52587</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995835</TD><TD>11.92529559 -25.3450653</TD><TD>0.505</TD><TD>2023.907961</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>78</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_031207_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:35</TD><TD>4.00</TD>
-     <TD>-0.0149587</TD><TD>5.53494</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995837</TD><TD>11.92529557 -25.34499516</TD><TD>0.505</TD><TD>2023.907963</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>79</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_031308_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:39</TD><TD>4.00</TD>
-     <TD>-0.0495541</TD><TD>5.61224</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995891</TD><TD>11.92537318 -25.34499514</TD><TD>0.505</TD><TD>2023.907964</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>80</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_031410_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:44</TD><TD>4.00</TD>
-     <TD>-0.0380563</TD><TD>5.59559</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.99585</TD><TD>11.92537316 -25.344925</TD><TD>0.505</TD><TD>2023.907966</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>81</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_031511_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:48</TD><TD>4.00</TD>
-     <TD>-0.00143477</TD><TD>5.62681</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995808</TD><TD>11.92514031 -25.34485492</TD><TD>0.505</TD><TD>2023.907968</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>82</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_031613_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:53</TD><TD>4.00</TD>
-     <TD>-0.0581626</TD><TD>5.64702</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.995859</TD><TD>11.92521789 -25.34478476</TD><TD>0.505</TD><TD>2023.90797</TD><TD>2000</TD><TD>2000</TD>
-     <TD>ICRS</TD>
-    </TR>
-    <TR>
-     <TD>83</TD><TD>/large_data/Commission/NGC0253/m800/scaled/calib_7DT07_NGC0253_20231128_031714_m800_60.bkgsub.zpscaled.fits</TD><TD>(null)</TD><TD>F</TD><TD>NGC0253</TD>
-     <TD>0</TD><TD>2024-08-21</TD><TD>06:31:57</TD><TD>4.00</TD>
-     <TD>-0.0110241</TD><TD>5.56724</TD><TD>F</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
-     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.779809</TD><TD>65000</TD><TD>60</TD><TD>1</TD>
-     <TD>0.99578</TD><TD>11.92514029 -25.34478478</TD><TD>0.505</TD><TD>2023.907972</TD><TD>2000</TD><TD>2000</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>100</TD><TD>0.0100404</TD>
+     <TD>0.995896</TD><TD>248.6328907 -50.1026853</TD><TD>0.505</TD><TD>2024.568224</TD><TD>2000</TD><TD>2000</TD>
      <TD>ICRS</TD>
     </TR>
    </TABLEDATA></DATA>
@@ -825,10 +105,10 @@
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>SWarp configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="swarp -c ./config/7dt.swarp @/large_data/Commission/NGC0253/m800/images_to_stack.txt -IMAGEOUT_NAME /large_data/Commission/NGC0253/m800/calib_7DT_NGC0253_20231124_015528_m800_4980.com.fits -CENTER_TYPE MANUAL -CENTER 00:47:33,-25:17:20 -SUBTRACT_BACK N -RESAMPLE_DIR /large_data/Commission/NGC0253/m800/resamp -GAIN_KEYWORD EGAIN -GAIN_DEFAULT 0.78 -FSCALE_KEYWORD FAKE -WEIGHTOUT_NAME /large_data/Commission/NGC0253/m800/calib_7DT_NGC0253_20231124_015528_m800_4980.weight.fits"/>
-   <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="./config/7dt.swarp"/>
-   <PARAM name="ImageOut_Name" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value="/large_data/Commission/NGC0253/m800/calib_7DT_NGC0253_20231124_015528_m800_4980.com.fits"/>
-   <PARAM name="WeightOut_Name" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value="/large_data/Commission/NGC0253/m800/calib_7DT_NGC0253_20231124_015528_m800_4980.weight.fits"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="swarp -c ../../config/7dt.swarp @/home/snu/gppyTest_dhhyun/factory/7dt01/2001-02-23_gain2750/calib_7DT01_T04534_20240727_010018_m400_100.image.list -IMAGEOUT_NAME /home/snu/gppyTest_dhhyun/factory/7dt01/2001-02-23_gain2750/calib_7DT01_T04534_20240727_010354_m400_300.com.fits -RESAMPLE_DIR /home/snu/gppyTest_dhhyun/factory/7dt01/2001-02-23_gain2750 -CENTER_TYPE MANUAL -CENTER 16:34:28.50828729,-50:05:39.62264151 -GAIN_KEYWORD EGAIN"/>
+   <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="../../config/7dt.swarp"/>
+   <PARAM name="ImageOut_Name" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value="/home/snu/gppyTest_dhhyun/factory/7dt01/2001-02-23_gain2750/calib_7DT01_T04534_20240727_010354_m400_300.com.fits"/>
+   <PARAM name="WeightOut_Name" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value="coadd.weight.fits"/>
    <PARAM name="Header_Only" datatype="boolean" ucd="meta.code;obs.param" value="F"/>
    <PARAM name="Header_Suffix" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value=".head"/>
    <PARAM name="Weight_Suffix" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value=".weight.fits"/>
@@ -839,23 +119,23 @@
    <PARAM name="Projection_Type" datatype="char" arraysize="*" ucd="meta;pos;obs.param" value="TAN"/>
    <PARAM name="Projection_Err" datatype="float" arraysize="1" ucd="pos.angDistance;stat.max;obs.param" value="0.001" unit="pix"/>
    <PARAM name="Center_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="MANUAL"/>
-   <PARAM name="Center" datatype="double" arraysize="2" ucd="pos;obs.param" value="        11.8875    -25.28888889" unit="pix"/>
+   <PARAM name="Center" datatype="double" arraysize="2" ucd="pos;obs.param" value="    248.6187845    -50.09433962" unit="pix"/>
    <PARAM name="PixelScale_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="MANUAL"/>
    <PARAM name="Pixel_Scale" datatype="float" arraysize="1" ucd="instr.scale;instr.pixel;obs.param" value="0.505"/>
    <PARAM name="Image_Size" datatype="int" arraysize="2" ucd="instr.scale;instr.pixel;obs.param" value="10200 6800"/>
    <PARAM name="Resample" datatype="boolean" ucd="meta.code" value="T"/>
-   <PARAM name="Resample_Dir" datatype="char" arraysize="*" ucd="meta.dataset" value="/large_data/Commission/NGC0253/m800/resamp"/>
+   <PARAM name="Resample_Dir" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/snu/gppyTest_dhhyun/factory/7dt01/2001-02-23_gain2750"/>
    <PARAM name="Resample_Suffix" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value=".resamp.fits"/>
    <PARAM name="Resampling_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="LANCZOS3"/>
    <PARAM name="Oversampling" datatype="int" arraysize="1" ucd="arith.factor;instr.pixel;obs.param" value="1"/>
    <PARAM name="FScalAstro_Type" datatype="char" arraysize="*" ucd="phot.calib;obs.param" value="VARIABLE"/>
-   <PARAM name="FScale_Keyword" datatype="char" arraysize="*" ucd="meta.code;phot.calib;obs.param" value="FAKE"/>
+   <PARAM name="FScale_Keyword" datatype="char" arraysize="*" ucd="meta.code;phot.calib;obs.param" value="FLXSCALE"/>
    <PARAM name="FScale_Default" datatype="float" ucd="phot.calib;obs.param" value="1"/>
    <PARAM name="Gain_Keyword" datatype="char" arraysize="*" ucd="meta.code;phot.calib;obs.param" value="EGAIN"/>
-   <PARAM name="Gain_Default" datatype="float" ucd="phot.calib;obs.param" value="0.78"/>
+   <PARAM name="Gain_Default" datatype="float" ucd="phot.calib;obs.param" value="0.779809"/>
    <PARAM name="SatLev_Keyword" datatype="char" arraysize="*" ucd="meta.code;instr.saturation;obs.param" value="SATURATE"/>
    <PARAM name="SatLev_Default" datatype="float" ucd="instr.saturation;obs.param" value="65000"/>
-   <PARAM name="Subtract_Back" datatype="boolean" ucd="meta.code" value="F"/>
+   <PARAM name="Subtract_Back" datatype="boolean" ucd="meta.code" value="T"/>
    <PARAM name="Back_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param" value="NONE"/>
    <PARAM name="Back_Size" datatype="int" ucd="obs.param" value="512"/>
    <PARAM name="Back_FilterSize" datatype="int" ucd="obs.param" value="3"/>

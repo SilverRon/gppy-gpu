@@ -273,7 +273,10 @@ def phot_routine(inim):
 	print(presexcom)
 	# Redirect SE output to a tmp log
 	timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-	sexlog = str(path_root / f"sex_{timestamp}.log")
+	path_tmp = path_root / 'tmp'
+	if not path_tmp.exists():
+		path_tmp.mkdir()
+	sexlog = str(path_tmp / f"sex_{timestamp}.log")
 	# os.system(presexcom)
 	os.system(f"{presexcom} > {sexlog} 2>&1")  # stderr is logged with stdout
 	pretbl = Table.read(precat, format='ascii.sextractor')
@@ -284,6 +287,12 @@ def phot_routine(inim):
 	print('3. MATCHING')
 	c_pre = SkyCoord(pretbl['ALPHA_J2000'], pretbl['DELTA_J2000'], unit='deg')
 	c_ref = SkyCoord(reftbl['ra'], reftbl['dec'], unit='deg')
+	# # debug
+	# import pickle
+	# with open('debug.pkl', 'wb') as f:  # 'wb' is used to write in binary mode
+	# 	pickle.dump((c_pre, c_ref), f)
+	# import astropy
+	# print(astropy.__version__)
 	indx_match, sep, _ = c_pre.match_to_catalog_sky(c_ref)
 	_premtbl = hstack([pretbl, reftbl[indx_match]])
 	_premtbl['sep'] = sep.arcsec
@@ -779,7 +788,7 @@ for ii, inim in enumerate(imlist):
 	try:
 		phot_routine(inim)
 	except Exception as e:
-		print(f"\nPhotometry for {os.path.basename(inim)} was failed!\n")
+		print(f"\nPhotometry for {os.path.basename(inim)} failed!\n")
 		print(f"Error:\n{e}")
 		fail_image_list.append(inim)
 #------------------------------------------------------------
