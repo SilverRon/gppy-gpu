@@ -45,6 +45,7 @@ if path_src not in map(Path, sys.path):
 	sys.path.append(str(path_src)) 
 from preprocess import calib
 from util import tool
+from util.path_manager import log2tmp
 #------------------------------------------------------------
 #	plot setting
 #------------------------------------------------------------
@@ -65,7 +66,16 @@ start_localtime = time.strftime('%Y-%m-%d_%H:%M:%S_(%Z)', time.localtime())
 #------------------------------------------------------------
 # n_binning = 2
 n_binning = 1
+verbose_sex = False
 verbose_gpu = False
+
+#	N cores for Multiprocessing
+# try:
+# 	ncore = int(sys.argv[2])
+# except:
+# 	ncore = 2
+ncore = 4
+print(f"- Number of Cores: {ncore}")
 
 #------------------------------------------------------------
 #	Ready
@@ -84,14 +94,6 @@ except Exception as e:
 	print(f'Unexpected behavior. Check parameter obs')
 
 print(f'# Observatory : {obs.upper()}')
-
-#	N cores for Multiprocessing
-# try:
-# 	ncore = int(sys.argv[2])
-# except:
-# 	ncore = 2
-ncore = 4
-print(f"- Number of Cores: {ncore}")
 #%%
 #------------------------------------------------------------
 #	Path
@@ -949,9 +951,13 @@ st_ = time.time()
 original_directory = os.getcwd()
 os.chdir(path_data)
 #	Copy default.sex (High DETECT_THRESH)
-cpcom_default_cfg = f"cp ~/gppy/config/default.sex {path_data}"
+cpcom_default_cfg = f"cp {path_config}/default.sex {path_data}"
 print(cpcom_default_cfg)
-os.system(cpcom_default_cfg)
+if verbose_sex:
+	os.system(cpcom_default_cfg)
+else:
+	# Redirect SE output to a tmp log
+	os.system(log2tmp(cpcom_default_cfg, "mainsex"))
 #	Astrometry
 with ProcessPoolExecutor(max_workers=ncore) as executor:
 	# results = list(executor.map(calib.astrometry, fnamelist, objectlist, ralist, declist, fovlist, cpulimitlist, cfglist, _))
