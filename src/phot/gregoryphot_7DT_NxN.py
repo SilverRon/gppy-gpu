@@ -37,10 +37,11 @@ path_thisfile = Path(__file__).resolve()
 path_root = path_thisfile.parent.parent.parent
 sys.path.append(str(path_root / 'src'))
 from phot import gpphot
-from util import query
-from util import tool
 from phot import gcurve
 from preprocess import calib
+from util import query
+from util import tool
+from util.path_manager import log2tmp
 starttime = time.time()
 #============================================================
 #	FUNCTION
@@ -271,14 +272,8 @@ def phot_routine(inim):
 	precat = f"{head}.pre.cat"
 	presexcom = f"source-extractor -c {conf_simple} {inim} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PARAMETERS_NAME {param_simple} -CATALOG_NAME {precat}"
 	print(presexcom)
-	# Redirect SE output to a tmp log
-	timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-	path_tmp = path_root / 'tmp'
-	if not path_tmp.exists():
-		path_tmp.mkdir()
-	sexlog = str(path_tmp / f"sex_{timestamp}.log")
 	# os.system(presexcom)
-	os.system(f"{presexcom} > {sexlog} 2>&1")  # stderr is logged with stdout
+	os.system(log2tmp(presexcom, "presex"))  # stderr is logged with stdout
 	pretbl = Table.read(precat, format='ascii.sextractor')
 	#
 	pretbl['within_ellipse'] = is_within_ellipse(pretbl['X_IMAGE'], pretbl['Y_IMAGE'], xcent, ycent, frac*hdr['NAXIS1']/2, frac*hdr['NAXIS2']/2)
