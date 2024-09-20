@@ -134,7 +134,8 @@ path_subtraction = str(path_src / "util/gregorysubt_7DT.py")
 path_find = str(path_src / 'phot/gregoryfind_7DT.py')
 #------------------------------------------------------------
 path_raw = f'{path_obsdata}/{obs.upper()}'
-rawlist = sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))
+# rawlist = sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))
+rawlist = [os.path.abspath(path) for path in sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))]
 #------------------------------------------------------------
 path_obs = f'{path_config}/obs.dat'
 path_changehdr = f'{path_config}/changehdr.dat'
@@ -240,7 +241,7 @@ timetbl['time'] = 0.0 * u.second
 #============================================================
 
 # revision. s for string
-newlist = [s for s in rawlist if (s not in datalist) & (s+'/' not in datalist)]
+newlist = [os.path.abspath(s) for s in rawlist if (s not in datalist) & (s+'/' not in datalist)]
 if len(newlist) == 0:
 	print('No new data')
 	sys.exit()
@@ -257,7 +258,7 @@ else:
 
 """
 try:
-	path_new = sys.argv[2]
+	path_new = os.path.abspath(sys.argv[2])
 	#revision
 	if not Path(path_new).exists():
 		print('Provided path does not exist')
