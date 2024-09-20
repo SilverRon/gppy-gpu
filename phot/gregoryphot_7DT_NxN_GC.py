@@ -1,5 +1,6 @@
 #	PHOTOMETRY CODE FOR PYTHON 3.X
 #	CREATED	2020.12.10	Gregory S.H. Paek
+#	MODIFIED 2024.08.28 Gregory S.H. Paek: Globular Cluster
 #============================================================
 import os, glob, sys, subprocess
 import numpy as np
@@ -53,6 +54,28 @@ def is_within_ellipse(x, y, center_x, center_y, a, b):
 	term1 = ((x - center_x) ** 2) / (a ** 2)
 	term2 = ((y - center_y) ** 2) / (b ** 2)
 	return term1 + term2 <= 1
+#------------------------------------------------------------
+
+def is_not_within_inner_circle(x, y, xcent, ycent, inner_radius):
+    """
+    Check if points (x, y) are within the circle defined by:
+    center (xcent, ycent) and radius inner_radius.
+
+    Parameters:
+    x, y : array-like
+        Coordinates of the points to check.
+    xcent, ycent : float
+        Coordinates of the circle center.
+    inner_radius : float
+        Radius of the inner circle.
+
+    Returns:
+    within : array-like
+        Boolean array where True indicates the point is within the inner circle.
+    """
+    # return np.sqrt((x - xcent)**2 + (y - ycent)**2) <= inner_radius
+    return np.sqrt((x - xcent)**2 + (y - ycent)**2) > inner_radius
+
 #------------------------------------------------------------
 def weighted_median(values, errors):
 	# 오차를 역수로 사용하여 가중치 계산
@@ -282,6 +305,9 @@ def phot_routine(inim):
 	matching_radius = 1.
 	premtbl = _premtbl[_premtbl['sep']<matching_radius]
 	premtbl['within_ellipse'] = is_within_ellipse(premtbl['X_IMAGE'], premtbl['Y_IMAGE'], xcent, ycent, frac*hdr['NAXIS1']/2, frac*hdr['NAXIS2']/2)
+	#
+	# inner_radius = 1500
+	premtbl['is_not_inner_circle'] = is_not_within_inner_circle(premtbl['X_IMAGE'], premtbl['Y_IMAGE'], xcent, ycent, inner_radius=inner_radius)
 
 	# indx_star4seeing = np.where(
 	# 	#	Star-like Source
@@ -313,6 +339,7 @@ def phot_routine(inim):
 		(premtbl['FLAGS']==0) &
 		#	Within Ellipse
 		(premtbl['within_ellipse'] == True) &
+		(premtbl['is_not_inner_circle'] == True) &
 		#
 		# (premtbl['C_term']<2) &
 		# (premtbl['ruwe']<1.4) &
@@ -456,17 +483,18 @@ def phot_routine(inim):
 	matching_radius = 1.
 	mtbl = _mtbl[_mtbl['sep']<matching_radius]
 	mtbl['within_ellipse'] = is_within_ellipse(mtbl['X_IMAGE'], mtbl['Y_IMAGE'], xcent, ycent, frac*hdr['NAXIS1']/2, frac*hdr['NAXIS2']/2)
+	mtbl['is_not_inner_circle'] = is_not_within_inner_circle(mtbl['X_IMAGE'], mtbl['Y_IMAGE'], xcent, ycent, inner_radius=inner_radius)
 
 	# mtbl['dist2center'] = tool.sqsum((xcent-mtbl['X_IMAGE']), (ycent-mtbl['Y_IMAGE']))
 	# mtbl['xdist2center'] = np.abs(xcent-mtbl['X_IMAGE'])
 	# mtbl['ydist2center'] = np.abs(ycent-mtbl['Y_IMAGE'])
 	print(f"""Matched Sources: {len(mtbl)} (r={matching_radius:.3f}")""")
 
+	#
+
 	for nn, inmagkey in enumerate(inmagkeys):
 		suffix = inmagkey.replace("MAG_", "")
 		mtbl[f"SNR_{suffix}"] = mtbl[f'FLUX_{suffix}'] / mtbl[f'FLUXERR_{suffix}']
-
-	#
 
 	# dist2center_cut = frac*(xcent+ycent)/2
 	# indx_star4zp = np.where(
@@ -494,6 +522,7 @@ def phot_routine(inim):
 		(mtbl['FLAGS']==0) &
 		#	Within Ellipse
 		(mtbl['within_ellipse'] == True) &
+		(mtbl['is_not_inner_circle'] == True) &
 		#	SNR cut
 		(mtbl['SNR_AUTO'] > 20) &
 		#	Magnitude in Ref. Cat 
@@ -507,6 +536,7 @@ def phot_routine(inim):
 	)
 
 	zptbl = mtbl[indx_star4zp]
+	# zptbl.write("zp_table.csv", format='csv')
 
 	print(f"{len(zptbl)} sources to calibration ZP")
 
@@ -594,10 +624,10 @@ def phot_routine(inim):
 
 		plt.close()
 		# plt.errorbar(zptbl[refmagkey], zparr, xerr=zptbl[refmagerkey], yerr=zperrarr, ls='none', c='grey', alpha=0.5)
-		plt.errorbar(zptbl[refmagkey], zparr, xerr=0, yerr=zperrarr, ls='none', c='grey', alpha=0.5)
+		plt.errorbar(zptbl[refmagkey], zparr, xerr=0, yerr=zperrarr, ls='none', c='silver', alpha=0.5)
 		plt.plot(zptbl_alive[refmagkey], zptbl_alive[refmagkey]-zptbl_alive[inmagkey], '.', c='dodgerblue', alpha=0.75, zorder=999, label=f'{len(zptbl_alive)}')
-		plt.plot(zptbl_exile[refmagkey], zptbl_exile[refmagkey]-zptbl_exile[inmagkey], 'x', c='tomato', alpha=0.75, label=f'{len(zptbl_exile)}')
-		plt.axhline(y=zp, ls='-', lw=1, c='grey', zorder=1, label=f"ZP: {zp:.3f}+/-{zperr:.3f}")
+		plt.plot(zptbl_exile[refmagkey], zptbl_exile[refmagkey]-zptbl_exile[inmagkey], 'x', c='tomato', alpha=0.5, label=f'{len(zptbl_exile)}')
+		plt.axhline(y=zp, ls='-', lw=1, c='grey', zorder=1, label=rf"ZP={zp:.3f}$\rm \pm${zperr:.3f}")
 		plt.axhspan(ymin=zp-zperr, ymax=zp+zperr, color='silver', alpha=0.5, zorder=0)
 		plt.xlabel(refmagkey)
 		# plt.xlim([8, 16])
@@ -607,9 +637,23 @@ def phot_routine(inim):
 		plt.xlim([10, 20])
 		plt.ylim([zp-0.25, zp+0.25])
 		plt.ylabel(f'ZP_{inmagkey}')
-		plt.legend(loc='upper center', ncol=3)
+		# plt.legend(loc='upper center', ncol=3)
+		plt.legend(loc='upper left', ncol=1, framealpha=1.0)
 		plt.tight_layout()
 		plt.savefig(f"{head}.{inmagkey}.png", dpi=100)
+
+
+		plt.close()
+		fig = plt.figure(figsize=(8, 4))
+		plt.scatter(zptbl['X_IMAGE'], zptbl['Y_IMAGE'], c=zparr, ec='k', marker='.', vmin=zp-0.1, vmax=zp+0.1)
+		cbar = plt.colorbar()
+		cbar.set_label('ZP')
+		plt.xlabel(f'X_IMAGE')
+		plt.ylabel(f'Y_IMAGE')
+		# plt.legend(loc='upper center', ncol=3)
+		plt.tight_layout()
+		plt.savefig(f"{head}.{inmagkey}.xy.png", dpi=100)
+
 
 		#	Apply ZP
 		##	MAG
@@ -752,6 +796,9 @@ DEBLEND_MINCONT = gphot_dict['DEBLEND_MINCONT']
 BACK_SIZE = gphot_dict['BACK_SIZE']
 BACK_FILTERSIZE = gphot_dict['BACK_FILTERSIZE']
 BACKPHOTO_TYPE = gphot_dict['BACKPHOTO_TYPE']
+
+# inner_radius = 1500
+inner_radius = 2000
 #------------------------------------------------------------
 seeing_assume = 2.0 * u.arcsecond
 #------------------------------------------------------------
