@@ -120,7 +120,7 @@ def correct_flux_excess_factor(bp_rp, phot_bp_rp_excess_factor):
     
     return phot_bp_rp_excess_factor - correction
 #------------------------------------------------------------
-def phot_routine(inim):
+def phot_routine(inim, filte):
 	#------------------------------------------------------------
 	#	INFO. from file name
 	#------------------------------------------------------------
@@ -130,12 +130,15 @@ def phot_routine(inim):
 
 	obs = part[1]
 	obj = hdr['OBJECT']
-	# refmagkey = f"{hdr['FILTER']}_mag"
-	# refmagerkey = f"{hdr['FILTER']}_magerr"
-	# refsnrkey = f"{hdr['FILTER']}_snr"
-	refmagkey = f"mag_{hdr['FILTER']}"
-	refmagerkey = f"magerr_{hdr['FILTER']}"
-	refsnrkey = f"snr_{hdr['FILTER']}"
+	# refmagkey = f"{filte}_mag"
+	# refmagerkey = f"{filte}_magerr"
+	# refsnrkey = f"{filte}_snr"
+	# refmagkey = f"mag_{filte}"
+	# refmagerkey = f"magerr_{filte}"
+	# refsnrkey = f"snr_{filte}"
+	refmagkey = f"mag_{filte}"
+	refmagerkey = f"magerr_{filte}"
+	refsnrkey = f"snr_{filte}"
 	#------------------------------------------------------------
 	print(inim, obs, obj, refmagkey, refmagerkey)
 	obsdict = tool.getccdinfo(obs, path_obs)
@@ -265,9 +268,15 @@ def phot_routine(inim):
 	#	Pre-Source EXtractor
 	#------------------------------------------------------------
 	precat = f"{head}.pre.cat"
-	presexcom = f"source-extractor -c {conf_simple} {inim} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PARAMETERS_NAME {param_simple} -CATALOG_NAME {precat}"
-	print(presexcom)
-	os.system(presexcom)
+
+	if os.path.exists(precat):
+		print(f"{precat} already exists!")
+		pass
+	else:
+		presexcom = f"source-extractor -c {conf_simple} {inim} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PARAMETERS_NAME {param_simple} -CATALOG_NAME {precat}"
+		print(presexcom)
+		os.system(presexcom)
+
 	pretbl = Table.read(precat, format='ascii.sextractor')
 	#
 	pretbl['within_ellipse'] = is_within_ellipse(pretbl['X_IMAGE'], pretbl['Y_IMAGE'], xcent, ycent, frac*hdr['NAXIS1']/2, frac*hdr['NAXIS2']/2)
@@ -433,13 +442,18 @@ def phot_routine(inim):
 	print('2. SOURCE EXTRACTOR')
 	com = gpphot.sexcom(inim, param_insex)
 	t0_sex = time.time()
-	print(com)
-	sexout = subprocess.getoutput(com)
+
+	if os.path.exists(cat):
+		skymed, skysig = hdr['SKYVAL'], hdr['SKYSIG']
+	else:
+		print(com)
+		sexout = subprocess.getoutput(com)
+		line = [s for s in sexout.split('\n') if 'RMS' in s]
+		skymed, skysig = float(line[0].split('Background:')[1].split('RMS:')[0]), float(line[0].split('RMS:')[1].split('/')[0])
+		# os.system(f'rm {seg} {aper} {bkg} {sub}'.format(seg, aper, bkg, sub))
+	
 	delt_sex = time.time() - t0_sex
 	print(f"SourceEXtractor: {delt_sex:.3f} sec")
-	line = [s for s in sexout.split('\n') if 'RMS' in s]
-	skymed, skysig = float(line[0].split('Background:')[1].split('RMS:')[0]), float(line[0].split('RMS:')[1].split('/')[0])
-	# os.system(f'rm {seg} {aper} {bkg} {sub}'.format(seg, aper, bkg, sub))
 
 	setbl = Table.read(cat, format='ascii.sextractor')
 	# setbl = Table.read(cat, format='fits')
@@ -461,10 +475,6 @@ def phot_routine(inim):
 	# mtbl['xdist2center'] = np.abs(xcent-mtbl['X_IMAGE'])
 	# mtbl['ydist2center'] = np.abs(ycent-mtbl['Y_IMAGE'])
 	print(f"""Matched Sources: {len(mtbl)} (r={matching_radius:.3f}")""")
-
-	for nn, inmagkey in enumerate(inmagkeys):
-		suffix = inmagkey.replace("MAG_", "")
-		mtbl[f"SNR_{suffix}"] = mtbl[f'FLUX_{suffix}'] / mtbl[f'FLUXERR_{suffix}']
 
 	#
 
@@ -494,16 +504,13 @@ def phot_routine(inim):
 		(mtbl['FLAGS']==0) &
 		#	Within Ellipse
 		(mtbl['within_ellipse'] == True) &
-		#	SNR cut
-		(mtbl['SNR_AUTO'] > 20) &
 		#	Magnitude in Ref. Cat 
 		# (mtbl[f'{refmagkey}']<refmagupper) &
 		# (mtbl[f'{refmagkey}']>refmaglower) &
 		# (mtbl[f'{refmagerkey}']<refmaglower)
 		#
-		# (mtbl[refmagkey]>11.75) &
-		(mtbl[refmagkey]>refmaglower)# &
-		# (mtbl[refmagkey]<18.0)
+		(mtbl[refmagkey]>11.75) &
+		(mtbl[refmagkey]<18.0)
 	)
 
 	zptbl = mtbl[indx_star4zp]
@@ -613,8 +620,8 @@ def phot_routine(inim):
 
 		#	Apply ZP
 		##	MAG
-		_calmagkey = f"{inmagkey}_{hdr['FILTER']}"
-		_calmagerrkey = f"{inmagerrkey}_{hdr['FILTER']}"
+		_calmagkey = f"{inmagkey}_{filte}"
+		_calmagerrkey = f"{inmagerrkey}_{filte}"
 		##	FLUX
 		_calfluxkey = _calmagkey.replace('MAG', 'FLUX')
 		_calfluxerrkey = _calmagerrkey.replace('MAG', 'FLUX')
@@ -678,7 +685,7 @@ def phot_routine(inim):
 		# _zp_dict
 
 		header_to_add.update(_zp_dict)
-
+		break
 	#------------------------------------------------------------
 	#	ADD HEADER INFO
 	#------------------------------------------------------------
@@ -698,13 +705,15 @@ def phot_routine(inim):
 	meta_dict = {
 		'obs': obs,
 		'object': obj,
-		'filter': hdr['FILTER'],
+		'filter': filte,
 		'date-obs': hdr['date-obs'],
 		'jd': jd,
 		'mjd': mjd,
 	}
 	setbl.meta = meta_dict
 	setbl.write(f'{head}.phot.cat', format='ascii.tab', overwrite=True)
+
+	return zperr
 #============================================================
 #	USER SETTING
 #============================================================
@@ -774,13 +783,40 @@ except:
 	n_binning = 1
 #------------------------------------------------------------
 fail_image_list = []
+
+
+wavelengths= np.arange(4000, 8875+125, 125)
+
+wfilters = ['m375w', 'm425w']
+mfilters = [f"m{str(center_lam)[0:3]}" for center_lam in wavelengths][::2]
+mlamarr = np.array([float(filte[1:]) for filte in mfilters])
+bfilters = ['u', 'g', 'r', 'i', 'z']
+filters = mfilters+bfilters+wfilters
+
+
 for ii, inim in enumerate(imlist):
+	outbl = Table()
+	outbl['filter'] = filters
+	outbl['zperr'] = 0.
 	try:
-		phot_routine(inim)
+		for ff, filte in enumerate(outbl['filter']):
+			zperr = phot_routine(inim, filte=filte)
+			outbl['zperr'][ff] = zperr
 	except Exception as e:
 		print(f"\nPhotometry for {os.path.basename(inim)} was failed!\n")
 		print(f"Error:\n{e}")
 		fail_image_list.append(inim)
+	plt.close()
+	fig = plt.figure(figsize=(10, 4))
+	plt.plot(outbl['filter'], outbl['zperr'], 's-')
+	plt.ylabel('ZP ERR')
+	plt.xticks(rotation=90)
+	plt.title(f"min={outbl['filter'][outbl['zperr']==np.min(outbl['zperr'])]}")
+	plt.tight_layout()
+	plt.savefig(f"{inim.replace('fits', 'zpcheck.png')}")
+	plt.show()
+	outbl.write(f"{inim.replace('fits', 'zpcheck.csv')}", format='csv', overwrite=True)
+
 #------------------------------------------------------------
 #	Logging the Failed Images
 #------------------------------------------------------------
@@ -804,3 +840,5 @@ if delt > 60.:
 	delt = delt/60.
 	dimen = 'hours'
 print(f'PHOTOMETRY IS DONE.\t({delt:.3f} {dimen})')
+
+
