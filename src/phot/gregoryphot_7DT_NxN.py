@@ -13,6 +13,7 @@ plt.rcParams['savefig.dpi'] = 500
 plt.rc('font', family='serif')
 #	Astropy
 from astropy.table import Table, vstack, hstack
+from astropy.table import MaskedColumn
 from astropy.io import ascii
 from astropy.io import fits
 from astropy.time import Time
@@ -135,12 +136,14 @@ def phot_routine(inim):
 
 	obs = part[1]
 	obj = hdr['OBJECT']
-	# refmagkey = f"{hdr['FILTER']}_mag"
-	# refmagerkey = f"{hdr['FILTER']}_magerr"
-	# refsnrkey = f"{hdr['FILTER']}_snr"
-	refmagkey = f"mag_{hdr['FILTER']}"
-	refmagerkey = f"magerr_{hdr['FILTER']}"
-	refsnrkey = f"snr_{hdr['FILTER']}"
+	filte = hdr['FILTER']
+	dateobs = hdr['DATE-OBS']
+	# refmagkey = f"{filte}_mag"
+	# refmagerkey = f"{filte}_magerr"
+	# refsnrkey = f"{filte}_snr"
+	refmagkey = f"mag_{filte}"
+	refmagerkey = f"magerr_{filte}"
+	refsnrkey = f"snr_{filte}"
 	#------------------------------------------------------------
 	print(inim, obs, obj, refmagkey, refmagerkey)
 	obsdict = tool.getccdinfo(obs, path_obs)
@@ -460,19 +463,60 @@ def phot_routine(inim):
 	#	Matching
 	#------------------------------------------------------------
 	print('3. MATCHING')
+	#	No proper motion correction
+	# c_sex = SkyCoord(setbl['ALPHA_J2000'], setbl['DELTA_J2000'], unit='deg')
+	# c_ref = SkyCoord(reftbl['ra'], reftbl['dec'], unit='deg')
+	# indx_match, sep, _ = c_sex.match_to_catalog_sky(c_ref)
+
+
+	#	Proper Motion Correction
+	# 관측 시점을 Astropy Time 객체로 변환
+	obs_time = Time(dateobs, format='isot', scale='utc')
+
+	# 기준 에포크 (Gaia DR3는 J2016.0)
+	epoch_gaia = Time(2016.0, format='jyear')
+
+	# reftbl의 ra, dec, pmra, pmdec, parallax를 가져옴
+	ra = reftbl['ra']  # 단위: degrees
+	dec = reftbl['dec']  # 단위: degrees
+	pmra = reftbl['pmra']  # 단위: mas/yr
+	pmdec = reftbl['pmdec']  # 단위: mas/yr
+	parallax = reftbl['parallax']  # 단위: mas
+
+	# NaN 또는 None인 값을 확인하여, 고유 운동 정보가 없는 경우 처리
+	# pmra, pmdec, parallax가 NaN인 경우는 None으로 처리
+	pmra = np.where(np.isnan(pmra), None, pmra)
+	pmdec = np.where(np.isnan(pmdec), None, pmdec)
+	parallax = np.where(np.isnan(parallax), None, parallax)
+
+	# SkyCoord 객체 생성 (고유 운동이 없는 소스는 None으로 처리됨)
+	c_ref = SkyCoord(ra=ra*u.deg,
+					dec=dec*u.deg,
+					pm_ra_cosdec=pmra*u.mas/u.yr if pmra is not None else None,
+					pm_dec=pmdec*u.mas/u.yr if pmdec is not None else None,
+					distance=(1/(parallax*u.mas)) if parallax is not None else None,
+					obstime=epoch_gaia)  # 기준 에포크를 J2016.0으로 지정
+
+	# 관측 시점에 맞춰 고유 운동 보정
+	c_ref_corrected = c_ref.apply_space_motion(new_obstime=obs_time)
+
+	# 보정된 좌표 출력
+	# print(f"Corrected RA: {c_ref_corrected.ra}")
+	# print(f"Corrected Dec: {c_ref_corrected.dec}")
+
+	# 이제 이 좌표를 이용해 기존 좌표와 매칭
 	c_sex = SkyCoord(setbl['ALPHA_J2000'], setbl['DELTA_J2000'], unit='deg')
-	c_ref = SkyCoord(reftbl['ra'], reftbl['dec'], unit='deg')
-	indx_match, sep, _ = c_sex.match_to_catalog_sky(c_ref)
+
+	# 매칭 수행
+	indx_match, sep, _ = c_sex.match_to_catalog_sky(c_ref_corrected)
+
+	# SourceEXtractor Catalog + Reference Catalog
 	_mtbl = hstack([setbl, reftbl[indx_match]])
 	_mtbl['sep'] = sep.arcsec
 	matching_radius = 1.
 	mtbl = _mtbl[_mtbl['sep']<matching_radius]
 	mtbl['within_ellipse'] = is_within_ellipse(mtbl['X_IMAGE'], mtbl['Y_IMAGE'], xcent, ycent, frac*hdr['NAXIS1']/2, frac*hdr['NAXIS2']/2)
-
-	# mtbl['dist2center'] = tool.sqsum((xcent-mtbl['X_IMAGE']), (ycent-mtbl['Y_IMAGE']))
-	# mtbl['xdist2center'] = np.abs(xcent-mtbl['X_IMAGE'])
-	# mtbl['ydist2center'] = np.abs(ycent-mtbl['Y_IMAGE'])
-	print(f"""Matched Sources: {len(mtbl)} (r={matching_radius:.3f}")""")
+	print(f"""Matched Sources: {len(mtbl):_} (r={matching_radius:.3f}")""")
 
 	for nn, inmagkey in enumerate(inmagkeys):
 		suffix = inmagkey.replace("MAG_", "")
@@ -625,8 +669,8 @@ def phot_routine(inim):
 
 		#	Apply ZP
 		##	MAG
-		_calmagkey = f"{inmagkey}_{hdr['FILTER']}"
-		_calmagerrkey = f"{inmagerrkey}_{hdr['FILTER']}"
+		_calmagkey = f"{inmagkey}_{filte}"
+		_calmagerrkey = f"{inmagerrkey}_{filte}"
 		##	FLUX
 		_calfluxkey = _calmagkey.replace('MAG', 'FLUX')
 		_calfluxerrkey = _calmagerrkey.replace('MAG', 'FLUX')
@@ -707,10 +751,24 @@ def phot_routine(inim):
 	# setbl['jd'] = jd
 	# setbl['mjd'] = mjd
 
+	#	Add Reference Catalog Information
+	keys_from_refcat = ['source_id', 'bp_rp', 'phot_g_mean_mag', f'mag_{filte}']
+
+	# 각 키에 대해 매칭된 값들을 처리
+	for key in keys_from_refcat:
+		valuearr = reftbl[key][indx_match].data  # 매칭된 값들 추출
+
+		# MaskedColumn을 사용해 매칭 반경을 넘는 경우 마스킹 처리
+		masked_valuearr = MaskedColumn(valuearr, mask=(sep.arcsec > matching_radius))
+		
+		# 결과를 setbl에 추가 (또는 업데이트)
+		setbl[key] = masked_valuearr
+	
+	#	Meta data
 	meta_dict = {
 		'obs': obs,
 		'object': obj,
-		'filter': hdr['FILTER'],
+		'filter': filte,
 		'date-obs': hdr['date-obs'],
 		'jd': jd,
 		'mjd': mjd,
