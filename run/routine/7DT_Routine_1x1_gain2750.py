@@ -37,9 +37,7 @@ from astropy.time import Time
 #------------------------------------------------------------
 # Custom Packages
 path_thisfile = Path(__file__).resolve()
-# ABSOLUTE path of gppy-gpu
 path_root = path_thisfile.parent.parent.parent  # Careful! not a str
-# sys.path.append('../../src')  # Deprecated
 path_src = path_root / 'src'
 if path_src not in map(Path, sys.path):
 	sys.path.append(str(path_src)) 
