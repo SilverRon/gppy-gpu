@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from IPython.core.interactiveshell import InteractiveShell
 from ccdproc import ImageFileCollection
+import psutil
 #	Astropy
 from astropy.io import fits
 import astropy.io.ascii as ascii
@@ -77,6 +78,7 @@ verbose_gpu = False
 ncore = 4
 print(f"- Number of Cores: {ncore}")
 
+memory_threshold = 50
 #------------------------------------------------------------
 #	Ready
 #------------------------------------------------------------
@@ -959,10 +961,18 @@ if verbose_sex:
 else:
 	# Redirect SE output to a tmp log
 	os.system(log2tmp(cpcom_default_cfg, "mainsex"))
+
 #	Astrometry
+while psutil.virtual_memory().percent > memory_threshold:
+	print(f"Memory Usage is above {memory_threshold}% ({psutil.virtual_memory().percent}%) - Start the Astrometry!!!")
+	time.sleep(10)
+
+print(f"Memory Usage is below {memory_threshold}% - Start the Astrometry!!!")
 with ProcessPoolExecutor(max_workers=ncore) as executor:
 	# results = list(executor.map(calib.astrometry, fnamelist, objectlist, ralist, declist, fovlist, cpulimitlist, cfglist, _))
 	results = list(executor.map(calib.astrometry, fnamelist, objectlist, ralist, declist, fovlist, cpulimitlist, _, _))
+
+
 delt = time.time() - st_
 #	Move back to the original path
 os.chdir(original_directory)
