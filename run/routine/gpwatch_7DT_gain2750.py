@@ -80,7 +80,7 @@ while True:
     survey_data_list = sorted(glob.glob(f"{path_to_monitor}/{pattern_survey}"))
     too_data_list = sorted(glob.glob(f"{path_to_monitor}/{pattern_too}"))
     test_data_list = sorted(glob.glob(f"{path_to_monitor}/{pattern_test}"))
-    raw_data_list = too_data_list+survey_data_list
+    raw_data_list = [os.path.abspath(folder) for folder in too_data_list+survey_data_list]
     # for _data in test_data_list: raw_data_list.remove(_data)
 
     # if len(raw_data_list) > 0:
@@ -88,7 +88,7 @@ while True:
     #     print(f"ToO Data       : {len(too_data_list)}")
     #     print(f"All Data       : {len(raw_data_list)}")
 
-    data_to_process = [data for data in raw_data_list if data not in logtbl['date']]
+    data_to_process = [os.path.abspath(data) for data in raw_data_list if data not in logtbl['date']]
     if len(data_to_process) > 0:
         print(f"Data to Process: {len(data_to_process)}")
 

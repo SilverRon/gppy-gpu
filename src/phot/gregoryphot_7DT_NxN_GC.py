@@ -1,8 +1,8 @@
 #	PHOTOMETRY CODE FOR PYTHON 3.X
 #	CREATED	2020.12.10	Gregory S.H. Paek
+#	MODIFIED 2024.08.28 Gregory S.H. Paek: Globular Cluster
 #============================================================
 import os, glob, sys, subprocess
-from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -13,7 +13,6 @@ plt.rcParams['savefig.dpi'] = 500
 plt.rc('font', family='serif')
 #	Astropy
 from astropy.table import Table, vstack, hstack
-from astropy.table import MaskedColumn
 from astropy.io import ascii
 from astropy.io import fits
 from astropy.time import Time
@@ -28,21 +27,17 @@ warnings.filterwarnings('ignore', message="Warning: 'partition' will ignore the 
 
 # from astropy.utils.exceptions import FITSFixedWarning
 # warnings.filterwarnings('ignore', category=FITSFixedWarning, append=True)
-from datetime import date, datetime
+from datetime import date
 import time
 import multiprocessing
 #	gpPy
-# sys.path.append('..')
-# sys.path.append('/home/gp/gppy')
-path_thisfile = Path(__file__).resolve()
-path_root = path_thisfile.parent.parent.parent
-sys.path.append(str(path_root / 'src'))
+sys.path.append('..')
+sys.path.append('/home/gp/gppy')
 from phot import gpphot
-from phot import gcurve
-from preprocess import calib
 from util import query
 from util import tool
-from util.path_manager import log2tmp
+from phot import gcurve
+from preprocess import calib
 starttime = time.time()
 #============================================================
 #	FUNCTION
@@ -59,6 +54,28 @@ def is_within_ellipse(x, y, center_x, center_y, a, b):
 	term1 = ((x - center_x) ** 2) / (a ** 2)
 	term2 = ((y - center_y) ** 2) / (b ** 2)
 	return term1 + term2 <= 1
+#------------------------------------------------------------
+
+def is_not_within_inner_circle(x, y, xcent, ycent, inner_radius):
+    """
+    Check if points (x, y) are within the circle defined by:
+    center (xcent, ycent) and radius inner_radius.
+
+    Parameters:
+    x, y : array-like
+        Coordinates of the points to check.
+    xcent, ycent : float
+        Coordinates of the circle center.
+    inner_radius : float
+        Radius of the inner circle.
+
+    Returns:
+    within : array-like
+        Boolean array where True indicates the point is within the inner circle.
+    """
+    # return np.sqrt((x - xcent)**2 + (y - ycent)**2) <= inner_radius
+    return np.sqrt((x - xcent)**2 + (y - ycent)**2) > inner_radius
+
 #------------------------------------------------------------
 def weighted_median(values, errors):
 	# 오차를 역수로 사용하여 가중치 계산
@@ -136,14 +153,12 @@ def phot_routine(inim):
 
 	obs = part[1]
 	obj = hdr['OBJECT']
-	filte = hdr['FILTER']
-	dateobs = hdr['DATE-OBS']
-	# refmagkey = f"{filte}_mag"
-	# refmagerkey = f"{filte}_magerr"
-	# refsnrkey = f"{filte}_snr"
-	refmagkey = f"mag_{filte}"
-	refmagerkey = f"magerr_{filte}"
-	refsnrkey = f"snr_{filte}"
+	# refmagkey = f"{hdr['FILTER']}_mag"
+	# refmagerkey = f"{hdr['FILTER']}_magerr"
+	# refsnrkey = f"{hdr['FILTER']}_snr"
+	refmagkey = f"mag_{hdr['FILTER']}"
+	refmagerkey = f"magerr_{hdr['FILTER']}"
+	refsnrkey = f"snr_{hdr['FILTER']}"
 	#------------------------------------------------------------
 	print(inim, obs, obj, refmagkey, refmagerkey)
 	obsdict = tool.getccdinfo(obs, path_obs)
@@ -275,8 +290,7 @@ def phot_routine(inim):
 	precat = f"{head}.pre.cat"
 	presexcom = f"source-extractor -c {conf_simple} {inim} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PARAMETERS_NAME {param_simple} -CATALOG_NAME {precat}"
 	print(presexcom)
-	# os.system(presexcom)
-	os.system(log2tmp(presexcom, "presex"))  # stderr is logged with stdout
+	os.system(presexcom)
 	pretbl = Table.read(precat, format='ascii.sextractor')
 	#
 	pretbl['within_ellipse'] = is_within_ellipse(pretbl['X_IMAGE'], pretbl['Y_IMAGE'], xcent, ycent, frac*hdr['NAXIS1']/2, frac*hdr['NAXIS2']/2)
@@ -285,18 +299,15 @@ def phot_routine(inim):
 	print('3. MATCHING')
 	c_pre = SkyCoord(pretbl['ALPHA_J2000'], pretbl['DELTA_J2000'], unit='deg')
 	c_ref = SkyCoord(reftbl['ra'], reftbl['dec'], unit='deg')
-	# # debug
-	# import pickle
-	# with open('debug.pkl', 'wb') as f:  # 'wb' is used to write in binary mode
-	# 	pickle.dump((c_pre, c_ref), f)
-	# import astropy
-	# print(astropy.__version__)
 	indx_match, sep, _ = c_pre.match_to_catalog_sky(c_ref)
 	_premtbl = hstack([pretbl, reftbl[indx_match]])
 	_premtbl['sep'] = sep.arcsec
 	matching_radius = 1.
 	premtbl = _premtbl[_premtbl['sep']<matching_radius]
 	premtbl['within_ellipse'] = is_within_ellipse(premtbl['X_IMAGE'], premtbl['Y_IMAGE'], xcent, ycent, frac*hdr['NAXIS1']/2, frac*hdr['NAXIS2']/2)
+	#
+	# inner_radius = 1500
+	premtbl['is_not_inner_circle'] = is_not_within_inner_circle(premtbl['X_IMAGE'], premtbl['Y_IMAGE'], xcent, ycent, inner_radius=inner_radius)
 
 	# indx_star4seeing = np.where(
 	# 	#	Star-like Source
@@ -328,6 +339,7 @@ def phot_routine(inim):
 		(premtbl['FLAGS']==0) &
 		#	Within Ellipse
 		(premtbl['within_ellipse'] == True) &
+		(premtbl['is_not_inner_circle'] == True) &
 		#
 		# (premtbl['C_term']<2) &
 		# (premtbl['ruwe']<1.4) &
@@ -463,66 +475,26 @@ def phot_routine(inim):
 	#	Matching
 	#------------------------------------------------------------
 	print('3. MATCHING')
-	#	No proper motion correction
-	# c_sex = SkyCoord(setbl['ALPHA_J2000'], setbl['DELTA_J2000'], unit='deg')
-	# c_ref = SkyCoord(reftbl['ra'], reftbl['dec'], unit='deg')
-	# indx_match, sep, _ = c_sex.match_to_catalog_sky(c_ref)
-
-
-	#	Proper Motion Correction
-	# 관측 시점을 Astropy Time 객체로 변환
-	obs_time = Time(dateobs, format='isot', scale='utc')
-
-	# 기준 에포크 (Gaia DR3는 J2016.0)
-	epoch_gaia = Time(2016.0, format='jyear')
-
-	# reftbl의 ra, dec, pmra, pmdec, parallax를 가져옴
-	ra = reftbl['ra']  # 단위: degrees
-	dec = reftbl['dec']  # 단위: degrees
-	pmra = reftbl['pmra']  # 단위: mas/yr
-	pmdec = reftbl['pmdec']  # 단위: mas/yr
-	parallax = reftbl['parallax']  # 단위: mas
-
-	# NaN 또는 None인 값을 확인하여, 고유 운동 정보가 없는 경우 처리
-	# pmra, pmdec, parallax가 NaN인 경우는 None으로 처리
-	pmra = np.where(np.isnan(pmra), None, pmra)
-	pmdec = np.where(np.isnan(pmdec), None, pmdec)
-	parallax = np.where(np.isnan(parallax), None, parallax)
-
-	# SkyCoord 객체 생성 (고유 운동이 없는 소스는 None으로 처리됨)
-	c_ref = SkyCoord(ra=ra*u.deg,
-					dec=dec*u.deg,
-					pm_ra_cosdec=pmra*u.mas/u.yr if pmra is not None else None,
-					pm_dec=pmdec*u.mas/u.yr if pmdec is not None else None,
-					distance=(1/(parallax*u.mas)) if parallax is not None else None,
-					obstime=epoch_gaia)  # 기준 에포크를 J2016.0으로 지정
-
-	# 관측 시점에 맞춰 고유 운동 보정
-	c_ref_corrected = c_ref.apply_space_motion(new_obstime=obs_time)
-
-	# 보정된 좌표 출력
-	# print(f"Corrected RA: {c_ref_corrected.ra}")
-	# print(f"Corrected Dec: {c_ref_corrected.dec}")
-
-	# 이제 이 좌표를 이용해 기존 좌표와 매칭
 	c_sex = SkyCoord(setbl['ALPHA_J2000'], setbl['DELTA_J2000'], unit='deg')
-
-	# 매칭 수행
-	indx_match, sep, _ = c_sex.match_to_catalog_sky(c_ref_corrected)
-
-	# SourceEXtractor Catalog + Reference Catalog
+	c_ref = SkyCoord(reftbl['ra'], reftbl['dec'], unit='deg')
+	indx_match, sep, _ = c_sex.match_to_catalog_sky(c_ref)
 	_mtbl = hstack([setbl, reftbl[indx_match]])
 	_mtbl['sep'] = sep.arcsec
 	matching_radius = 1.
 	mtbl = _mtbl[_mtbl['sep']<matching_radius]
 	mtbl['within_ellipse'] = is_within_ellipse(mtbl['X_IMAGE'], mtbl['Y_IMAGE'], xcent, ycent, frac*hdr['NAXIS1']/2, frac*hdr['NAXIS2']/2)
-	print(f"""Matched Sources: {len(mtbl):_} (r={matching_radius:.3f}")""")
+	mtbl['is_not_inner_circle'] = is_not_within_inner_circle(mtbl['X_IMAGE'], mtbl['Y_IMAGE'], xcent, ycent, inner_radius=inner_radius)
+
+	# mtbl['dist2center'] = tool.sqsum((xcent-mtbl['X_IMAGE']), (ycent-mtbl['Y_IMAGE']))
+	# mtbl['xdist2center'] = np.abs(xcent-mtbl['X_IMAGE'])
+	# mtbl['ydist2center'] = np.abs(ycent-mtbl['Y_IMAGE'])
+	print(f"""Matched Sources: {len(mtbl)} (r={matching_radius:.3f}")""")
+
+	#
 
 	for nn, inmagkey in enumerate(inmagkeys):
 		suffix = inmagkey.replace("MAG_", "")
 		mtbl[f"SNR_{suffix}"] = mtbl[f'FLUX_{suffix}'] / mtbl[f'FLUXERR_{suffix}']
-
-	#
 
 	# dist2center_cut = frac*(xcent+ycent)/2
 	# indx_star4zp = np.where(
@@ -550,6 +522,7 @@ def phot_routine(inim):
 		(mtbl['FLAGS']==0) &
 		#	Within Ellipse
 		(mtbl['within_ellipse'] == True) &
+		(mtbl['is_not_inner_circle'] == True) &
 		#	SNR cut
 		(mtbl['SNR_AUTO'] > 20) &
 		#	Magnitude in Ref. Cat 
@@ -563,6 +536,7 @@ def phot_routine(inim):
 	)
 
 	zptbl = mtbl[indx_star4zp]
+	# zptbl.write("zp_table.csv", format='csv')
 
 	print(f"{len(zptbl)} sources to calibration ZP")
 
@@ -650,10 +624,10 @@ def phot_routine(inim):
 
 		plt.close()
 		# plt.errorbar(zptbl[refmagkey], zparr, xerr=zptbl[refmagerkey], yerr=zperrarr, ls='none', c='grey', alpha=0.5)
-		plt.errorbar(zptbl[refmagkey], zparr, xerr=0, yerr=zperrarr, ls='none', c='grey', alpha=0.5)
+		plt.errorbar(zptbl[refmagkey], zparr, xerr=0, yerr=zperrarr, ls='none', c='silver', alpha=0.5)
 		plt.plot(zptbl_alive[refmagkey], zptbl_alive[refmagkey]-zptbl_alive[inmagkey], '.', c='dodgerblue', alpha=0.75, zorder=999, label=f'{len(zptbl_alive)}')
-		plt.plot(zptbl_exile[refmagkey], zptbl_exile[refmagkey]-zptbl_exile[inmagkey], 'x', c='tomato', alpha=0.75, label=f'{len(zptbl_exile)}')
-		plt.axhline(y=zp, ls='-', lw=1, c='grey', zorder=1, label=f"ZP: {zp:.3f}+/-{zperr:.3f}")
+		plt.plot(zptbl_exile[refmagkey], zptbl_exile[refmagkey]-zptbl_exile[inmagkey], 'x', c='tomato', alpha=0.5, label=f'{len(zptbl_exile)}')
+		plt.axhline(y=zp, ls='-', lw=1, c='grey', zorder=1, label=rf"ZP={zp:.3f}$\rm \pm${zperr:.3f}")
 		plt.axhspan(ymin=zp-zperr, ymax=zp+zperr, color='silver', alpha=0.5, zorder=0)
 		plt.xlabel(refmagkey)
 		# plt.xlim([8, 16])
@@ -663,14 +637,28 @@ def phot_routine(inim):
 		plt.xlim([10, 20])
 		plt.ylim([zp-0.25, zp+0.25])
 		plt.ylabel(f'ZP_{inmagkey}')
-		plt.legend(loc='upper center', ncol=3)
+		# plt.legend(loc='upper center', ncol=3)
+		plt.legend(loc='upper left', ncol=1, framealpha=1.0)
 		plt.tight_layout()
 		plt.savefig(f"{head}.{inmagkey}.png", dpi=100)
 
+
+		plt.close()
+		fig = plt.figure(figsize=(8, 4))
+		plt.scatter(zptbl['X_IMAGE'], zptbl['Y_IMAGE'], c=zparr, ec='k', marker='.', vmin=zp-0.1, vmax=zp+0.1)
+		cbar = plt.colorbar()
+		cbar.set_label('ZP')
+		plt.xlabel(f'X_IMAGE')
+		plt.ylabel(f'Y_IMAGE')
+		# plt.legend(loc='upper center', ncol=3)
+		plt.tight_layout()
+		plt.savefig(f"{head}.{inmagkey}.xy.png", dpi=100)
+
+
 		#	Apply ZP
 		##	MAG
-		_calmagkey = f"{inmagkey}_{filte}"
-		_calmagerrkey = f"{inmagerrkey}_{filte}"
+		_calmagkey = f"{inmagkey}_{hdr['FILTER']}"
+		_calmagerrkey = f"{inmagerrkey}_{hdr['FILTER']}"
 		##	FLUX
 		_calfluxkey = _calmagkey.replace('MAG', 'FLUX')
 		_calfluxerrkey = _calmagerrkey.replace('MAG', 'FLUX')
@@ -751,24 +739,10 @@ def phot_routine(inim):
 	# setbl['jd'] = jd
 	# setbl['mjd'] = mjd
 
-	#	Add Reference Catalog Information
-	keys_from_refcat = ['source_id', 'bp_rp', 'phot_g_mean_mag', f'mag_{filte}']
-
-	# 각 키에 대해 매칭된 값들을 처리
-	for key in keys_from_refcat:
-		valuearr = reftbl[key][indx_match].data  # 매칭된 값들 추출
-
-		# MaskedColumn을 사용해 매칭 반경을 넘는 경우 마스킹 처리
-		masked_valuearr = MaskedColumn(valuearr, mask=(sep.arcsec > matching_radius))
-		
-		# 결과를 setbl에 추가 (또는 업데이트)
-		setbl[key] = masked_valuearr
-	
-	#	Meta data
 	meta_dict = {
 		'obs': obs,
 		'object': obj,
-		'filter': filte,
+		'filter': hdr['FILTER'],
 		'date-obs': hdr['date-obs'],
 		'jd': jd,
 		'mjd': mjd,
@@ -787,7 +761,7 @@ except:
 	path_base = '.'
 
 path_refcat	= f'/large_data/factory/ref_cat'
-path_config = str(path_root / 'config')  # '/home/gp/gppy/config'
+path_config = '/home/gp/gppy/config'
 path_to_filterset = f"{path_config}/filterset"
 path_obs = f'{path_config}/obs.dat'
 # path_target = './transient.dat'
@@ -822,6 +796,9 @@ DEBLEND_MINCONT = gphot_dict['DEBLEND_MINCONT']
 BACK_SIZE = gphot_dict['BACK_SIZE']
 BACK_FILTERSIZE = gphot_dict['BACK_FILTERSIZE']
 BACKPHOTO_TYPE = gphot_dict['BACKPHOTO_TYPE']
+
+# inner_radius = 1500
+inner_radius = 2000
 #------------------------------------------------------------
 seeing_assume = 2.0 * u.arcsecond
 #------------------------------------------------------------
@@ -848,7 +825,7 @@ for ii, inim in enumerate(imlist):
 	try:
 		phot_routine(inim)
 	except Exception as e:
-		print(f"\nPhotometry for {os.path.basename(inim)} failed!\n")
+		print(f"\nPhotometry for {os.path.basename(inim)} was failed!\n")
 		print(f"Error:\n{e}")
 		fail_image_list.append(inim)
 #------------------------------------------------------------

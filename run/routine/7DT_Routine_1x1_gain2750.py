@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from IPython.core.interactiveshell import InteractiveShell
 from ccdproc import ImageFileCollection
+import psutil
 #	Astropy
 from astropy.io import fits
 import astropy.io.ascii as ascii
@@ -37,7 +38,9 @@ from astropy.time import Time
 #------------------------------------------------------------
 # Custom Packages
 path_thisfile = Path(__file__).resolve()
+# ABSOLUTE path of gppy-gpu
 path_root = path_thisfile.parent.parent.parent  # Careful! not a str
+# sys.path.append('../../src')  # Deprecated
 path_src = path_root / 'src'
 if path_src not in map(Path, sys.path):
 	sys.path.append(str(path_src)) 
@@ -75,6 +78,7 @@ verbose_gpu = False
 ncore = 4
 print(f"- Number of Cores: {ncore}")
 
+memory_threshold = 50
 #------------------------------------------------------------
 #	Ready
 #------------------------------------------------------------
@@ -132,7 +136,8 @@ path_subtraction = str(path_src / "util/gregorysubt_7DT.py")
 path_find = str(path_src / 'phot/gregoryfind_7DT.py')
 #------------------------------------------------------------
 path_raw = f'{path_obsdata}/{obs.upper()}'
-rawlist = sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))
+# rawlist = sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))
+rawlist = [os.path.abspath(path) for path in sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))]
 #------------------------------------------------------------
 path_obs = f'{path_config}/obs.dat'
 path_changehdr = f'{path_config}/changehdr.dat'
@@ -238,7 +243,7 @@ timetbl['time'] = 0.0 * u.second
 #============================================================
 
 # revision. s for string
-newlist = [s for s in rawlist if (s not in datalist) & (s+'/' not in datalist)]
+newlist = [os.path.abspath(s) for s in rawlist if (s not in datalist) & (s+'/' not in datalist)]
 if len(newlist) == 0:
 	print('No new data')
 	sys.exit()
@@ -255,7 +260,7 @@ else:
 
 """
 try:
-	path_new = sys.argv[2]
+	path_new = os.path.abspath(sys.argv[2])
 	#revision
 	if not Path(path_new).exists():
 		print('Provided path does not exist')
@@ -956,10 +961,18 @@ if verbose_sex:
 else:
 	# Redirect SE output to a tmp log
 	os.system(log2tmp(cpcom_default_cfg, "mainsex"))
+
 #	Astrometry
+while psutil.virtual_memory().percent > memory_threshold:
+	print(f"Memory Usage is above {memory_threshold}% ({psutil.virtual_memory().percent}%) - Start the Astrometry!!!")
+	time.sleep(10)
+
+print(f"Memory Usage is below {memory_threshold}% - Start the Astrometry!!!")
 with ProcessPoolExecutor(max_workers=ncore) as executor:
 	# results = list(executor.map(calib.astrometry, fnamelist, objectlist, ralist, declist, fovlist, cpulimitlist, cfglist, _))
 	results = list(executor.map(calib.astrometry, fnamelist, objectlist, ralist, declist, fovlist, cpulimitlist, _, _))
+
+
 delt = time.time() - st_
 #	Move back to the original path
 os.chdir(original_directory)

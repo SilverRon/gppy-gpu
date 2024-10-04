@@ -2,7 +2,6 @@
 #	CREATED	2020.12.10	Gregory S.H. Paek
 #============================================================
 import os, glob, sys, subprocess
-from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -13,7 +12,6 @@ plt.rcParams['savefig.dpi'] = 500
 plt.rc('font', family='serif')
 #	Astropy
 from astropy.table import Table, vstack, hstack
-from astropy.table import MaskedColumn
 from astropy.io import ascii
 from astropy.io import fits
 from astropy.time import Time
@@ -28,21 +26,17 @@ warnings.filterwarnings('ignore', message="Warning: 'partition' will ignore the 
 
 # from astropy.utils.exceptions import FITSFixedWarning
 # warnings.filterwarnings('ignore', category=FITSFixedWarning, append=True)
-from datetime import date, datetime
+from datetime import date
 import time
 import multiprocessing
 #	gpPy
-# sys.path.append('..')
-# sys.path.append('/home/gp/gppy')
-path_thisfile = Path(__file__).resolve()
-path_root = path_thisfile.parent.parent.parent
-sys.path.append(str(path_root / 'src'))
+sys.path.append('..')
+sys.path.append('/home/gp/gppy')
 from phot import gpphot
-from phot import gcurve
-from preprocess import calib
 from util import query
 from util import tool
-from util.path_manager import log2tmp
+from phot import gcurve
+from preprocess import calib
 starttime = time.time()
 #============================================================
 #	FUNCTION
@@ -126,7 +120,7 @@ def correct_flux_excess_factor(bp_rp, phot_bp_rp_excess_factor):
     
     return phot_bp_rp_excess_factor - correction
 #------------------------------------------------------------
-def phot_routine(inim):
+def phot_routine(inim, filte):
 	#------------------------------------------------------------
 	#	INFO. from file name
 	#------------------------------------------------------------
@@ -136,11 +130,12 @@ def phot_routine(inim):
 
 	obs = part[1]
 	obj = hdr['OBJECT']
-	filte = hdr['FILTER']
-	dateobs = hdr['DATE-OBS']
 	# refmagkey = f"{filte}_mag"
 	# refmagerkey = f"{filte}_magerr"
 	# refsnrkey = f"{filte}_snr"
+	# refmagkey = f"mag_{filte}"
+	# refmagerkey = f"magerr_{filte}"
+	# refsnrkey = f"snr_{filte}"
 	refmagkey = f"mag_{filte}"
 	refmagerkey = f"magerr_{filte}"
 	refsnrkey = f"snr_{filte}"
@@ -273,10 +268,15 @@ def phot_routine(inim):
 	#	Pre-Source EXtractor
 	#------------------------------------------------------------
 	precat = f"{head}.pre.cat"
-	presexcom = f"source-extractor -c {conf_simple} {inim} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PARAMETERS_NAME {param_simple} -CATALOG_NAME {precat}"
-	print(presexcom)
-	# os.system(presexcom)
-	os.system(log2tmp(presexcom, "presex"))  # stderr is logged with stdout
+
+	if os.path.exists(precat):
+		print(f"{precat} already exists!")
+		pass
+	else:
+		presexcom = f"source-extractor -c {conf_simple} {inim} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PARAMETERS_NAME {param_simple} -CATALOG_NAME {precat}"
+		print(presexcom)
+		os.system(presexcom)
+
 	pretbl = Table.read(precat, format='ascii.sextractor')
 	#
 	pretbl['within_ellipse'] = is_within_ellipse(pretbl['X_IMAGE'], pretbl['Y_IMAGE'], xcent, ycent, frac*hdr['NAXIS1']/2, frac*hdr['NAXIS2']/2)
@@ -285,12 +285,6 @@ def phot_routine(inim):
 	print('3. MATCHING')
 	c_pre = SkyCoord(pretbl['ALPHA_J2000'], pretbl['DELTA_J2000'], unit='deg')
 	c_ref = SkyCoord(reftbl['ra'], reftbl['dec'], unit='deg')
-	# # debug
-	# import pickle
-	# with open('debug.pkl', 'wb') as f:  # 'wb' is used to write in binary mode
-	# 	pickle.dump((c_pre, c_ref), f)
-	# import astropy
-	# print(astropy.__version__)
 	indx_match, sep, _ = c_pre.match_to_catalog_sky(c_ref)
 	_premtbl = hstack([pretbl, reftbl[indx_match]])
 	_premtbl['sep'] = sep.arcsec
@@ -448,13 +442,18 @@ def phot_routine(inim):
 	print('2. SOURCE EXTRACTOR')
 	com = gpphot.sexcom(inim, param_insex)
 	t0_sex = time.time()
-	print(com)
-	sexout = subprocess.getoutput(com)
+
+	if os.path.exists(cat):
+		skymed, skysig = hdr['SKYVAL'], hdr['SKYSIG']
+	else:
+		print(com)
+		sexout = subprocess.getoutput(com)
+		line = [s for s in sexout.split('\n') if 'RMS' in s]
+		skymed, skysig = float(line[0].split('Background:')[1].split('RMS:')[0]), float(line[0].split('RMS:')[1].split('/')[0])
+		# os.system(f'rm {seg} {aper} {bkg} {sub}'.format(seg, aper, bkg, sub))
+	
 	delt_sex = time.time() - t0_sex
 	print(f"SourceEXtractor: {delt_sex:.3f} sec")
-	line = [s for s in sexout.split('\n') if 'RMS' in s]
-	skymed, skysig = float(line[0].split('Background:')[1].split('RMS:')[0]), float(line[0].split('RMS:')[1].split('/')[0])
-	# os.system(f'rm {seg} {aper} {bkg} {sub}'.format(seg, aper, bkg, sub))
 
 	setbl = Table.read(cat, format='ascii.sextractor')
 	# setbl = Table.read(cat, format='fits')
@@ -463,64 +462,19 @@ def phot_routine(inim):
 	#	Matching
 	#------------------------------------------------------------
 	print('3. MATCHING')
-	#	No proper motion correction
-	# c_sex = SkyCoord(setbl['ALPHA_J2000'], setbl['DELTA_J2000'], unit='deg')
-	# c_ref = SkyCoord(reftbl['ra'], reftbl['dec'], unit='deg')
-	# indx_match, sep, _ = c_sex.match_to_catalog_sky(c_ref)
-
-
-	#	Proper Motion Correction
-	# 관측 시점을 Astropy Time 객체로 변환
-	obs_time = Time(dateobs, format='isot', scale='utc')
-
-	# 기준 에포크 (Gaia DR3는 J2016.0)
-	epoch_gaia = Time(2016.0, format='jyear')
-
-	# reftbl의 ra, dec, pmra, pmdec, parallax를 가져옴
-	ra = reftbl['ra']  # 단위: degrees
-	dec = reftbl['dec']  # 단위: degrees
-	pmra = reftbl['pmra']  # 단위: mas/yr
-	pmdec = reftbl['pmdec']  # 단위: mas/yr
-	parallax = reftbl['parallax']  # 단위: mas
-
-	# NaN 또는 None인 값을 확인하여, 고유 운동 정보가 없는 경우 처리
-	# pmra, pmdec, parallax가 NaN인 경우는 None으로 처리
-	pmra = np.where(np.isnan(pmra), None, pmra)
-	pmdec = np.where(np.isnan(pmdec), None, pmdec)
-	parallax = np.where(np.isnan(parallax), None, parallax)
-
-	# SkyCoord 객체 생성 (고유 운동이 없는 소스는 None으로 처리됨)
-	c_ref = SkyCoord(ra=ra*u.deg,
-					dec=dec*u.deg,
-					pm_ra_cosdec=pmra*u.mas/u.yr if pmra is not None else None,
-					pm_dec=pmdec*u.mas/u.yr if pmdec is not None else None,
-					distance=(1/(parallax*u.mas)) if parallax is not None else None,
-					obstime=epoch_gaia)  # 기준 에포크를 J2016.0으로 지정
-
-	# 관측 시점에 맞춰 고유 운동 보정
-	c_ref_corrected = c_ref.apply_space_motion(new_obstime=obs_time)
-
-	# 보정된 좌표 출력
-	# print(f"Corrected RA: {c_ref_corrected.ra}")
-	# print(f"Corrected Dec: {c_ref_corrected.dec}")
-
-	# 이제 이 좌표를 이용해 기존 좌표와 매칭
 	c_sex = SkyCoord(setbl['ALPHA_J2000'], setbl['DELTA_J2000'], unit='deg')
-
-	# 매칭 수행
-	indx_match, sep, _ = c_sex.match_to_catalog_sky(c_ref_corrected)
-
-	# SourceEXtractor Catalog + Reference Catalog
+	c_ref = SkyCoord(reftbl['ra'], reftbl['dec'], unit='deg')
+	indx_match, sep, _ = c_sex.match_to_catalog_sky(c_ref)
 	_mtbl = hstack([setbl, reftbl[indx_match]])
 	_mtbl['sep'] = sep.arcsec
 	matching_radius = 1.
 	mtbl = _mtbl[_mtbl['sep']<matching_radius]
 	mtbl['within_ellipse'] = is_within_ellipse(mtbl['X_IMAGE'], mtbl['Y_IMAGE'], xcent, ycent, frac*hdr['NAXIS1']/2, frac*hdr['NAXIS2']/2)
-	print(f"""Matched Sources: {len(mtbl):_} (r={matching_radius:.3f}")""")
 
-	for nn, inmagkey in enumerate(inmagkeys):
-		suffix = inmagkey.replace("MAG_", "")
-		mtbl[f"SNR_{suffix}"] = mtbl[f'FLUX_{suffix}'] / mtbl[f'FLUXERR_{suffix}']
+	# mtbl['dist2center'] = tool.sqsum((xcent-mtbl['X_IMAGE']), (ycent-mtbl['Y_IMAGE']))
+	# mtbl['xdist2center'] = np.abs(xcent-mtbl['X_IMAGE'])
+	# mtbl['ydist2center'] = np.abs(ycent-mtbl['Y_IMAGE'])
+	print(f"""Matched Sources: {len(mtbl)} (r={matching_radius:.3f}")""")
 
 	#
 
@@ -550,16 +504,13 @@ def phot_routine(inim):
 		(mtbl['FLAGS']==0) &
 		#	Within Ellipse
 		(mtbl['within_ellipse'] == True) &
-		#	SNR cut
-		(mtbl['SNR_AUTO'] > 20) &
 		#	Magnitude in Ref. Cat 
 		# (mtbl[f'{refmagkey}']<refmagupper) &
 		# (mtbl[f'{refmagkey}']>refmaglower) &
 		# (mtbl[f'{refmagerkey}']<refmaglower)
 		#
-		# (mtbl[refmagkey]>11.75) &
-		(mtbl[refmagkey]>refmaglower)# &
-		# (mtbl[refmagkey]<18.0)
+		(mtbl[refmagkey]>11.75) &
+		(mtbl[refmagkey]<18.0)
 	)
 
 	zptbl = mtbl[indx_star4zp]
@@ -734,7 +685,7 @@ def phot_routine(inim):
 		# _zp_dict
 
 		header_to_add.update(_zp_dict)
-
+		break
 	#------------------------------------------------------------
 	#	ADD HEADER INFO
 	#------------------------------------------------------------
@@ -751,20 +702,6 @@ def phot_routine(inim):
 	# setbl['jd'] = jd
 	# setbl['mjd'] = mjd
 
-	#	Add Reference Catalog Information
-	keys_from_refcat = ['source_id', 'bp_rp', 'phot_g_mean_mag', f'mag_{filte}']
-
-	# 각 키에 대해 매칭된 값들을 처리
-	for key in keys_from_refcat:
-		valuearr = reftbl[key][indx_match].data  # 매칭된 값들 추출
-
-		# MaskedColumn을 사용해 매칭 반경을 넘는 경우 마스킹 처리
-		masked_valuearr = MaskedColumn(valuearr, mask=(sep.arcsec > matching_radius))
-		
-		# 결과를 setbl에 추가 (또는 업데이트)
-		setbl[key] = masked_valuearr
-	
-	#	Meta data
 	meta_dict = {
 		'obs': obs,
 		'object': obj,
@@ -775,6 +712,8 @@ def phot_routine(inim):
 	}
 	setbl.meta = meta_dict
 	setbl.write(f'{head}.phot.cat', format='ascii.tab', overwrite=True)
+
+	return zperr
 #============================================================
 #	USER SETTING
 #============================================================
@@ -787,7 +726,7 @@ except:
 	path_base = '.'
 
 path_refcat	= f'/large_data/factory/ref_cat'
-path_config = str(path_root / 'config')  # '/home/gp/gppy/config'
+path_config = '/home/gp/gppy/config'
 path_to_filterset = f"{path_config}/filterset"
 path_obs = f'{path_config}/obs.dat'
 # path_target = './transient.dat'
@@ -844,13 +783,40 @@ except:
 	n_binning = 1
 #------------------------------------------------------------
 fail_image_list = []
+
+
+wavelengths= np.arange(4000, 8875+125, 125)
+
+wfilters = ['m375w', 'm425w']
+mfilters = [f"m{str(center_lam)[0:3]}" for center_lam in wavelengths][::2]
+mlamarr = np.array([float(filte[1:]) for filte in mfilters])
+bfilters = ['u', 'g', 'r', 'i', 'z']
+filters = mfilters+bfilters+wfilters
+
+
 for ii, inim in enumerate(imlist):
+	outbl = Table()
+	outbl['filter'] = filters
+	outbl['zperr'] = 0.
 	try:
-		phot_routine(inim)
+		for ff, filte in enumerate(outbl['filter']):
+			zperr = phot_routine(inim, filte=filte)
+			outbl['zperr'][ff] = zperr
 	except Exception as e:
-		print(f"\nPhotometry for {os.path.basename(inim)} failed!\n")
+		print(f"\nPhotometry for {os.path.basename(inim)} was failed!\n")
 		print(f"Error:\n{e}")
 		fail_image_list.append(inim)
+	plt.close()
+	fig = plt.figure(figsize=(10, 4))
+	plt.plot(outbl['filter'], outbl['zperr'], 's-')
+	plt.ylabel('ZP ERR')
+	plt.xticks(rotation=90)
+	plt.title(f"min={outbl['filter'][outbl['zperr']==np.min(outbl['zperr'])]}")
+	plt.tight_layout()
+	plt.savefig(f"{inim.replace('fits', 'zpcheck.png')}")
+	plt.show()
+	outbl.write(f"{inim.replace('fits', 'zpcheck.csv')}", format='csv', overwrite=True)
+
 #------------------------------------------------------------
 #	Logging the Failed Images
 #------------------------------------------------------------
@@ -874,3 +840,5 @@ if delt > 60.:
 	delt = delt/60.
 	dimen = 'hours'
 print(f'PHOTOMETRY IS DONE.\t({delt:.3f} {dimen})')
+
+

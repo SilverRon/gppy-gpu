@@ -160,12 +160,12 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
 coadd.weight.fits
-
-
-# dhhyun added
 **/__pycache__
+**/.vscode
+
+# Dummy output
 **/missfits.xml
 **/scamp.xml
 **/swarp.xml
-**/.vscode
