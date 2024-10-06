@@ -36,14 +36,48 @@ from astropy.table import Table, vstack, hstack
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
 #------------------------------------------------------------
-# Custom Packages
-path_thisfile = Path(__file__).resolve()
-# ABSOLUTE path of gppy-gpu
-path_root = path_thisfile.parent.parent.parent  # Careful! not a str
-# sys.path.append('../../src')  # Deprecated
-path_src = path_root / 'src'
-if path_src not in map(Path, sys.path):
-	sys.path.append(str(path_src)) 
+def find_gppy_gpu_src(depth=3):
+    """Searches up and down 3 levels from the CWD for the 'gppy-gpu/src' directory."""
+    cwd = Path(os.getcwd()).resolve()
+    search_dir = 'gppy-gpu/src'
+
+    # Search upwards from the CWD
+    for up_level in range(depth + 1):
+        try:
+            search_path_up = cwd.parents[up_level] / search_dir
+            if search_path_up.exists() and search_path_up.is_dir():
+                return search_path_up
+        except IndexError:
+            # Stop when trying to access beyond the root directory
+            break
+
+    # Search downwards from the CWD (within depth)
+    for root, dirs, _ in os.walk(cwd):
+        current_depth = len(Path(root).relative_to(cwd).parts)
+        if current_depth <= depth:
+            # Now check if the full path contains the 'gppy-gpu/src'
+            search_path_down = Path(root) / search_dir
+            if search_path_down.exists() and search_path_down.is_dir():
+                return search_path_down
+
+    # If not found
+    return None
+
+# Path Setup for Custom Packages
+try:
+	path_thisfile = Path(__file__).resolve()
+	# ABSOLUTE path of gppy-gpu
+	Path_root = path_thisfile.parent.parent.parent  # Careful! not a str
+	# sys.path.append('../../src')  # Deprecated
+	Path_src = Path_root / 'src'
+	Path_run = path_thisfile.parent
+except NameError:
+	Path_src = find_gppy_gpu_src()
+	Path_root = Path(Path_src).parent 
+	Path_run = Path_root / 'run' / 'routine'
+
+if Path_src not in map(Path, sys.path):
+	sys.path.append(str(Path_src)) 
 from preprocess import calib
 from util import tool
 from util.path_manager import log2tmp
@@ -101,7 +135,7 @@ print(f'# Observatory : {obs.upper()}')
 #	Path
 #------------------------------------------------------------
 #   Main Paths from path.json
-with open(path_thisfile.parent / 'path.json', 'r') as jsonfile:
+with open(Path_run / 'path.json', 'r') as jsonfile:
     upaths = json.load(jsonfile)
 
 path_base = upaths['path_base']  # '/home/snu/gppyTest_dhhyun/factory'  # '/large_data/factory'
@@ -121,7 +155,7 @@ path_factory = f'{path_base}/{obs.lower()}'
 path_log = f'{path_base}/log/{obs.lower()}.log'
 
 # path_config = '/home/paek/config'
-path_config = str(path_root / 'config')  # '../../config'
+path_config = str(Path_root / 'config')  # '../../config'
 path_keys = path_config  # f'../../config'
 path_default_gphot = f'{path_config}/gphot.{obs.lower()}_{n_binning}x{n_binning}.config'
 path_mframe = f'{path_base}/master_frame_{n_binning}x{n_binning}_gain2750'
@@ -130,10 +164,10 @@ path_mframe = f'{path_base}/master_frame_{n_binning}x{n_binning}_gain2750'
 #	Codes
 #------------------------------------------------------------
 # path_phot_sg = './phot/gregoryphot_2021.py'
-path_phot_mp = str(path_src / 'phot/gregoryphot_7DT_NxN.py')  # './phot/gregoryphot_7DT_NxN.py'
-path_phot_sub = str(path_src / 'phot/gregorydet_7DT_NxN.py')
-path_subtraction = str(path_src / "util/gregorysubt_7DT.py")
-path_find = str(path_src / 'phot/gregoryfind_7DT.py')
+path_phot_mp = str(Path_src / 'phot/gregoryphot_7DT_NxN.py')  # './phot/gregoryphot_7DT_NxN.py'
+path_phot_sub = str(Path_src / 'phot/gregorydet_7DT_NxN.py')
+path_subtraction = str(Path_src / "util/gregorysubt_7DT.py")
+path_find = str(Path_src / 'phot/gregoryfind_7DT.py')
 #------------------------------------------------------------
 path_raw = f'{path_obsdata}/{obs.upper()}'
 # rawlist = sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))
@@ -142,7 +176,7 @@ rawlist = [os.path.abspath(path) for path in sorted(glob.glob(f'{path_raw}/2???-
 path_obs = f'{path_config}/obs.dat'
 path_changehdr = f'{path_config}/changehdr.dat'
 path_alltarget = f'{path_config}/alltarget.dat'
-path_skygrid = str(path_root / "data/skygrid/7DT")  # "../../data/skygrid/7DT"
+path_skygrid = str(Path_root / "data/skygrid/7DT")  # "../../data/skygrid/7DT"
 skygrid_table = Table.read(f"{path_skygrid}/skygrid.fits")
 tile_name_pattern = r"T\d{5}$"
 # skygrid_table = Table.read(f"{path_skygrid}/displaycenter.txt", format='ascii')
