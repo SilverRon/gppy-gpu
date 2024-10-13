@@ -22,14 +22,14 @@ ASTREF_CATALOG         GAIA-EDR3       # NONE,FILE,USNO-A2,USNO-B1,GSC-2.3,
 ASTREF_BAND            DEFAULT         # Photom. band for astr.ref.magnitudes
                                        # or DEFAULT, BLUEST, or REDDEST
 ASTREFCAT_NAME         astrefcat.cat   # Local astrometric reference catalogs
-ASTREFCENT_KEYS        X_WORLD,Y_WORLD # Local ref.cat. centroid parameters
-ASTREFERR_KEYS         ERRA_WORLD, ERRB_WORLD, ERRTHETA_WORLD
+ASTREFCENT_KEYS        RA_ICRS,DE_ICRS # Local ref.cat. centroid parameters
+ASTREFERR_KEYS         e_RA_ICRS, e_DE_ICRS, ERRTHETA_WORLD
                                        # Local ref.cat. err. ellipse params
-ASTREFPROP_KEYS        PMALPHA_J2000, PMDELTA_J2000 # Local ref.cat. PM params
-ASTREFPROPERR_KEYS     PMALPHAERR_J2000, PMDELTAERR_J2000
+ASTREFPROP_KEYS        pmRA, pmDE # Local ref.cat. PM params
+ASTREFPROPERR_KEYS     e_pmRA, e_pmDE
                                        # Local ref.cat. PM err. params
-ASTREFMAG_KEY          MAG             # Local ref.cat. magnitude parameter
-ASTREFMAGERR_KEY       MAGERR          # Local ref.cat. mag. error parameter
+ASTREFMAG_KEY          Gmag             # Local ref.cat. magnitude parameter
+ASTREFMAGERR_KEY       e_Gmag          # Local ref.cat. mag. error parameter
 ASTREFOBSDATE_KEY      OBSDATE         # Local ref.cat. obs. date parameter
 ASTREFMAG_LIMITS       -99.0,99.0      # Select magnitude range in ASTREF_BAND
 SAVE_REFCATALOG        Y               # Save ref catalogs in FITS-LDAC format?
