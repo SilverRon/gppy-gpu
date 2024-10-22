@@ -161,8 +161,11 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Dummy output
 coadd.weight.fits
+**/__pycache__
+**/.vscode
+
+# Dummy output
 **/missfits.xml
 **/scamp.xml
 **/swarp.xml

@@ -33,7 +33,7 @@ ASTREFMAGERR_KEY       e_Gmag          # Local ref.cat. mag. error parameter
 ASTREFOBSDATE_KEY      OBSDATE         # Local ref.cat. obs. date parameter
 ASTREFMAG_LIMITS       -99.0,99.0      # Select magnitude range in ASTREF_BAND
 SAVE_REFCATALOG        Y               # Save ref catalogs in FITS-LDAC format?
-REFOUT_CATPATH         /large_data/factory/ref_scamp               # Save path for reference catalogs
+REFOUT_CATPATH         /home/snu/gppyTest_dhhyun/factory/ref_scamp               # Save path for reference catalogs
  
 #--------------------------- Merged output catalogs ---------------------------
  
