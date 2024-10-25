@@ -1132,7 +1132,7 @@ for oo, obj in enumerate(objarr):
 		astrefcat = f"{path_ref_scamp}/{obj}.fits"
 		scamp_addcom = f"-ASTREF_CATALOG FILE -ASTREFCAT_NAME {astrefcat}"
 	else:
-		scamp_addcom = f""
+		scamp_addcom = f"-REFOUT_CATPATH {path_ref_scamp}"
 
 	#	Run
 	scampcom = f"scamp -c {path_config}/7dt.scamp @{path_cat_scamp_list} {scamp_addcom}"
