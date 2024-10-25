@@ -3,7 +3,7 @@
 <VOTABLE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.ivoa.net/xml/VOTable/v1.1">
 <DESCRIPTION>produced by SWarp</DESCRIPTION>
 <!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
-<RESOURCE ID="SWarp" name="calib_7DT02_T00738_20240715_052911_m450_300.com.fits">
+<RESOURCE ID="SWarp" name="calib_7DT05_WD1544-377_20240810_010328_m475_600.com.fits">
  <DESCRIPTION>Data related to SWarp</DESCRIPTION>
  <INFO name="QUERY_STATUS" value="OK" />
  <COOSYS ID="J2000" equinox="J2000" epoch="J2000" system="ICRS"/>
@@ -16,23 +16,23 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2002ASPC..281..228B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="4"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2024-10-22"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="18:03:53"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="24.81" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2024-10-25"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="12:11:40"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="161.07" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="gp"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
   <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/gp/gppy/run/routine"/>
-  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="/large_data/factory/7dt02/2024-07-14_gain2750/calib_7DT02_T00738_20240715_052911_m450_300.com.fits"/>
+  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_010328_m475_600.com.fits"/>
   <PARAM name="Weight_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="coadd.weight.fits"/>
-  <PARAM name="NOverlap_Max" datatype="int" ucd="meta.number;stat.max;obs.image" value="3"/>
-  <PARAM name="ExpTime_Max" datatype="float" ucd="time.expo;stat.max;obs.image" value="300" unit="s"/>
-  <PARAM name="Gain_Max" datatype="float" ucd="instr.calib;stat.max;obs.image" value="24.4043" unit="photon/ADU"/>
+  <PARAM name="NOverlap_Max" datatype="int" ucd="meta.number;stat.max;obs.image" value="20"/>
+  <PARAM name="ExpTime_Max" datatype="float" ucd="time.expo;stat.max;obs.image" value="600" unit="s"/>
+  <PARAM name="Gain_Max" datatype="float" ucd="instr.calib;stat.max;obs.image" value="49.0578" unit="photon/ADU"/>
   <TABLE ID="Input_Image_Data" name="Input_Image_Data">
    <DESCRIPTION>Data gathered by SWarp for every FITS input image</DESCRIPTION>
    <!-- NFrames may be 0 if an error occurred early in the processing -->
-   <PARAM name="NFrames" datatype="int" ucd="meta.number;meta.dataset" value="3"/>
+   <PARAM name="NFrames" datatype="int" ucd="meta.number;meta.dataset" value="20"/>
    <!-- CurrFrame may differ from NFrames if an error occurred -->
-   <PARAM name="CurrFrame" datatype="int" ucd="meta.number;meta.dataset" value="3"/>
+   <PARAM name="CurrFrame" datatype="int" ucd="meta.number;meta.dataset" value="20"/>
    <FIELD name="Frame_Index" datatype="int" ucd="meta.record"/>
    <FIELD name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits"/>
    <FIELD name="Weight_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits"/>
@@ -67,30 +67,183 @@
    <FIELD name="COOSYS" datatype="char" arraysize="*" ucd="meta.code;pos"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>1</TD><TD>/large_data/factory/7dt02/2024-07-14_gain2750/calib_7DT02_T00738_20240715_052400_m450_100.fits</TD><TD>(null)</TD><TD>F</TD><TD>T00738</TD>
-     <TD>0</TD><TD>2024-10-22</TD><TD>18:03:35</TD><TD>6.00</TD>
-     <TD>67.8421</TD><TD>17.6256</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>1</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005212_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:09:06</TD><TD>6.00</TD>
+     <TD>12.0983</TD><TD>8.76419</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
      <TD>NONE</TD><TD>T</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.25619</TD><TD>65000</TD><TD>100</TD><TD>0.01</TD>
-     <TD>0.998498</TD><TD>303.2920863 -74.72633981</TD><TD>0.505</TD><TD>2024.535866</TD><TD>2000</TD><TD>2000</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0333314</TD>
+     <TD>0.995931</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606533</TD><TD>2000</TD><TD>2000</TD>
      <TD>ICRS</TD>
     </TR>
     <TR>
-     <TD>2</TD><TD>/large_data/factory/7dt02/2024-07-14_gain2750/calib_7DT02_T00738_20240715_052726_m450_100.fits</TD><TD>(null)</TD><TD>F</TD><TD>T00738</TD>
-     <TD>0</TD><TD>2024-10-22</TD><TD>18:03:41</TD><TD>5.00</TD>
-     <TD>65.2804</TD><TD>17.2724</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>2</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005248_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:09:12</TD><TD>6.00</TD>
+     <TD>12.2981</TD><TD>8.75182</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
      <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.25619</TD><TD>65000</TD><TD>100</TD><TD>0.0100006</TD>
-     <TD>0.996633</TD><TD>303.2733358 -74.71105988</TD><TD>0.505</TD><TD>2024.535872</TD><TD>2000</TD><TD>2000</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0331835</TD>
+     <TD>0.995888</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606533</TD><TD>2000</TD><TD>2000</TD>
      <TD>ICRS</TD>
     </TR>
     <TR>
-     <TD>3</TD><TD>/large_data/factory/7dt02/2024-07-14_gain2750/calib_7DT02_T00738_20240715_052911_m450_100.fits</TD><TD>(null)</TD><TD>F</TD><TD>T00738</TD>
-     <TD>0</TD><TD>2024-10-22</TD><TD>18:03:46</TD><TD>4.00</TD>
-     <TD>63.4928</TD><TD>17.0939</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>3</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005323_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:09:19</TD><TD>6.00</TD>
+     <TD>12.1086</TD><TD>8.75495</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
      <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>0.25619</TD><TD>65000</TD><TD>100</TD><TD>0.0100733</TD>
-     <TD>0.996621</TD><TD>303.2749297 -74.71077851</TD><TD>0.505</TD><TD>2024.535875</TD><TD>2000</TD><TD>2000</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0331673</TD>
+     <TD>0.995933</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606535</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>4</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005359_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:09:24</TD><TD>5.00</TD>
+     <TD>12.0903</TD><TD>8.75018</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0332122</TD>
+     <TD>0.995928</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606535</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>5</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005435_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:09:31</TD><TD>6.00</TD>
+     <TD>12.3005</TD><TD>8.75344</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0330678</TD>
+     <TD>0.995909</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606537</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>6</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005509_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:09:37</TD><TD>6.00</TD>
+     <TD>12.0942</TD><TD>8.75121</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0330497</TD>
+     <TD>0.995929</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606539</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>7</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005545_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:09:43</TD><TD>5.00</TD>
+     <TD>12.2763</TD><TD>8.758</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0330091</TD>
+     <TD>0.995951</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606539</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>8</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005621_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:09:49</TD><TD>6.00</TD>
+     <TD>12.1593</TD><TD>8.76117</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0330778</TD>
+     <TD>0.995955</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.60654</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>9</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005657_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:09:55</TD><TD>5.00</TD>
+     <TD>12.3169</TD><TD>8.76954</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0334694</TD>
+     <TD>0.995937</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.60654</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>10</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005732_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:10:01</TD><TD>5.00</TD>
+     <TD>12.1683</TD><TD>8.77116</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0336896</TD>
+     <TD>0.995977</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606542</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>11</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005808_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:10:07</TD><TD>6.00</TD>
+     <TD>12.153</TD><TD>8.76048</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0334887</TD>
+     <TD>0.995902</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606544</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>12</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005844_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:10:13</TD><TD>5.00</TD>
+     <TD>12.3116</TD><TD>8.7667</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0334462</TD>
+     <TD>0.995938</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606544</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>13</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005918_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:10:18</TD><TD>5.00</TD>
+     <TD>12.0934</TD><TD>8.74399</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.033243</TD>
+     <TD>0.995955</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606546</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>14</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005954_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:10:24</TD><TD>5.00</TD>
+     <TD>12.1421</TD><TD>8.7506</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0330652</TD>
+     <TD>0.995973</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606546</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>15</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_010029_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:10:30</TD><TD>5.00</TD>
+     <TD>12.0628</TD><TD>8.7432</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0330915</TD>
+     <TD>0.995943</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606548</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>16</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_010105_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:10:35</TD><TD>5.00</TD>
+     <TD>12.0128</TD><TD>8.73193</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0332736</TD>
+     <TD>0.995953</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.60655</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>17</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_010141_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:10:41</TD><TD>6.00</TD>
+     <TD>12.1385</TD><TD>8.72125</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0332638</TD>
+     <TD>0.995955</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.60655</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>18</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_010216_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:10:47</TD><TD>5.00</TD>
+     <TD>12.032</TD><TD>8.72842</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0332366</TD>
+     <TD>0.995982</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606552</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>19</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_010252_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:10:53</TD><TD>5.00</TD>
+     <TD>12.0171</TD><TD>8.72708</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.0332997</TD>
+     <TD>0.995959</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606552</TD><TD>2000</TD><TD>2000</TD>
+     <TD>ICRS</TD>
+    </TR>
+    <TR>
+     <TD>20</TD><TD>/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_010328_m475_30.fits</TD><TD>(null)</TD><TD>F</TD><TD>WD1544-377</TD>
+     <TD>0</TD><TD>2024-10-25</TD><TD>12:10:58</TD><TD>5.00</TD>
+     <TD>12.0172</TD><TD>8.72944</TD><TD>T</TD><TD>AUTO</TD><TD>512</TD><TD>3</TD><TD>0</TD>
+     <TD>NONE</TD><TD>F</TD><TD>0</TD><TD>1</TD><TD>F</TD>
+     <TD>0.25619</TD><TD>65000</TD><TD>30</TD><TD>0.033247</TD>
+     <TD>0.995951</TD><TD>236.875 -37.919</TD><TD>0.505</TD><TD>2024.606554</TD><TD>2000</TD><TD>2000</TD>
      <TD>ICRS</TD>
     </TR>
    </TABLEDATA></DATA>
@@ -105,9 +258,9 @@
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>SWarp configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="swarp -c /home/gp/gppy/config/7dt.swarp @/large_data/factory/7dt02/2024-07-14_gain2750/calib_7DT02_T00738_20240715_052400_m450_100.image.list -IMAGEOUT_NAME /large_data/factory/7dt02/2024-07-14_gain2750/calib_7DT02_T00738_20240715_052911_m450_300.com.fits -RESAMPLE_DIR /large_data/factory/7dt02/2024-07-14_gain2750 -CENTER_TYPE MANUAL -CENTER 20:12:37.89473684,-74:43:01.13207547 -GAIN_KEYWORD EGAIN"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="swarp -c /home/gp/gppy/config/7dt.swarp @/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_005212_m475_30.image.list -IMAGEOUT_NAME /large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_010328_m475_600.com.fits -RESAMPLE_DIR /large_data/factory/7dt05/2024-08-09_gain2750 -CENTER_TYPE MANUAL -CENTER 15:47:30.00,-37:55:08.40 -GAIN_KEYWORD EGAIN"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="/home/gp/gppy/config/7dt.swarp"/>
-   <PARAM name="ImageOut_Name" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value="/large_data/factory/7dt02/2024-07-14_gain2750/calib_7DT02_T00738_20240715_052911_m450_300.com.fits"/>
+   <PARAM name="ImageOut_Name" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value="/large_data/factory/7dt05/2024-08-09_gain2750/calib_7DT05_WD1544-377_20240810_010328_m475_600.com.fits"/>
    <PARAM name="WeightOut_Name" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value="coadd.weight.fits"/>
    <PARAM name="Header_Only" datatype="boolean" ucd="meta.code;obs.param" value="F"/>
    <PARAM name="Header_Suffix" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value=".head"/>
@@ -119,12 +272,12 @@
    <PARAM name="Projection_Type" datatype="char" arraysize="*" ucd="meta;pos;obs.param" value="TAN"/>
    <PARAM name="Projection_Err" datatype="float" arraysize="1" ucd="pos.angDistance;stat.max;obs.param" value="0.001" unit="pix"/>
    <PARAM name="Center_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="MANUAL"/>
-   <PARAM name="Center" datatype="double" arraysize="2" ucd="pos;obs.param" value="    303.1578947    -74.71698113" unit="pix"/>
+   <PARAM name="Center" datatype="double" arraysize="2" ucd="pos;obs.param" value="        236.875         -37.919" unit="pix"/>
    <PARAM name="PixelScale_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="MANUAL"/>
    <PARAM name="Pixel_Scale" datatype="float" arraysize="1" ucd="instr.scale;instr.pixel;obs.param" value="0.505"/>
    <PARAM name="Image_Size" datatype="int" arraysize="2" ucd="instr.scale;instr.pixel;obs.param" value="10200 6800"/>
    <PARAM name="Resample" datatype="boolean" ucd="meta.code" value="T"/>
-   <PARAM name="Resample_Dir" datatype="char" arraysize="*" ucd="meta.dataset" value="/large_data/factory/7dt02/2024-07-14_gain2750"/>
+   <PARAM name="Resample_Dir" datatype="char" arraysize="*" ucd="meta.dataset" value="/large_data/factory/7dt05/2024-08-09_gain2750"/>
    <PARAM name="Resample_Suffix" datatype="char" arraysize="*" ucd="meta.dataset;meta.file" value=".resamp.fits"/>
    <PARAM name="Resampling_Type" datatype="char" arraysize="*" ucd="meta.code;pos;obs.param" value="LANCZOS3"/>
    <PARAM name="Oversampling" datatype="int" arraysize="1" ucd="arith.factor;instr.pixel;obs.param" value="1"/>
