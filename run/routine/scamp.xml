@@ -6,7 +6,7 @@
  xmlns:stc="http://www.ivoa.net/xml/STC/v1.10">
 <DESCRIPTION>produced by SCAMP</DESCRIPTION>
 <!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
-<RESOURCE ID="SCAMP" name="afdz7DT11_20240729_023258_T23260_m850_1x1_100.0s_0000.cat">
+<RESOURCE ID="SCAMP" name="afdz7DT04_20240919_085730_T18653_m800_1x1_100.0s_0000.cat">
  <DESCRIPTION>Data related to SCAMP</DESCRIPTION>
  <INFO name="QUERY_STATUS" value="OK" />
  <COOSYS ID="J2000" equinox="J2000" epoch="2000.0" system="ICRS"/>
@@ -19,9 +19,9 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2006ASPC..351..112B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="128"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.end;meta.software" value="2024-10-26"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.end;meta.software" value="00:56:01"/>
-  <PARAM name="Duration" datatype="float" ucd="time.duration;meta.software" value="14" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.end;meta.software" value="2024-10-27"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.end;meta.software" value="23:48:34"/>
+  <PARAM name="Duration" datatype="float" ucd="time.duration;meta.software" value="10" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="gp"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
   <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/gp/gppy/run/routine"/>
@@ -76,70 +76,70 @@
    <FIELD name="NDeg_Reference_HighSN" datatype="int" ucd="stat.fit.dof"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>1</TD><TD>afdz7DT11_20240729_023258_T23260_m850_1x1_100.0s_0000.cat</TD><TD>T23260</TD>
+     <TD>1</TD><TD>afdz7DT04_20240919_085730_T18653_m800_1x1_100.0s_0000.cat</TD><TD>T18653</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>5123</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.573870320</TD><TD>100.000</TD><TD>1.37</TD><TD>274.2678498 12.71531216</TD>
-     <TD>0.506426  0.506426</TD><TD>48.5803</TD><TD>-5.94601e-05</TD>
-     <TD>0.999825</TD><TD>0.0091183</TD><TD>22.0964</TD>
-     <TD>-0.0150439</TD><TD>0.00487029</TD><TD>0.614839</TD><TD>0.000297927</TD><TD>4.91976</TD>
-     <TD>1.08489</TD><TD>22388</TD><TD>2.09758</TD><TD>1215</TD>
-     <TD>0.00174342 -0.0537679</TD><TD>1.47309 1.43637</TD><TD>0.0471854</TD><TD>1.52355e-05</TD><TD>560</TD><TD>0.598603 -0.542759</TD><TD>1.31941 1.67678</TD><TD>-0.171566</TD><TD>4.0342e-06</TD><TD>31</TD>
+     <TD>562</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.716970555</TD><TD>100.000</TD><TD>1.15</TD><TD>61.70246738 -0.8380635407</TD>
+     <TD>0.507609  0.507609</TD><TD>48.665</TD><TD>5.01199e-05</TD>
+     <TD>1.00001</TD><TD>0.00113947</TD><TD>19.1157</TD>
+     <TD>0.00778034</TD><TD>0.0102464</TD><TD>0.0330733</TD><TD>0</TD><TD>0</TD>
+     <TD>3.01637</TD><TD>2459</TD><TD>10.2941</TD><TD>321</TD>
+     <TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD><TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD>
     </TR>
     <TR>
-     <TD>2</TD><TD>afdz7DT11_20240729_023443_T23260_m850_1x1_100.0s_0001.cat</TD><TD>T23260</TD>
+     <TD>2</TD><TD>afdz7DT04_20240919_085916_T18653_m800_1x1_100.0s_0001.cat</TD><TD>T18653</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>5448</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.573874122</TD><TD>100.000</TD><TD>1.37</TD><TD>274.2680104 12.71562804</TD>
-     <TD>0.506447  0.506447</TD><TD>48.5839</TD><TD>-0.00956752</TD>
-     <TD>0.999964</TD><TD>-0.00161415</TD><TD>20.0499</TD>
-     <TD>-0.01508</TD><TD>0.00484785</TD><TD>0.610231</TD><TD>0.000100606</TD><TD>11.1498</TD>
-     <TD>1.03822</TD><TD>22704</TD><TD>2.27993</TD><TD>1205</TD>
-     <TD>-0.0185808 -0.0746703</TD><TD>1.45725 1.45955</TD><TD>0.0568576</TD><TD>1.40487e-05</TD><TD>592</TD><TD>0.551006 -0.45189</TD><TD>1.28535 1.67199</TD><TD>-0.11425</TD><TD>4.04247e-06</TD><TD>31</TD>
+     <TD>577</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.716974358</TD><TD>100.000</TD><TD>1.15</TD><TD>61.70218205 -0.838031837</TD>
+     <TD>0.507702  0.507702</TD><TD>48.6739</TD><TD>0.000949817</TD>
+     <TD>1.00003</TD><TD>0.000458334</TD><TD>19.6186</TD>
+     <TD>0.00777844</TD><TD>0.0102256</TD><TD>0.0346141</TD><TD>0.000305894</TD><TD>7.36512</TD>
+     <TD>3.85354</TD><TD>2482</TD><TD>12.3729</TD><TD>321</TD>
+     <TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD><TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD>
     </TR>
     <TR>
-     <TD>3</TD><TD>afdz7DT11_20240729_023628_T23260_m850_1x1_100.0s_0002.cat</TD><TD>T23260</TD>
+     <TD>3</TD><TD>afdz7DT04_20240919_090101_T18653_m800_1x1_100.0s_0002.cat</TD><TD>T18653</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>5357</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.573877925</TD><TD>100.000</TD><TD>1.37</TD><TD>274.268039 12.71572711</TD>
-     <TD>0.506426  0.506426</TD><TD>48.577</TD><TD>-0.0100859</TD>
-     <TD>0.999858</TD><TD>0.00467463</TD><TD>20.7477</TD>
-     <TD>-0.0150522</TD><TD>0.00483234</TD><TD>0.607735</TD><TD>0.000239009</TD><TD>67.3322</TD>
-     <TD>1.01025</TD><TD>22667</TD><TD>1.78757</TD><TD>1208</TD>
-     <TD>-0.00453894 -0.079191</TD><TD>1.47526 1.45574</TD><TD>0.0578598</TD><TD>1.63125e-05</TD><TD>584</TD><TD>0.596633 -0.555559</TD><TD>1.31777 1.68105</TD><TD>-0.170796</TD><TD>4.06654e-06</TD><TD>31</TD>
+     <TD>563</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.716978161</TD><TD>100.000</TD><TD>1.15</TD><TD>61.70189551 -0.8378033111</TD>
+     <TD>0.50693  0.50693</TD><TD>48.5467</TD><TD>0.00295766</TD>
+     <TD>0.997561</TD><TD>-0.0148313</TD><TD>20.0312</TD>
+     <TD>0.00751818</TD><TD>0.0100659</TD><TD>0.0347928</TD><TD>0.002259</TD><TD>46.3381</TD>
+     <TD>3.96026</TD><TD>2450</TD><TD>13.6608</TD><TD>323</TD>
+     <TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD><TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD>
     </TR>
     <TR>
-     <TD>4</TD><TD>afdz7DT11_20240729_023822_T23260_m875_1x1_100.0s_0000.cat</TD><TD>T23260</TD>
+     <TD>4</TD><TD>afdz7DT04_20240919_090432_T18653_m825_1x1_100.0s_0000.cat</TD><TD>T18653</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>4328</TD><TD>1</TD><TD>A2</TD><TD>P2</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.573881727</TD><TD>100.000</TD><TD>1.37</TD><TD>274.2680306 12.71616132</TD>
-     <TD>0.506447  0.506447</TD><TD>48.5823</TD><TD>-3.33709e-05</TD>
-     <TD>0.999986</TD><TD>-0.0127986</TD><TD>21.2054</TD>
-     <TD>-0.0151203</TD><TD>0.00478549</TD><TD>0.581523</TD><TD>8.43701e-05</TD><TD>77.2852</TD>
-     <TD>1.00529</TD><TD>20645</TD><TD>1.70959</TD><TD>1109</TD>
-     <TD>0.00422693 -0.104174</TD><TD>1.45353 1.44808</TD><TD>0.0676273</TD><TD>1.52362e-05</TD><TD>470</TD><TD>0.476543 -0.38854</TD><TD>1.25951 1.71357</TD><TD>-0.0264169</TD><TD>1.62769e-06</TD><TD>25</TD>
+     <TD>547</TD><TD>1</TD><TD>A2</TD><TD>P2</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.716983864</TD><TD>100.000</TD><TD>1.15</TD><TD>61.70187168 -0.8380937454</TD>
+     <TD>0.507612  0.507612</TD><TD>48.6561</TD><TD>3.39272e-05</TD>
+     <TD>0.999792</TD><TD>0.00728576</TD><TD>19.9748</TD>
+     <TD>0.00773975</TD><TD>0.0102083</TD><TD>0.0339683</TD><TD>0.00041565</TD><TD>46.6243</TD>
+     <TD>3.18435</TD><TD>2408</TD><TD>11.5643</TD><TD>303</TD>
+     <TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD><TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD>
     </TR>
     <TR>
-     <TD>5</TD><TD>afdz7DT11_20240729_024009_T23260_m875_1x1_100.0s_0001.cat</TD><TD>T23260</TD>
+     <TD>5</TD><TD>afdz7DT04_20240919_090618_T18653_m825_1x1_100.0s_0001.cat</TD><TD>T18653</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>4444</TD><TD>1</TD><TD>A2</TD><TD>P2</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.573885530</TD><TD>100.000</TD><TD>1.37</TD><TD>274.2678082 12.71605463</TD>
-     <TD>0.506433  0.506433</TD><TD>48.5789</TD><TD>-0.00539924</TD>
-     <TD>0.999923</TD><TD>-0.00020813</TD><TD>20.8938</TD>
-     <TD>-0.0150591</TD><TD>0.00480331</TD><TD>0.599749</TD><TD>0.000169998</TD><TD>42.0307</TD>
-     <TD>0.999252</TD><TD>21001</TD><TD>1.66006</TD><TD>1103</TD>
-     <TD>-0.00507541 -0.105798</TD><TD>1.45258 1.44029</TD><TD>0.085159</TD><TD>1.40272e-05</TD><TD>482</TD><TD>0.443159 -0.224047</TD><TD>1.2624 1.65575</TD><TD>0.0390262</TD><TD>1.70077e-06</TD><TD>23</TD>
+     <TD>576</TD><TD>1</TD><TD>A2</TD><TD>P2</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.716987667</TD><TD>100.000</TD><TD>1.15</TD><TD>61.70168607 -0.8380668089</TD>
+     <TD>0.507609  0.507609</TD><TD>48.666</TD><TD>-0.00234621</TD>
+     <TD>1.00002</TD><TD>0.00115018</TD><TD>18.8267</TD>
+     <TD>0.00761166</TD><TD>0.0102808</TD><TD>0.029775</TD><TD>0</TD><TD>0</TD>
+     <TD>3.03292</TD><TD>2458</TD><TD>11.4226</TD><TD>306</TD>
+     <TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD><TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD>
     </TR>
     <TR>
-     <TD>6</TD><TD>afdz7DT11_20240729_024154_T23260_m875_1x1_100.0s_0002.cat</TD><TD>T23260</TD>
+     <TD>6</TD><TD>afdz7DT04_20240919_090803_T18653_m825_1x1_100.0s_0002.cat</TD><TD>T18653</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>4394</TD><TD>1</TD><TD>A2</TD><TD>P2</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.573887431</TD><TD>100.000</TD><TD>1.37</TD><TD>274.267621 12.71600333</TD>
-     <TD>0.506439  0.506439</TD><TD>48.5843</TD><TD>-0.00400864</TD>
-     <TD>0.999967</TD><TD>-0.0054996</TD><TD>21.1019</TD>
-     <TD>-0.015077</TD><TD>0.0048236</TD><TD>0.601268</TD><TD>0.000115894</TD><TD>88.1197</TD>
-     <TD>1.00419</TD><TD>20877</TD><TD>1.7548</TD><TD>1116</TD>
-     <TD>0.0244887 -0.0726705</TD><TD>1.46949 1.44254</TD><TD>0.0535758</TD><TD>1.42307e-05</TD><TD>471</TD><TD>0.496133 -0.287396</TD><TD>1.2864 1.66763</TD><TD>-0.0271708</TD><TD>1.62266e-06</TD><TD>24</TD>
+     <TD>588</TD><TD>1</TD><TD>A2</TD><TD>P2</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.716991470</TD><TD>100.000</TD><TD>1.15</TD><TD>61.70164746 -0.8379013414</TD>
+     <TD>0.507619  0.507619</TD><TD>48.6664</TD><TD>0.0028066</TD>
+     <TD>1.00001</TD><TD>0.00114033</TD><TD>17.6095</TD>
+     <TD>0.00758734</TD><TD>0.0102483</TD><TD>0.0349119</TD><TD>0</TD><TD>0</TD>
+     <TD>3.12619</TD><TD>2467</TD><TD>11.9317</TD><TD>306</TD>
+     <TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD><TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -195,15 +195,15 @@
    <TR>
      <TD>G1</TD><TD>1</TD><TD>6</TD>
      <TD>2</TD><TD>0</TD><TD>1</TD>
-     <TD>274.2829994 12.71097095</TD><TD>0.506435  0.506435</TD><TD>48.6106</TD>
+     <TD>61.69425171 -0.8482861809</TD><TD>0.507605  0.507605</TD><TD>48.6906</TD>
      <TD>file</TD><TD>1</TD>
-     <TD>0.0754132 0.0917517</TD><TD>0.0402603</TD><TD>1.02442</TD><TD>28199</TD>
-     <TD>0.0129836 0.0191444</TD><TD>0.766108</TD><TD>1.8891</TD><TD>1499</TD>
-     <TD>0.010866 -0.0874154</TD><TD>1.46067 1.45443</TD><TD>0.046717</TD><TD>1.48781e-05</TD><TD>637</TD>
-     <TD>0.591588 -0.490292</TD><TD>1.29917 1.67849</TD><TD>0.92996</TD><TD>3.00117e-06</TD><TD>32</TD>
+     <TD>0.110654 0.104394</TD><TD>-0.139412</TD><TD>3.36319</TD><TD>3119</TD>
+     <TD>0.042002 0.0363627</TD><TD>-1.11333</TD><TD>11.8824</TD><TD>395</TD>
+     <TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD>
+     <TD>0 0</TD><TD>0 0</TD><TD>0</TD><TD>0</TD><TD>0</TD>
      <TD>P1,P2</TD>
-     <TD>0.0865869 0.0881339</TD><TD>1.86285 1.88525</TD><TD>15239 12860</TD>
-     <TD>0.00878757 0.00887738</TD><TD>1.71531 1.41143</TD><TD>827 672</TD>
+     <TD>0.0673231 0.0774079</TD><TD>1.84843 1.96251</TD><TD>1548 1544</TD>
+     <TD>0.00724935 0.00650417</TD><TD>1.40609 1.44508</TD><TD>210 185</TD>
      <TD>0 0</TD><TD>0 0</TD><TD>0 0</TD>
      <TD>0 0</TD><TD>0 0</TD><TD>0 0</TD>
     </TR>
@@ -221,11 +221,11 @@
    <DATA><TABLEDATA>
     <TR>
      <TD>A1</TD><TD>1</TD><TD>3</TD><TD>1</TD>
-     <TD>2</TD><TD>FILTER  = 'm850    '            ,QRUNID  =                       </TD>
+     <TD>2</TD><TD>FILTER  = 'm800    '            ,QRUNID  =                       </TD>
     </TR>
     <TR>
      <TD>A2</TD><TD>2</TD><TD>3</TD><TD>1</TD>
-     <TD>2</TD><TD>FILTER  = 'm875    '            ,QRUNID  =                       </TD>
+     <TD>2</TD><TD>FILTER  = 'm825    '            ,QRUNID  =                       </TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -241,11 +241,11 @@
    <DATA><TABLEDATA>
     <TR>
      <TD>P1</TD><TD>1</TD><TD>3</TD><TD>0</TD>
-     <TD>1</TD><TD>FILTER  = 'm850    '            </TD>
+     <TD>1</TD><TD>FILTER  = 'm800    '            </TD>
     </TR>
     <TR>
      <TD>P2</TD><TD>2</TD><TD>3</TD><TD>0</TD>
-     <TD>1</TD><TD>FILTER  = 'm875    '            </TD>
+     <TD>1</TD><TD>FILTER  = 'm825    '            </TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -255,19 +255,19 @@
    <FIELD name="Time" datatype="char" arraysize="*" ucd="meta;time.end"/>
    <FIELD name="Msg" datatype="char" arraysize="*" ucd="meta"/>
    <DATA><TABLEDATA>
-    <TR><TD>2024-10-26</TD><TD>00:55:47</TD><TD>This executable has been compiled using a version of the ATLAS library without sPerformance will be degraded.</TD></TR>
-    <TR><TD>2024-10-26</TD><TD>00:55:48</TD><TD>FLAGS parameter not found in catalog T23260.fits</TD></TR>
+    <TR><TD>2024-10-27</TD><TD>23:48:24</TD><TD>This executable has been compiled using a version of the ATLAS library without sPerformance will be degraded.</TD></TR>
+    <TR><TD>2024-10-27</TD><TD>23:48:24</TD><TD>FLAGS parameter not found in catalog T18653.fits</TD></TR>
    </TABLEDATA></DATA>
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>SCAMP configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="scamp -c /home/gp/gppy/config/7dt.scamp @/large_data/factory/7dt11/2024-07-28_gain2750/T23260.cat.scamp.list -ASTREF_CATALOG FILE -ASTREFCAT_NAME /large_data/factory/ref_scamp/T23260.fits"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="scamp -c /home/gp/gppy/config/7dt.scamp @/large_data/factory/7dt04/2024-09-18_gain2750/T18653.cat.scamp.list -ASTREF_CATALOG FILE -ASTREFCAT_NAME /large_data/factory/ref_scamp/T18653.fits"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="/home/gp/gppy/config/7dt.scamp"/>
    <PARAM name="Ref_Server" datatype="char" arraysize="*" ucd="meta.ref.url" value="vizier.unistra.fr"/>
    <PARAM name="Ref_TimeOut" unit="s" datatype="double" arraysize="1" ucd="meta;time.duration" value="10"/>
    <PARAM name="AstRef_Catalog" datatype="char" arraysize="*" ucd="meta.code;meta.file" value="FILE"/>
    <PARAM name="AstRef_Band" datatype="char" arraysize="*" ucd="instr.bandpass" value="DEFAULT"/>
-   <PARAM name="AstRefCat_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file;meta.dataset" value="/large_data/factory/ref_scamp/T23260.fits"/>
+   <PARAM name="AstRefCat_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file;meta.dataset" value="/large_data/factory/ref_scamp/T18653.fits"/>
    <PARAM name="AstRefCent_Keys" datatype="char" arraysize="*" ucd="meta.id;pos.eq" value="RA_ICRS,DE_ICRS"/>
    <PARAM name="AstRefErr_Keys" datatype="char" arraysize="*" ucd="meta.id;pos.errorEllipse" value="e_RA_ICRS,e_DE_ICRS,ERRTHETA_WORLD"/>
    <PARAM name="AstRefMag_Key" datatype="char" arraysize="*" ucd="meta.id;phot.mag" value="Gmag"/>

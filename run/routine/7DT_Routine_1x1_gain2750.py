@@ -1128,16 +1128,28 @@ for oo, obj in enumerate(objarr):
 		s.write(f"{incat}\n")
 	s.close()
 
-	if re.match(tile_name_pattern, obj):
+	if (re.match(tile_name_pattern, obj)) and (obj not in ['T04231', 'T04409', 'T04590']):
 		astrefcat = f"{path_ref_scamp}/{obj}.fits"
 		scamp_addcom = f"-ASTREF_CATALOG FILE -ASTREFCAT_NAME {astrefcat}"
 	else:
 		scamp_addcom = f"-REFOUT_CATPATH {path_ref_scamp}"
 
 	#	Run
-	scampcom = f"scamp -c {path_config}/7dt.scamp @{path_cat_scamp_list} {scamp_addcom}"
-	print(scampcom)
-	os.system(scampcom)
+	# scampcom = f"scamp -c {path_config}/7dt.scamp @{path_cat_scamp_list} {scamp_addcom}"
+	# print(scampcom)
+	# os.system(scampcom)
+
+	# Run with subprocess
+	scampcom = ["scamp", "-c", f"{path_config}/7dt.scamp", f"@{path_cat_scamp_list}"]
+	scampcom += scamp_addcom.split()
+	print(" ".join(scampcom))  # Join the command list for printing
+
+	try:
+		result = subprocess.run(scampcom, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		print(result.stdout.decode())  # 명령어 실행 결과 출력
+	except subprocess.CalledProcessError as e:
+		print(f"Command failed with error code {e.returncode}")
+		print(f"stderr output: {e.stderr.decode()}")
 
 
 #	Rename afdz*.head --> fdz*.head
