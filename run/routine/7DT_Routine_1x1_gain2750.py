@@ -142,6 +142,7 @@ path_base = upaths['path_base']  # '/home/snu/gppyTest_dhhyun/factory'  # '/larg
 path_obsdata = f'{path_base}/../obsdata' if upaths['path_obsdata'] == '' else upaths['path_obsdata']
 path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}_gain2750' if upaths['path_gal'] == '' else upaths['path_gal']
 path_refcat = f'{path_base}/ref_cat' if upaths['path_refcat'] == '' else upaths['path_refcat']
+path_ref_scamp = f'{path_base}/ref_scamp' if upaths['path_ref_scamp'] == '' else upaths['path_ref_scamp']
 
 # path_gal = f'{path_base}/../processed'
 # path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}'
@@ -219,6 +220,9 @@ if not os.path.exists(path_log):
 	f.write('/large_data/obsdata/7DT01/1994-10-26_1x1_gain2750,1994-10-26_00:00:00_(KST),1994-10-26_00:01:00_(KST),-\n')
 	f.close()
 #------------------------------------------------------------
+#	Constant
+#------------------------------------------------------------
+
 #------------------------------------------------------------
 #	Table
 #------------------------------------------------------------
@@ -1107,10 +1111,46 @@ for inim in fdzimlist:
 i.close()
 
 #	SCAMP
-scampcom = f"scamp -c {path_config}/7dt.scamp @{path_cat_scamp_list}"
+# scampcom = f"scamp -c {path_config}/7dt.scamp @{path_cat_scamp_list}"
 # scampcom = f"scamp -c {path_config}/7dt.scamp @{path_cat_scamp_list} -AHEADER_GLOBAL {path_config}/{obs.lower()}.ahead"
-print(scampcom)
-os.system(scampcom)
+# print(scampcom)
+# os.system(scampcom)
+
+#	SCAMP (input CATALOG)
+print(f"= = = = = = = = = = = = Astrometry Correction = = = = = = = = = = = =")
+for oo, obj in enumerate(objarr):
+	print(f"[{oo+1}/{len(objarr)}] {obj}")
+
+	path_cat_scamp_list = f"{path_data}/{obj}.cat.scamp.list"
+	s = open(path_cat_scamp_list, 'w')
+	obj_outcatlist = [incat for incat in outcatlist if obj in os.path.basename(incat)]
+	for incat in obj_outcatlist:
+		s.write(f"{incat}\n")
+	s.close()
+
+	if (re.match(tile_name_pattern, obj)) and (obj not in ['T04231', 'T04409', 'T04590']):
+		astrefcat = f"{path_ref_scamp}/{obj}.fits"
+		scamp_addcom = f"-ASTREF_CATALOG FILE -ASTREFCAT_NAME {astrefcat}"
+	else:
+		scamp_addcom = f"-REFOUT_CATPATH {path_ref_scamp}"
+
+	#	Run
+	# scampcom = f"scamp -c {path_config}/7dt.scamp @{path_cat_scamp_list} {scamp_addcom}"
+	# print(scampcom)
+	# os.system(scampcom)
+
+	# Run with subprocess
+	scampcom = ["scamp", "-c", f"{path_config}/7dt.scamp", f"@{path_cat_scamp_list}"]
+	scampcom += scamp_addcom.split()
+	print(" ".join(scampcom))  # Join the command list for printing
+
+	try:
+		result = subprocess.run(scampcom, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		print(result.stdout.decode())  # 명령어 실행 결과 출력
+	except subprocess.CalledProcessError as e:
+		print(f"Command failed with error code {e.returncode}")
+		print(f"stderr output: {e.stderr.decode()}")
+
 
 #	Rename afdz*.head --> fdz*.head
 for inhead in outheadlist: os.rename(inhead, inhead.replace('afdz', 'fdz'))

@@ -1,6 +1,6 @@
 {
-    "path_base": "/home/snu/gppyTest_dhhyun/factory",
-    "path_obsdata": "/home/snu/gppyTest_dhhyun/obsdata",
+    "path_base": "/large_data/factory",
+    "path_obsdata": "/large_data/obsdata",
     "path_gal": "",
     "path_refcat": "",
     "path_ref_scamp": "",
