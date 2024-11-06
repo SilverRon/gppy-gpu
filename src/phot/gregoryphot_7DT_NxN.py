@@ -825,7 +825,13 @@ BACKPHOTO_TYPE = gphot_dict['BACKPHOTO_TYPE']
 #------------------------------------------------------------
 seeing_assume = 2.0 * u.arcsecond
 #------------------------------------------------------------
-imlist = sorted(glob.glob(imkey))
+if "@" in imkey:
+	image_list_file = imkey[1:]
+	# 파일을 읽어서 각 줄을 리스트로 변환
+	with open(image_list_file, 'r') as f:
+		imlist = [line.strip() for line in f if line.strip()]  # 빈 줄이 있을 경우 제거
+else:
+	imlist = sorted(glob.glob(imkey))
 # ncore = 8
 # ncore = 4
 try:

@@ -79,8 +79,11 @@ n_sigma = 5
 # tl, tu = refskyval - n_sigma * refskysig, 60000
 # tl, tu = refskyval - n_sigma * refskysig, 60000000
 tl, tu = -60000000, 60000000
+# tl, tu = -20000, 5100000
 ##	Region Split (y, x = 6800, 10200)
 nrx, nry = 3, 2
+# nrx, nry = 1, 1
+# nrx, nry = 6, 4
 #============================================================
 # %%
 #	Data
@@ -168,6 +171,7 @@ print(f"Convolved Image: {hcim}")
 
 # %%
 il, iu = inskyval - n_sigma * inskysig, 60000
+# il, iu = 0, 6000000
 #	Run
 com = (
 	f"hotpants -c t -n i "

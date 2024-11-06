@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 반복 횟수 설정
-NUM_REPETITIONS=13
+NUM_REPETITIONS=14
 
 # 첫 번째 탭부터 반복하여 실행
 for i in $(seq 1 $NUM_REPETITIONS); do

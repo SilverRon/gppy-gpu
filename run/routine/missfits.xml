@@ -15,15 +15,15 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Chiara Marmo,Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2006ASPC..351..112B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="1"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2024-10-27"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="23:52:16"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="229" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2024-11-06"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="02:11:28"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="124" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="gp"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
   <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/gp/gppy/run/routine"/>
   <TABLE ID="OutFields" name="OutFields">
    <DESCRIPTION>Metadata about the MissFITS</DESCRIPTION>  output images
-   <PARAM name="NImages" datatype="int" ucd="meta.number;meta.dataset" value="144"/>
+   <PARAM name="NImages" datatype="int" ucd="meta.number;meta.dataset" value="222"/>
    <FIELD name="Output_Image_Name" datatype="char" ucd="meta.id;meta.file;meta.fits"/>
    <FIELD name="Input_Image_Type" datatype="char" ucd="meta;meta.code.class"/>
    <FIELD name="Input_Extensions" datatype="int" ucd="meta.number;meta.dataset"/>
@@ -35,724 +35,1114 @@
    <FIELD name="OBJECT" datatype="char" ucd="meta;meta.note"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>fdz7DT10_20240913_013506_T13556_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_005742_T21621_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13556  </TD>
+<TD>T21621  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_013653_T13556_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_005928_T21621_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13556  </TD>
+<TD>T21621  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_013841_T13556_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_010114_T21621_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13556  </TD>
+<TD>T21621  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_014225_T13556_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_010447_T21621_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13556  </TD>
+<TD>T21621  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_014412_T13556_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_010633_T21621_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13556  </TD>
+<TD>T21621  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_014559_T13556_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_010818_T21621_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13556  </TD>
+<TD>T21621  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_014822_T10950_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_011120_T20509_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10950  </TD>
+<TD>T20509  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_015010_T10950_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_011305_T20509_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10950  </TD>
+<TD>T20509  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_015157_T10950_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_011450_T20509_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10950  </TD>
+<TD>T20509  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_015356_T10950_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_011648_T20509_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10950  </TD>
+<TD>T20509  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_015544_T10950_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_011833_T20509_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10950  </TD>
+<TD>T20509  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_015731_T10950_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_012019_T20509_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10950  </TD>
+<TD>T20509  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_015941_T11974_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_012256_T19155_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11974  </TD>
+<TD>T19155  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_020129_T11974_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_012441_T19155_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11974  </TD>
+<TD>T19155  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_020316_T11974_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_012626_T19155_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11974  </TD>
+<TD>T19155  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_020514_T11974_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_012825_T19155_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11974  </TD>
+<TD>T19155  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_020702_T11974_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_013011_T19155_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11974  </TD>
+<TD>T19155  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_020849_T11974_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_013156_T19155_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11974  </TD>
+<TD>T19155  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_021107_T11716_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_013418_T04223_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11716  </TD>
+<TD>T04223  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_021255_T11716_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_013604_T04223_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11716  </TD>
+<TD>T04223  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_021442_T11716_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_013749_T04223_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11716  </TD>
+<TD>T04223  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_021640_T11716_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_013947_T04223_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11716  </TD>
+<TD>T04223  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_021828_T11716_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_014132_T04223_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11716  </TD>
+<TD>T04223  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_022015_T11716_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_014318_T04223_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11716  </TD>
+<TD>T04223  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_022233_T11203_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_014551_T20001_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11203  </TD>
+<TD>T20001  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_022420_T11203_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_014736_T20001_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11203  </TD>
+<TD>T20001  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_022608_T11203_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_014922_T20001_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T11203  </TD>
+<TD>T20001  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_030049_T08296_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_015120_T20001_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T08296  </TD>
+<TD>T20001  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_030236_T08296_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_015305_T20001_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T08296  </TD>
+<TD>T20001  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_030423_T08296_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_015450_T20001_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T08296  </TD>
+<TD>T20001  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_044107_T21668_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_015713_T11021_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21668  </TD>
+<TD>T11021  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_044255_T21668_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_020033_T11021_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21668  </TD>
+<TD>T11021  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_044442_T21668_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_020218_T11021_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21668  </TD>
+<TD>T11021  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_044825_T21668_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_020416_T11021_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21668  </TD>
+<TD>T11021  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_045013_T21668_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_020738_T11021_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21668  </TD>
+<TD>T11021  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_045200_T21668_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_020924_T11021_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21668  </TD>
+<TD>T11021  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_045816_T23051_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_021230_T13373_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23051  </TD>
+<TD>T13373  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_050004_T23051_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_021415_T13373_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23051  </TD>
+<TD>T13373  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_053316_T23051_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
-     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>F</TD>
-<TD>T23051  </TD>
+     <TD>fdz7DT09_20241028_021600_T13373_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T13373  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_021757_T13373_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T13373  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_021942_T13373_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T13373  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_022127_T13373_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T13373  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_022358_T14735_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14735  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_022543_T14735_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14735  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_022729_T14735_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14735  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_022926_T14735_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14735  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_023111_T14735_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14735  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_023257_T14735_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14735  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_023528_T03895_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T03895  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_023713_T03895_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T03895  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_023858_T03895_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T03895  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_024056_T03895_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T03895  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_024241_T03895_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T03895  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_024426_T03895_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T03895  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_024647_T06365_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T06365  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_024832_T06365_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T06365  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_025017_T06365_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T06365  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_025214_T06365_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T06365  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_025400_T06365_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T06365  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_025546_T06365_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T06365  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_025813_T01494_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T01494  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_025958_T01494_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T01494  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_030321_T01494_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T01494  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_030517_T01494_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T01494  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_030703_T01494_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T01494  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_031028_T01494_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T01494  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_031338_T21420_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21420  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_031523_T21420_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21420  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_031708_T21420_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21420  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_031906_T21420_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21420  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_032051_T21420_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21420  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_032236_T21420_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21420  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_032458_T11298_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T11298  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_032644_T11298_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T11298  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_032828_T11298_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T11298  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_033026_T11298_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T11298  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_033211_T11298_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T11298  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_033357_T11298_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T11298  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_053515_T23051_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
-     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>F</TD>
-<TD>T23051  </TD>
+     <TD>fdz7DT09_20241028_033631_T21977_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21977  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_033816_T21977_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21977  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_034001_T21977_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21977  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_034159_T21977_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21977  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_034344_T21977_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21977  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_034530_T21977_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T21977  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_034757_T14479_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14479  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_034942_T14479_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14479  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_035127_T14479_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14479  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_035325_T14479_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14479  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_035510_T14479_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14479  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_035655_T14479_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T14479  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_035923_T20870_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T20870  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_040108_T20870_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T20870  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_040254_T20870_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T20870  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_040452_T20870_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T20870  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_040637_T20870_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T20870  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_040822_T20870_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T20870  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_041317_T12604_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T12604  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_041502_T12604_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T12604  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_041647_T12604_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T12604  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_042017_T12604_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T12604  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_042202_T12604_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T12604  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_042348_T12604_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T12604  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_042652_T18638_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T18638  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_042838_T18638_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T18638  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_043023_T18638_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T18638  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_043219_T18638_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T18638  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_043405_T18638_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T18638  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_043550_T18638_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T18638  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_043815_T08601_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T08601  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_044001_T08601_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T08601  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_044147_T08601_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T08601  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_044344_T08601_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T08601  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_044529_T08601_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T08601  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_044715_T08601_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T08601  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_044948_T03907_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T03907  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_045133_T03907_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T03907  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_045318_T03907_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T03907  </TD>
+    </TR>
+    <TR>
+     <TD>fdz7DT09_20241028_045517_T03907_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
+<TD>T03907  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_053703_T23051_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_045702_T03907_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23051  </TD>
+<TD>T03907  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_053850_T23051_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_045847_T03907_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23051  </TD>
+<TD>T03907  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_054257_T01616_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_050110_T15858_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T01616  </TD>
+<TD>T15858  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_054445_T01616_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_050255_T15858_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T01616  </TD>
+<TD>T15858  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_054632_T01616_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_050440_T15858_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T01616  </TD>
+<TD>T15858  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_055017_T01616_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_050637_T15858_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T01616  </TD>
+<TD>T15858  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_055204_T01616_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_050823_T15858_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T01616  </TD>
+<TD>T15858  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_055352_T01616_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_051008_T15858_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T01616  </TD>
+<TD>T15858  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_055607_T21129_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_051516_T14767_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21129  </TD>
+<TD>T14767  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_055754_T21129_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_051701_T14767_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21129  </TD>
+<TD>T14767  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_055942_T21129_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_051846_T14767_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21129  </TD>
+<TD>T14767  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_060139_T21129_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_052217_T14767_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21129  </TD>
+<TD>T14767  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_060327_T21129_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_052402_T14767_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21129  </TD>
+<TD>T14767  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_060514_T21129_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_052547_T14767_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21129  </TD>
+<TD>T14767  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_061102_T10781_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_052843_T08611_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10781  </TD>
+<TD>T08611  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_061249_T10781_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_053028_T08611_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10781  </TD>
+<TD>T08611  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_061437_T10781_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_053213_T08611_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10781  </TD>
+<TD>T08611  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_061634_T10781_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_053411_T08611_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10781  </TD>
+<TD>T08611  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_061821_T10781_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_053557_T08611_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10781  </TD>
+<TD>T08611  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_062008_T10781_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_053742_T08611_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T10781  </TD>
+<TD>T08611  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_062226_T16667_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_054016_T06817_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T16667  </TD>
+<TD>T06817  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_062413_T16667_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_054201_T06817_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T16667  </TD>
+<TD>T06817  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_062600_T16667_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_054347_T06817_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T16667  </TD>
+<TD>T06817  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_062758_T16667_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_054544_T06817_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T16667  </TD>
+<TD>T06817  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_062945_T16667_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_054729_T06817_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T16667  </TD>
+<TD>T06817  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_063133_T16667_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_054914_T06817_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T16667  </TD>
+<TD>T06817  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_063351_T13392_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_055145_T01028_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13392  </TD>
+<TD>T01028  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_063538_T13392_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_055330_T01028_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13392  </TD>
+<TD>T01028  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_063725_T13392_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_055515_T01028_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13392  </TD>
+<TD>T01028  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_063924_T13392_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_055713_T01028_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13392  </TD>
+<TD>T01028  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_064112_T13392_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_055858_T01028_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13392  </TD>
+<TD>T01028  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_064259_T13392_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_060043_T01028_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T13392  </TD>
+<TD>T01028  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_064700_T20581_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_060314_T00296_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20581  </TD>
+<TD>T00296  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_064848_T20581_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_060459_T00296_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20581  </TD>
+<TD>T00296  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_065035_T20581_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_060644_T00296_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20581  </TD>
+<TD>T00296  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_065419_T20581_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_060841_T00296_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20581  </TD>
+<TD>T00296  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_065606_T20581_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_061027_T00296_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20581  </TD>
+<TD>T00296  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_065754_T20581_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_061212_T00296_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20581  </TD>
+<TD>T00296  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_070011_T00476_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_061733_T07943_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00476  </TD>
+<TD>T07943  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_070158_T00476_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_061918_T07943_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00476  </TD>
+<TD>T07943  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_070346_T00476_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_062103_T07943_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00476  </TD>
+<TD>T07943  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_070544_T00476_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_062434_T07943_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00476  </TD>
+<TD>T07943  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_070731_T00476_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_062619_T07943_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00476  </TD>
+<TD>T07943  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_070919_T00476_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_062804_T07943_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00476  </TD>
+<TD>T07943  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_071508_T23892_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_063110_T11091_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23892  </TD>
+<TD>T11091  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_071656_T23892_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_063255_T11091_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23892  </TD>
+<TD>T11091  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_071843_T23892_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_063440_T11091_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23892  </TD>
+<TD>T11091  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_072041_T23892_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_063638_T11091_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23892  </TD>
+<TD>T11091  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_072229_T23892_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_063824_T11091_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23892  </TD>
+<TD>T11091  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_072416_T23892_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_064009_T11091_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23892  </TD>
+<TD>T11091  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_072632_T19472_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_064237_T18685_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T19472  </TD>
+<TD>T18685  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_072819_T19472_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_064423_T18685_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T19472  </TD>
+<TD>T18685  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_073007_T19472_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_064608_T18685_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T19472  </TD>
+<TD>T18685  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_073205_T19472_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_064806_T18685_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T19472  </TD>
+<TD>T18685  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_073352_T19472_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_064951_T18685_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T19472  </TD>
+<TD>T18685  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_073540_T19472_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_065136_T18685_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T19472  </TD>
+<TD>T18685  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_073758_T15854_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_065400_T15051_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T15854  </TD>
+<TD>T15051  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_073945_T15854_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_065545_T15051_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T15854  </TD>
+<TD>T15051  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_074132_T15854_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_065730_T15051_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T15854  </TD>
+<TD>T15051  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_074330_T15854_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_065928_T15051_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T15854  </TD>
+<TD>T15051  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_074518_T15854_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_070114_T15051_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T15854  </TD>
+<TD>T15051  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_074705_T15854_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_070259_T15051_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T15854  </TD>
+<TD>T15051  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_075107_T00612_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_070530_T01869_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00612  </TD>
+<TD>T01869  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_075255_T00612_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_070715_T01869_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00612  </TD>
+<TD>T01869  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_075442_T00612_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_070900_T01869_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00612  </TD>
+<TD>T01869  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_075825_T00612_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_071059_T01869_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00612  </TD>
+<TD>T01869  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_080013_T00612_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_071244_T01869_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00612  </TD>
+<TD>T01869  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_080200_T00612_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_071429_T01869_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00612  </TD>
+<TD>T01869  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_080416_T21433_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_071936_T23383_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21433  </TD>
+<TD>T23383  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_080604_T21433_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_072121_T23383_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21433  </TD>
+<TD>T23383  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_080751_T21433_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_072306_T23383_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21433  </TD>
+<TD>T23383  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_080949_T21433_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_072638_T23383_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21433  </TD>
+<TD>T23383  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_081136_T21433_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_072824_T23383_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21433  </TD>
+<TD>T23383  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_081324_T21433_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_073009_T23383_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T21433  </TD>
+<TD>T23383  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_081911_T09080_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_073316_T00143_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T09080  </TD>
+<TD>T00143  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_082058_T09080_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_073501_T00143_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T09080  </TD>
+<TD>T00143  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_082246_T09080_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_073646_T00143_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T09080  </TD>
+<TD>T00143  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_082444_T09080_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_073844_T00143_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T09080  </TD>
+<TD>T00143  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_082631_T09080_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_074029_T00143_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T09080  </TD>
+<TD>T00143  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_082819_T09080_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_074215_T00143_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T09080  </TD>
+<TD>T00143  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_083037_T20604_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_074441_T15335_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20604  </TD>
+<TD>T15335  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_083225_T20604_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_074626_T15335_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20604  </TD>
+<TD>T15335  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_083413_T20604_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_074811_T15335_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20604  </TD>
+<TD>T15335  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_083610_T20604_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_075008_T15335_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20604  </TD>
+<TD>T15335  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_083758_T20604_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_075154_T15335_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20604  </TD>
+<TD>T15335  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_083945_T20604_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_075339_T15335_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T20604  </TD>
+<TD>T15335  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_084203_T24182_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_075613_T17554_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T24182  </TD>
+<TD>T17554  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_084351_T24182_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_075759_T17554_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T24182  </TD>
+<TD>T17554  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_084538_T24182_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_075944_T17554_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T24182  </TD>
+<TD>T17554  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_084736_T24182_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_080141_T17554_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T24182  </TD>
+<TD>T17554  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_084924_T24182_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_080326_T17554_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T24182  </TD>
+<TD>T17554  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_085111_T24182_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_080511_T17554_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T24182  </TD>
+<TD>T17554  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_085514_T00931_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_080743_T20909_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00931  </TD>
+<TD>T20909  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_085702_T00931_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_080928_T20909_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00931  </TD>
+<TD>T20909  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_085849_T00931_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_081113_T20909_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00931  </TD>
+<TD>T20909  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_090234_T00931_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_081310_T20909_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00931  </TD>
+<TD>T20909  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_090421_T00931_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_081455_T20909_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00931  </TD>
+<TD>T20909  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_090609_T00931_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_081640_T20909_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T00931  </TD>
+<TD>T20909  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_090823_T23373_m800_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_082146_T23665_m750_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23373  </TD>
+<TD>T23665  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_091011_T23373_m800_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_082331_T23665_m750_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23373  </TD>
+<TD>T23665  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_091158_T23373_m800_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_082516_T23665_m750_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23373  </TD>
+<TD>T23665  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_091358_T23373_m825_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_082848_T23665_m775_1x1_100.0s_0000.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23373  </TD>
+<TD>T23665  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_091545_T23373_m825_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_083034_T23665_m775_1x1_100.0s_0001.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23373  </TD>
+<TD>T23665  </TD>
     </TR>
     <TR>
-     <TD>fdz7DT10_20240913_091733_T23373_m825_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
+     <TD>fdz7DT09_20241028_083219_T23665_m775_1x1_100.0s_0002.fits</TD><TD>SAME</TD><TD>1</TD><TD>1</TD>
      <TD>SAME</TD><TD>1</TD><TD>1</TD><TD>T</TD>
-<TD>T23373  </TD>
+<TD>T23665  </TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -762,12 +1152,12 @@
    <FIELD name="Time" datatype="char" arraysize="*" ucd="meta;time.event.end"/>
    <FIELD name="Msg" datatype="char" arraysize="*" ucd="meta"/>
    <DATA><TABLEDATA>
-    <TR><TD>2024-10-27</TD><TD>23:48:27</TD><TD>default.missfits not found, using internal defaults</TD></TR>
+    <TR><TD>2024-11-06</TD><TD>02:09:24</TD><TD>default.missfits not found, using internal defaults</TD></TR>
    </TABLEDATA></DATA>
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>MissFITS configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="missfits @/large_data/factory/7dt10/2024-09-12_gain2750/image.missfits.list"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="missfits @/large_data/factory/7dt09/2024-10-27_gain2750/image.missfits.list"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.missfits"/>
    <PARAM name="Remove_Keyword" datatype="char" arraysize="*" ucd="  " value=""/>
    <PARAM name="Replace_Keyword" datatype="char" arraysize="*" ucd="  " value=""/>
