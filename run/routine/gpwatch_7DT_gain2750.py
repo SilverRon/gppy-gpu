@@ -64,12 +64,18 @@ path_to_log = str(Path(path_base) / 'log')  # f"/large_data/factory/log"
 # path_to_gppy = f"/home/gp/gppy"
 path_run = path_root / 'run' / 'routine'
 code = "7DT_Routine_1x1_gain2750.py"
+logfile = f"{path_to_log}/{obs.lower()}.log"
 #------------------------------------------------------------
 while True:
     #------------------------------------------------------------
     #   Log Table
     #------------------------------------------------------------
-    logtbl = Table.read(f"{path_to_log}/{obs.lower()}.log", format='csv')
+    if os.path.exists(logfile):
+        logtbl = Table.read(logfile, format='csv')
+    else:
+        print(f"No {logfile}. Generate default log table.")
+        os.system(f"cp {path_to_log}/7dt.log {logfile}")
+        logtbl = Table.read(logfile, format='csv')
     #------------------------------------------------------------
     #   DATE Folders (=Raw Data)
     #------------------------------------------------------------
