@@ -756,7 +756,7 @@ if os.path.exists(path_gphot) == True:
 	gphot_dict = file2dict(path_gphot)
 else:
 	gphot_dict = file2dict(path_default_gphot)
-	print('There is no gregoryphot configuration. Use default.')
+	print('There is no gregoryphot configuration. Using default.')
 #------------------------------------------------------------
 imkey = gphot_dict['imkey']
 refqueryradius = float(gphot_dict['refqueryradius'])# *u.degree
@@ -779,6 +779,7 @@ BACKPHOTO_TYPE = gphot_dict['BACKPHOTO_TYPE']
 #------------------------------------------------------------
 seeing_assume = 2.0 * u.arcsecond
 #------------------------------------------------------------
+imkey = str(Path(path_base) / imkey)
 imlist = sorted(glob.glob(imkey))
 # ncore = 8
 # ncore = 4
@@ -828,16 +829,23 @@ for ii, inim in enumerate(imlist):
 	plt.xticks(rotation=90)
 	plt.title(f"min={outbl['filter'][outbl['zperr']==np.min(outbl['zperr'])]}")
 	plt.tight_layout()
-	plt.savefig(f"{inim.replace('fits', 'zpcheck.png')}")
+	try:
+		plt.savefig(f"{inim.replace('fits', 'zpcheck.png')}")
+		outbl.write(f"{inim.replace('fits', 'zpcheck.csv')}", format='csv', overwrite=True)
+	except:
+		plt.savefig(f"{str(Path(inim).name).replace('fits', 'zpcheck.png')}")
+		outbl.write(f"{str(Path(inim).name).replace('fits', 'zpcheck.csv')}", format='csv', overwrite=True)
 	plt.show()
-	outbl.write(f"{inim.replace('fits', 'zpcheck.csv')}", format='csv', overwrite=True)
 
 #------------------------------------------------------------
 #	Logging the Failed Images
 #------------------------------------------------------------
 if len(fail_image_list) > 0:
 	if f"{os.path.dirname(fail_image_list[0])}"!='':
-		f = open(f"{os.path.dirname(fail_image_list[0])}/phot.fail.list", 'w')
+		try:
+			f = open(f"{os.path.dirname(fail_image_list[0])}/phot.fail.list", 'w')
+		except:
+			f = open(f"./phot.fail.list", 'w')
 	else:
 		f = open(f"./phot.fail.list", 'w')
 	for finim in fail_image_list:
