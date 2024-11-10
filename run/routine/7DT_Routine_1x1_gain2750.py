@@ -1074,16 +1074,16 @@ def run_pre_sextractor(inim, outcat, param_simple, conv_simple, nnw_simple, pixs
 		# Redirect SE output to a tmp log
 		os.system(log2tmp(sexcom, "presex"))
 
-	outcatlist = []
-	outheadlist = []
+outcatlist = []
+outheadlist = []
 
-	# for inim in calimlist:
-	for inim in afdzimlist:
-		outcat = inim.replace('fits', 'cat')
-		outhead = inim.replace('fits', 'head')
+# for inim in calimlist:
+for inim in afdzimlist:
+	outcat = inim.replace('fits', 'cat')
+	outhead = inim.replace('fits', 'head')
 
-		outcatlist.append(outcat)
-		outheadlist.append(outhead)
+	outcatlist.append(outcat)
+	outheadlist.append(outhead)
 
 t0_pre_source_extractor = time.time()
 
