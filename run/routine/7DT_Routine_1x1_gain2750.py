@@ -140,7 +140,7 @@ with open(Path_run / 'path.json', 'r') as jsonfile:
 
 path_base = upaths['path_base']  # '/home/snu/gppyTest_dhhyun/factory'  # '/large_data/factory'
 path_obsdata = f'{path_base}/../obsdata' if upaths['path_obsdata'] == '' else upaths['path_obsdata']
-path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}_gain2750' if upaths['path_gal'] == '' else upaths['path_gal']
+path_processed = f'{path_base}/../processed_{n_binning}x{n_binning}_gain2750' if upaths['path_processed'] == '' else upaths['path_processed']
 path_refcat = f'{path_base}/ref_cat' if upaths['path_refcat'] == '' else upaths['path_refcat']
 path_ref_scamp = f'{path_base}/ref_scamp' if upaths['path_ref_scamp'] == '' else upaths['path_ref_scamp']
 path_log = f'{path_base}/log/{obs.lower()}.log' if 'key' not in upaths or upaths['key'] == '' else upaths['path_log']
@@ -356,8 +356,23 @@ else:
 if not os.path.exists(path_data):
 	os.makedirs(path_data)
 obsinfo = calib.getobsinfo(obs, obstbl)
+#%%
+# Added Tile Selection Feature
 
 ic1 = ImageFileCollection(path_new, keywords='*')
+if 'tile' not in upaths or upaths['tile'] == "":
+	pass
+else:
+	try:
+		tile = f"{int(upaths['tile']):05}"
+		file_list = [str(f) for f in ic1.summary['file']]
+		pattern = re.compile(fr'(?=.*{tile}|FLAT|DARK|BIAS)')
+		filtered_files = [f for f in file_list if pattern.search(f)]
+		filtered_ic = ImageFileCollection(path_new, filenames=filtered_files)
+		ic1 = filtered_ic
+	except Exception as e:
+		print('Tile Selection Failed\n', e)
+#%%
 #------------------------------------------------------------
 #	Count the number of Light Frame
 #------------------------------------------------------------
@@ -1056,7 +1071,8 @@ def run_pre_sextractor(inim, outcat, param_simple, conv_simple, nnw_simple, pixs
 	#	Pre-Source EXtractor
 	sexcom = f"source-extractor -c {conf_simple} {inim} -CATALOG_NAME {outcat} -CATALOG_TYPE FITS_LDAC -PARAMETERS_NAME {param_simple} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PIXEL_SCALE {pixscale}"
 	print(sexcom)
-	os.system(sexcom)
+	# os.system(sexcom)
+	os.system(log2tmp(sexcom, "presex"))
 
 outcatlist = []
 outheadlist = []
@@ -1841,7 +1857,7 @@ for oo, obj in enumerate(objarr):
 	#	Filter
 	for filte in _filterarr:
 		#	Path to Destination
-		path_destination = f'{path_gal}/{obj}/{obs}/{filte}'
+		path_destination = f'{path_processed}/{obj}/{obs}/{filte}'
 		path_phot = f"{path_destination}/phot"
 		path_transient = f"{path_destination}/transient"
 		path_transient_cand_png = f"{path_transient}/png_image"
