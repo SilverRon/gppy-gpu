@@ -143,6 +143,8 @@ path_obsdata = f'{path_base}/../obsdata' if upaths['path_obsdata'] == '' else up
 path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}_gain2750' if upaths['path_gal'] == '' else upaths['path_gal']
 path_refcat = f'{path_base}/ref_cat' if upaths['path_refcat'] == '' else upaths['path_refcat']
 path_ref_scamp = f'{path_base}/ref_scamp' if upaths['path_ref_scamp'] == '' else upaths['path_ref_scamp']
+path_log = f'{path_base}/log/{obs.lower()}.log' if 'key' not in upaths or upaths['key'] == '' else upaths['path_log']
+	
 
 # path_gal = f'{path_base}/../processed'
 # path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}'
@@ -153,7 +155,7 @@ path_ref_scamp = f'{path_base}/ref_scamp' if upaths['path_ref_scamp'] == '' else
 path_ref = f'{path_base}/ref_frame'
 path_factory = f'{path_base}/{obs.lower()}'
 # path_save = f'/data6/bkgdata/{obs.upper()}'
-path_log = f'{path_base}/log/{obs.lower()}.log'
+# path_log = 
 
 # path_config = '/home/paek/config'
 path_config = str(Path_root / 'config')  # '../../config'
