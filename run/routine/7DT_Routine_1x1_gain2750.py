@@ -1011,11 +1011,7 @@ os.chdir(path_data)
 #	Copy default.sex (High DETECT_THRESH)
 cpcom_default_cfg = f"cp {path_config}/default.sex {path_data}"
 print(cpcom_default_cfg)
-if verbose_sex:
-	os.system(cpcom_default_cfg)
-else:
-	# Redirect SE output to a tmp log
-	os.system(log2tmp(cpcom_default_cfg, "mainsex"))
+os.system(cpcom_default_cfg)
 
 #	Astrometry
 while psutil.virtual_memory().percent > memory_threshold:
@@ -1072,13 +1068,17 @@ def run_pre_sextractor(inim, outcat, param_simple, conv_simple, nnw_simple, pixs
 	sexcom = f"source-extractor -c {conf_simple} {inim} -CATALOG_NAME {outcat} -CATALOG_TYPE FITS_LDAC -PARAMETERS_NAME {param_simple} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PIXEL_SCALE {pixscale}"
 	print(sexcom)
 	# os.system(sexcom)
-	os.system(log2tmp(sexcom, "presex"))
+	if verbose_sex:
+		os.system(cpcom_default_cfg)
+	else:
+		# Redirect SE output to a tmp log
+		os.system(log2tmp(sexcom, "presex"))
 
-outcatlist = []
-outheadlist = []
+	outcatlist = []
+	outheadlist = []
 
-# for inim in calimlist:
-for inim in afdzimlist:
+	# for inim in calimlist:
+	for inim in afdzimlist:
 	outcat = inim.replace('fits', 'cat')
 	outhead = inim.replace('fits', 'head')
 
