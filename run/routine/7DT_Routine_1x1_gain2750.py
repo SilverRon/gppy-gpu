@@ -103,6 +103,7 @@ start_localtime = time.strftime('%Y-%m-%d_%H:%M:%S_(%Z)', time.localtime())
 n_binning = 1
 verbose_sex = False
 verbose_gpu = False
+local_astref = False
 
 #	N cores for Multiprocessing
 # try:
@@ -1146,7 +1147,7 @@ for oo, obj in enumerate(objarr):
 		s.write(f"{incat}\n")
 	s.close()
 
-	if (re.match(tile_name_pattern, obj)) and (obj not in ['T04231', 'T04409', 'T04590']):
+	if not local_astref and (re.match(tile_name_pattern, obj)) and (obj not in ['T04231', 'T04409', 'T04590']):
 		astrefcat = f"{path_ref_scamp}/{obj}.fits"
 		scamp_addcom = f"-ASTREF_CATALOG FILE -ASTREFCAT_NAME {astrefcat}"
 	else:
