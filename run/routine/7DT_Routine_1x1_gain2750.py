@@ -1147,7 +1147,7 @@ for oo, obj in enumerate(objarr):
 		s.write(f"{incat}\n")
 	s.close()
 
-	if not local_astref and (re.match(tile_name_pattern, obj)) and (obj not in ['T04231', 'T04409', 'T04590']):
+	if local_astref and (re.match(tile_name_pattern, obj)) and (obj not in ['T04231', 'T04409', 'T04590']):
 		astrefcat = f"{path_ref_scamp}/{obj}.fits"
 		scamp_addcom = f"-ASTREF_CATALOG FILE -ASTREFCAT_NAME {astrefcat}"
 	else:
