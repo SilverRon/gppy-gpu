@@ -1,7 +1,10 @@
 #	PHOTOMETRY CODE FOR PYTHON 3.X
 #	CREATED	2020.12.10	Gregory S.H. Paek
 #============================================================
+#%%
 import os, glob, sys, subprocess
+import json
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -29,9 +32,13 @@ warnings.filterwarnings('ignore', message="Warning: 'partition' will ignore the 
 from datetime import date
 import time
 import multiprocessing
-#	gpPy
-sys.path.append('..')
-sys.path.append('/home/gp/gppy')
+
+#	gpPy Packages
+path_thisfile = Path(__file__).resolve()
+Path_root = path_thisfile.parents[2]
+Path_src = Path_root / 'src'
+if Path_src not in map(Path, sys.path):
+	sys.path.append(str(Path_src)) 
 from phot import gpphot
 from util import query
 from util import tool
@@ -719,14 +726,21 @@ def phot_routine(inim, filte):
 #============================================================
 #	PATH
 #------------------------------------------------------------
+
+# Change the path to "path.json" if necessary
+path_json = Path_root / 'run' / 'routine' / 'path.json'
+with open(path_json) as jsonfile:
+    upaths = json.load(jsonfile)
+path_base = upaths['path_base']  # '/large_data/factory'
+path_refcat = f'{path_base}/ref_cat' if upaths['path_refcat'] == '' else upaths['path_refcat']  # f'/large_data/factory/ref_cat'
+
 try:
 	# obs = (sys.argv[1]).upper()
 	path_base = sys.argv[1]
 except:
 	path_base = '.'
 
-path_refcat	= f'/large_data/factory/ref_cat'
-path_config = '/home/gp/gppy/config'
+path_config = str(Path_root / 'config')  # '/home/gp/gppy/config'
 path_to_filterset = f"{path_config}/filterset"
 path_obs = f'{path_config}/obs.dat'
 # path_target = './transient.dat'
@@ -734,6 +748,7 @@ path_gphot = f'{path_base}/gphot.config'
 path_default_gphot = f'{path_config}/gphot.config'
 # path_calibration_field = "/large_data/Calibration/7DT-Calibration/output/Calibration_Field"
 path_calibration_field = "/large_data/Calibration/7DT-Calibration/output/Calibration_Tile"
+#%%
 
 #------------------------------------------------------------
 print(path_gphot)
@@ -741,7 +756,7 @@ if os.path.exists(path_gphot) == True:
 	gphot_dict = file2dict(path_gphot)
 else:
 	gphot_dict = file2dict(path_default_gphot)
-	print('There is no gregoryphot configuration. Use default.')
+	print('There is no gregoryphot configuration. Using default.')
 #------------------------------------------------------------
 imkey = gphot_dict['imkey']
 refqueryradius = float(gphot_dict['refqueryradius'])# *u.degree
@@ -764,6 +779,7 @@ BACKPHOTO_TYPE = gphot_dict['BACKPHOTO_TYPE']
 #------------------------------------------------------------
 seeing_assume = 2.0 * u.arcsecond
 #------------------------------------------------------------
+imkey = str(Path(path_base) / imkey)
 imlist = sorted(glob.glob(imkey))
 # ncore = 8
 # ncore = 4
@@ -813,16 +829,23 @@ for ii, inim in enumerate(imlist):
 	plt.xticks(rotation=90)
 	plt.title(f"min={outbl['filter'][outbl['zperr']==np.min(outbl['zperr'])]}")
 	plt.tight_layout()
-	plt.savefig(f"{inim.replace('fits', 'zpcheck.png')}")
+	try:
+		plt.savefig(f"{inim.replace('fits', 'zpcheck.png')}")
+		outbl.write(f"{inim.replace('fits', 'zpcheck.csv')}", format='csv', overwrite=True)
+	except:
+		plt.savefig(f"{str(Path(inim).name).replace('fits', 'zpcheck.png')}")
+		outbl.write(f"{str(Path(inim).name).replace('fits', 'zpcheck.csv')}", format='csv', overwrite=True)
 	plt.show()
-	outbl.write(f"{inim.replace('fits', 'zpcheck.csv')}", format='csv', overwrite=True)
 
 #------------------------------------------------------------
 #	Logging the Failed Images
 #------------------------------------------------------------
 if len(fail_image_list) > 0:
 	if f"{os.path.dirname(fail_image_list[0])}"!='':
-		f = open(f"{os.path.dirname(fail_image_list[0])}/phot.fail.list", 'w')
+		try:
+			f = open(f"{os.path.dirname(fail_image_list[0])}/phot.fail.list", 'w')
+		except:
+			f = open(f"./phot.fail.list", 'w')
 	else:
 		f = open(f"./phot.fail.list", 'w')
 	for finim in fail_image_list:

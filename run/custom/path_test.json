@@ -1,7 +1,8 @@
 {
-    "path_base": "/large_data/factory",
-    "path_obsdata": "",
+    "path_base": "/home/snu/gppyTest_dhhyun/factory",
+    "path_obsdata": "/home/snu/gppyTest_dhhyun/obsdata",
     "path_processed": "",
     "path_refcat": "",
+    "path_ref_scamp": "",
     "_comment": "Name it 'path.json', and put it in run/routine or run/custom. path_base is required while others are optional, and a default file structure will be used if blank. Paths will be generated if they don't exist, so mind any typos."
 }

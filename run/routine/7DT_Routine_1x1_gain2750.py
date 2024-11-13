@@ -103,6 +103,8 @@ start_localtime = time.strftime('%Y-%m-%d_%H:%M:%S_(%Z)', time.localtime())
 n_binning = 1
 verbose_sex = False
 verbose_gpu = False
+local_astref = False
+debug = False
 
 #	N cores for Multiprocessing
 # try:
@@ -140,9 +142,11 @@ with open(Path_run / 'path.json', 'r') as jsonfile:
 
 path_base = upaths['path_base']  # '/home/snu/gppyTest_dhhyun/factory'  # '/large_data/factory'
 path_obsdata = f'{path_base}/../obsdata' if upaths['path_obsdata'] == '' else upaths['path_obsdata']
-path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}_gain2750' if upaths['path_gal'] == '' else upaths['path_gal']
+path_processed = f'{path_base}/../processed_{n_binning}x{n_binning}_gain2750' if upaths['path_processed'] == '' else upaths['path_processed']
 path_refcat = f'{path_base}/ref_cat' if upaths['path_refcat'] == '' else upaths['path_refcat']
-path_ref_scamp = f'{path_base}/ref_scamp' if upaths['path_ref_scamp'] == '' else upaths['path_ref_scamp']
+path_ref_scamp = f'{path_base}/ref_scamp' if 'path_ref_scamp' not in upaths or upaths['path_ref_scamp'] == '' else upaths['path_ref_scamp']
+path_log = f'{path_base}/log/{obs.lower()}.log' if 'key' not in upaths or upaths['key'] == '' else upaths['path_log']
+	
 
 # path_gal = f'{path_base}/../processed'
 # path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}'
@@ -153,7 +157,7 @@ path_ref_scamp = f'{path_base}/ref_scamp' if upaths['path_ref_scamp'] == '' else
 path_ref = f'{path_base}/ref_frame'
 path_factory = f'{path_base}/{obs.lower()}'
 # path_save = f'/data6/bkgdata/{obs.upper()}'
-path_log = f'{path_base}/log/{obs.lower()}.log'
+# path_log = 
 
 # path_config = '/home/paek/config'
 path_config = str(Path_root / 'config')  # '../../config'
@@ -354,8 +358,23 @@ else:
 if not os.path.exists(path_data):
 	os.makedirs(path_data)
 obsinfo = calib.getobsinfo(obs, obstbl)
+#%%
+# Added Tile Selection Feature
 
 ic1 = ImageFileCollection(path_new, keywords='*')
+if 'tile' not in upaths or upaths['tile'] == "":
+	pass
+else:
+	try:
+		tile = f"{int(upaths['tile']):05}"
+		file_list = [str(f) for f in ic1.summary['file']]
+		pattern = re.compile(fr'(?=.*{tile}|FLAT|DARK|BIAS)')
+		filtered_files = [f for f in file_list if pattern.search(f)]
+		filtered_ic = ImageFileCollection(path_new, filenames=filtered_files)
+		ic1 = filtered_ic
+	except Exception as e:
+		print('Tile Selection Failed\n', e)
+#%%
 #------------------------------------------------------------
 #	Count the number of Light Frame
 #------------------------------------------------------------
@@ -994,11 +1013,7 @@ os.chdir(path_data)
 #	Copy default.sex (High DETECT_THRESH)
 cpcom_default_cfg = f"cp {path_config}/default.sex {path_data}"
 print(cpcom_default_cfg)
-if verbose_sex:
-	os.system(cpcom_default_cfg)
-else:
-	# Redirect SE output to a tmp log
-	os.system(log2tmp(cpcom_default_cfg, "mainsex"))
+os.system(cpcom_default_cfg)
 
 #	Astrometry
 while psutil.virtual_memory().percent > memory_threshold:
@@ -1054,7 +1069,12 @@ def run_pre_sextractor(inim, outcat, param_simple, conv_simple, nnw_simple, pixs
 	#	Pre-Source EXtractor
 	sexcom = f"source-extractor -c {conf_simple} {inim} -CATALOG_NAME {outcat} -CATALOG_TYPE FITS_LDAC -PARAMETERS_NAME {param_simple} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PIXEL_SCALE {pixscale}"
 	print(sexcom)
-	os.system(sexcom)
+	# os.system(sexcom)
+	if verbose_sex:
+		os.system(cpcom_default_cfg)
+	else:
+		# Redirect SE output to a tmp log
+		os.system(log2tmp(sexcom, "presex"))
 
 outcatlist = []
 outheadlist = []
@@ -1117,7 +1137,7 @@ i.close()
 # os.system(scampcom)
 
 #	SCAMP (input CATALOG)
-print(f"= = = = = = = = = = = = Astrometry Correction = = = = = = = = = = = =")
+print(f"= = = = = = = = = = = = Astrometric Correction = = = = = = = = = = = =")
 for oo, obj in enumerate(objarr):
 	print(f"[{oo+1}/{len(objarr)}] {obj}")
 
@@ -1128,8 +1148,12 @@ for oo, obj in enumerate(objarr):
 		s.write(f"{incat}\n")
 	s.close()
 
-	if (re.match(tile_name_pattern, obj)) and (obj not in ['T04231', 'T04409', 'T04590']):
-		astrefcat = f"{path_ref_scamp}/{obj}.fits"
+	if local_astref and (re.match(tile_name_pattern, obj)) and (obj not in ['T04231', 'T04409', 'T04590']):
+		astrefcat = f"{path_ref_scamp}/{obj}.fits" if 'path_astrefcat' not in upaths or upaths['path_astrefcat'] == '' else upaths['path_astrefcat']
+		if debug:
+			print('='*79)
+			print('astrefcat', astrefcat)
+			print('='*79)
 		scamp_addcom = f"-ASTREF_CATALOG FILE -ASTREFCAT_NAME {astrefcat}"
 	else:
 		scamp_addcom = f"-REFOUT_CATPATH {path_ref_scamp}"
@@ -1141,6 +1165,8 @@ for oo, obj in enumerate(objarr):
 
 	# Run with subprocess
 	scampcom = ["scamp", "-c", f"{path_config}/7dt.scamp", f"@{path_cat_scamp_list}"]
+	# if debug:
+	# 	scampcom = ["scamp", "-c", f"{path_config}/7dt.scamp_vanilla", f"@{path_cat_scamp_list}"]
 	scampcom += scamp_addcom.split()
 	print(" ".join(scampcom))  # Join the command list for printing
 
@@ -1839,7 +1865,7 @@ for oo, obj in enumerate(objarr):
 	#	Filter
 	for filte in _filterarr:
 		#	Path to Destination
-		path_destination = f'{path_gal}/{obj}/{obs}/{filte}'
+		path_destination = f'{path_processed}/{obj}/{obs}/{filte}'
 		path_phot = f"{path_destination}/phot"
 		path_transient = f"{path_destination}/transient"
 		path_transient_cand_png = f"{path_transient}/png_image"
