@@ -6,7 +6,7 @@
  xmlns:stc="http://www.ivoa.net/xml/STC/v1.10">
 <DESCRIPTION>produced by SCAMP</DESCRIPTION>
 <!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
-<RESOURCE ID="SCAMP" name="afdz7DT13_20241028_082002_T23665_m875_1x1_100.0s_0000.cat">
+<RESOURCE ID="SCAMP" name="afdz7DT09_20241109_002709_T00174_m750_1x1_100.0s_0000.cat">
  <DESCRIPTION>Data related to SCAMP</DESCRIPTION>
  <INFO name="QUERY_STATUS" value="OK" />
  <COOSYS ID="J2000" equinox="J2000" epoch="2000.0" system="ICRS"/>
@@ -19,9 +19,9 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2006ASPC..351..112B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="128"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.end;meta.software" value="2024-11-06"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.end;meta.software" value="21:01:55"/>
-  <PARAM name="Duration" datatype="float" ucd="time.duration;meta.software" value="10" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.end;meta.software" value="2024-11-09"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.end;meta.software" value="10:13:42"/>
+  <PARAM name="Duration" datatype="float" ucd="time.duration;meta.software" value="12" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="gp"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
   <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/gp/gppy/run/routine"/>
@@ -76,70 +76,70 @@
    <FIELD name="NDeg_Reference_HighSN" datatype="int" ucd="stat.fit.dof"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>1</TD><TD>afdz7DT13_20241028_082002_T23665_m875_1x1_100.0s_0000.cat</TD><TD>T23665</TD>
+     <TD>1</TD><TD>afdz7DT09_20241109_002709_T00174_m750_1x1_100.0s_0000.cat</TD><TD>T00174</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>3511</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.823676389</TD><TD>100.000</TD><TD>1.41</TD><TD>90.32451383 14.42109361</TD>
-     <TD>0.506336  0.506336</TD><TD>48.5632</TD><TD>3.00407e-05</TD>
-     <TD>0.999638</TD><TD>-0.0291877</TD><TD>20.649</TD>
-     <TD>-0.00689327</TD><TD>-0.0125345</TD><TD>0.0760548</TD><TD>0.000966832</TD><TD>88.3416</TD>
-     <TD>2.8084</TD><TD>3391</TD><TD>8.2111</TD><TD>212</TD>
-     <TD>-0.0765114 -0.0199164</TD><TD>1.41197 1.54973</TD><TD>-0.0562339</TD><TD>2.24162e-05</TD><TD>227</TD><TD>0.311888 0.14418</TD><TD>1.25363 2.10034</TD><TD>0.115316</TD><TD>4.2974e-06</TD><TD>9</TD>
+     <TD>2060</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.855631290</TD><TD>100.000</TD><TD>1.73</TD><TD>36.00846736 -82.35970599</TD>
+     <TD>0.506206  0.506206</TD><TD>48.5692</TD><TD>1.9945e-05</TD>
+     <TD>0.999916</TD><TD>-0.00328086</TD><TD>17.3693</TD>
+     <TD>-0.00205125</TD><TD>0.000289421</TD><TD>0.51675</TD><TD>0.000790525</TD><TD>59.7684</TD>
+     <TD>2.57575</TD><TD>8593</TD><TD>11.8315</TD><TD>682</TD>
+     <TD>-0.219628 0.385961</TD><TD>1.51126 0.892307</TD><TD>-0.0748061</TD><TD>0.000126286</TD><TD>918</TD><TD>-0.0338863 0.37087</TD><TD>1.48106 0.897262</TD><TD>0.0188128</TD><TD>0.000474099</TD><TD>78</TD>
     </TR>
     <TR>
-     <TD>2</TD><TD>afdz7DT13_20241028_082147_T23665_m875_1x1_100.0s_0001.cat</TD><TD>T23665</TD>
+     <TD>2</TD><TD>afdz7DT09_20241109_002854_T00174_m750_1x1_100.0s_0001.cat</TD><TD>T00174</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>3932</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.823678290</TD><TD>100.000</TD><TD>1.41</TD><TD>90.32405522 14.42962447</TD>
-     <TD>0.506283  0.506283</TD><TD>48.5686</TD><TD>-0.102879</TD>
-     <TD>0.999975</TD><TD>0.012967</TD><TD>20.8303</TD>
-     <TD>-0.00729917</TD><TD>-0.00384098</TD><TD>0.0760346</TD><TD>5.09706e-05</TD><TD>74.2542</TD>
-     <TD>2.34185</TD><TD>3</TD><TD>0</TD><TD>0</TD>
-     <TD>0.0187764 -0.125442</TD><TD>1.48607 1.48321</TD><TD>0.0475477</TD><TD>2.08133e-05</TD><TD>257</TD><TD>-0.573809 -0.581461</TD><TD>1.28639 1.76077</TD><TD>0.104838</TD><TD>1.38464e-05</TD><TD>7</TD>
+     <TD>2058</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.855633191</TD><TD>100.000</TD><TD>1.73</TD><TD>36.00951587 -82.35965845</TD>
+     <TD>0.5062  0.5062</TD><TD>48.5691</TD><TD>0.00330039</TD>
+     <TD>0.999902</TD><TD>-0.00205245</TD><TD>16.7751</TD>
+     <TD>-0.00205669</TD><TD>0.000275944</TD><TD>0.494152</TD><TD>0.000786192</TD><TD>58.9964</TD>
+     <TD>2.23811</TD><TD>8598</TD><TD>9.92117</TD><TD>685</TD>
+     <TD>-0.200265 0.374829</TD><TD>1.49368 0.895591</TD><TD>-0.0812332</TD><TD>0.000125155</TD><TD>910</TD><TD>-0.0299901 0.380723</TD><TD>1.45726 0.897822</TD><TD>0.00605296</TD><TD>0.00046308</TD><TD>79</TD>
     </TR>
     <TR>
-     <TD>3</TD><TD>afdz7DT13_20241028_082332_T23665_m875_1x1_100.0s_0002.cat</TD><TD>T23665</TD>
+     <TD>3</TD><TD>afdz7DT09_20241109_003040_T00174_m750_1x1_100.0s_0002.cat</TD><TD>T00174</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>3988</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.823682092</TD><TD>100.000</TD><TD>1.41</TD><TD>90.32448174 14.4207895</TD>
-     <TD>0.506375  0.506375</TD><TD>48.5789</TD><TD>-0.0109169</TD>
-     <TD>1.00004</TD><TD>0.000103034</TD><TD>20.7846</TD>
-     <TD>-0.00674541</TD><TD>-0.0124108</TD><TD>0.0739662</TD><TD>0.000268075</TD><TD>19.6284</TD>
-     <TD>2.80234</TD><TD>3392</TD><TD>8.2111</TD><TD>212</TD>
-     <TD>-0.00228254 -0.0824271</TD><TD>1.411 1.54068</TD><TD>-0.0332435</TD><TD>2.23089e-05</TD><TD>255</TD><TD>0.0343602 0.0945558</TD><TD>0.984734 2.18717</TD><TD>0.074335</TD><TD>3.98717e-06</TD><TD>8</TD>
+     <TD>2109</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.855636994</TD><TD>100.000</TD><TD>1.73</TD><TD>36.01253079 -82.35962499</TD>
+     <TD>0.506198  0.506198</TD><TD>48.5663</TD><TD>0.00359048</TD>
+     <TD>0.999946</TD><TD>-0.000258063</TD><TD>16.7968</TD>
+     <TD>-0.00206615</TD><TD>0.000283132</TD><TD>0.491954</TD><TD>0.00069074</TD><TD>56.8864</TD>
+     <TD>2.35576</TD><TD>8620</TD><TD>10.3848</TD><TD>685</TD>
+     <TD>-0.216065 0.38429</TD><TD>1.49809 0.90517</TD><TD>-0.0705917</TD><TD>0.000124621</TD><TD>933</TD><TD>-0.0516445 0.380499</TD><TD>1.47035 0.907442</TD><TD>0.0222741</TD><TD>0.000471433</TD><TD>78</TD>
     </TR>
     <TR>
-     <TD>4</TD><TD>afdz7DT13_20241028_082517_T23665_m875_1x1_100.0s_0003.cat</TD><TD>T23665</TD>
+     <TD>4</TD><TD>afdz7DT09_20241109_003412_T00174_m775_1x1_100.0s_0000.cat</TD><TD>T00174</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>3875</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.823685895</TD><TD>100.000</TD><TD>1.41</TD><TD>90.31955152 14.44916094</TD>
-     <TD>0.506359  0.506359</TD><TD>48.5789</TD><TD>-1.25088</TD>
-     <TD>1.00005</TD><TD>-0.00386244</TD><TD>22.2278</TD>
-     <TD>-0.0120823</TD><TD>0.0158495</TD><TD>0.0710712</TD><TD>0.000200032</TD><TD>42.4913</TD>
-     <TD>1.13839</TD><TD>7126</TD><TD>3.90949</TD><TD>431</TD>
-     <TD>-0.0371053 0.0696785</TD><TD>1.46784 1.49715</TD><TD>-0.0376768</TD><TD>2.17006e-05</TD><TD>274</TD><TD>0.209228 0.174361</TD><TD>1.41092 1.53317</TD><TD>-0.321177</TD><TD>4.0156e-06</TD><TD>13</TD>
+     <TD>1673</TD><TD>1</TD><TD>A2</TD><TD>P2</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.855644599</TD><TD>100.000</TD><TD>1.72</TD><TD>36.02028548 -82.35895558</TD>
+     <TD>0.506263  0.506263</TD><TD>48.5776</TD><TD>2.70578e-05</TD>
+     <TD>0.999906</TD><TD>-0.0027676</TD><TD>18.924</TD>
+     <TD>-0.00205</TD><TD>0.000283511</TD><TD>0.502667</TD><TD>0.000892424</TD><TD>59.0712</TD>
+     <TD>2.26514</TD><TD>7921</TD><TD>9.91156</TD><TD>572</TD>
+     <TD>-0.185711 0.378592</TD><TD>1.48799 0.885699</TD><TD>-0.0615514</TD><TD>0.000144154</TD><TD>758</TD><TD>0.127981 0.424632</TD><TD>1.48616 0.904107</TD><TD>0.0213981</TD><TD>0.000479732</TD><TD>51</TD>
     </TR>
     <TR>
-     <TD>5</TD><TD>afdz7DT13_20241028_082702_T23665_m875_1x1_100.0s_0004.cat</TD><TD>T23665</TD>
+     <TD>5</TD><TD>afdz7DT09_20241109_003557_T00174_m775_1x1_100.0s_0001.cat</TD><TD>T00174</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>3855</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.823689698</TD><TD>100.000</TD><TD>1.41</TD><TD>90.31973926 14.44908622</TD>
-     <TD>0.506345  0.506345</TD><TD>48.5741</TD><TD>-1.25387</TD>
-     <TD>1.00008</TD><TD>-0.00756988</TD><TD>21.3213</TD>
-     <TD>-0.0120768</TD><TD>0.0158497</TD><TD>0.0715419</TD><TD>7.55013e-05</TD><TD>36.1724</TD>
-     <TD>1.16192</TD><TD>7114</TD><TD>4.39772</TD><TD>432</TD>
-     <TD>-0.0471283 0.000737327</TD><TD>1.44772 1.485</TD><TD>-0.0159506</TD><TD>2.07143e-05</TD><TD>280</TD><TD>0.206299 0.17103</TD><TD>1.40803 1.53868</TD><TD>-0.329494</TD><TD>4.0867e-06</TD><TD>13</TD>
+     <TD>1673</TD><TD>1</TD><TD>A2</TD><TD>P2</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.855646500</TD><TD>100.000</TD><TD>1.72</TD><TD>36.02142971 -82.35886977</TD>
+     <TD>0.506242  0.506242</TD><TD>48.573</TD><TD>0.000590608</TD>
+     <TD>0.999879</TD><TD>-0.00403569</TD><TD>18.3735</TD>
+     <TD>-0.00197546</TD><TD>0.000269607</TD><TD>0.502291</TD><TD>0.000814998</TD><TD>61.8152</TD>
+     <TD>2.11751</TD><TD>7876</TD><TD>8.57342</TD><TD>580</TD>
+     <TD>-0.2364 0.387228</TD><TD>1.51577 0.896356</TD><TD>-0.0677798</TD><TD>0.000150014</TD><TD>749</TD><TD>0.120852 0.430822</TD><TD>1.49801 0.921079</TD><TD>0.0304237</TD><TD>0.000490571</TD><TD>51</TD>
     </TR>
     <TR>
-     <TD>6</TD><TD>afdz7DT13_20241028_082847_T23665_m875_1x1_100.0s_0005.cat</TD><TD>T23665</TD>
+     <TD>6</TD><TD>afdz7DT09_20241109_003743_T00174_m775_1x1_100.0s_0002.cat</TD><TD>T00174</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>3735</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
-     <TD>2024.823691599</TD><TD>100.000</TD><TD>1.41</TD><TD>90.31985658 14.4489119</TD>
-     <TD>0.506284  0.506284</TD><TD>48.585</TD><TD>-1.25025</TD>
-     <TD>0.99962</TD><TD>-0.0149022</TD><TD>21.4508</TD>
-     <TD>-0.0120874</TD><TD>0.0159521</TD><TD>0.0700372</TD><TD>0.000775846</TD><TD>53.8172</TD>
-     <TD>1.24158</TD><TD>7042</TD><TD>5.09123</TD><TD>427</TD>
-     <TD>-0.0145099 -0.00765735</TD><TD>1.48422 1.48405</TD><TD>-0.00925062</TD><TD>1.97806e-05</TD><TD>271</TD><TD>0.219752 0.177742</TD><TD>1.42093 1.5332</TD><TD>-0.305333</TD><TD>4.05223e-06</TD><TD>13</TD>
+     <TD>1680</TD><TD>1</TD><TD>A2</TD><TD>P2</TD><TD>F</TD><TD>F</TD>
+     <TD>2024.855650303</TD><TD>100.000</TD><TD>1.72</TD><TD>36.02214298 -82.35876612</TD>
+     <TD>0.506236  0.506236</TD><TD>48.5725</TD><TD>0.00321064</TD>
+     <TD>0.999885</TD><TD>-0.00392137</TD><TD>19.13</TD>
+     <TD>-0.00202297</TD><TD>0.000277022</TD><TD>0.496945</TD><TD>0.000802757</TD><TD>63.4706</TD>
+     <TD>2.61105</TD><TD>7854</TD><TD>12.3663</TD><TD>580</TD>
+     <TD>-0.240858 0.372562</TD><TD>1.49075 0.897586</TD><TD>-0.0744005</TD><TD>0.00014629</TD><TD>757</TD><TD>0.0944431 0.419134</TD><TD>1.49325 0.920347</TD><TD>0.0269736</TD><TD>0.000484988</TD><TD>51</TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -177,41 +177,41 @@
    <FIELD name="AstromChi2_Reference_HighSN" datatype="float" ucd="stat.fit.chi2"/>
    <FIELD name="AstromNDets_Reference_HighSN" datatype="int" ucd="meta.number;src"/>
    <!-- =========== Photometric statistics =========== -->
-   <PARAM name="NPhotInstru" datatype="int" ucd="meta.number;meta.em" value="1"/>
+   <PARAM name="NPhotInstru" datatype="int" ucd="meta.number;meta.em" value="2"/>
    <FIELD name="PhotInstru_Name" datatype="char" arraysize="*" ucd="meta.id;instr.bandpass"/>
-   <FIELD name="PhotSigma_Internal" datatype="float" arraysize="1" ucd="stat.error;phot.mag" unit="mag"/>
-   <FIELD name="PhotChi2_Internal" datatype="float" arraysize="1" ucd="stat.chi2;phot.mag" unit="mag"/>
-   <FIELD name="PhotNDets_Internal" datatype="int" arraysize="1" ucd="meta.number;src"/>
-   <FIELD name="PhotSigma_Internal_HighSN" datatype="float" arraysize="1" ucd="stat.error;phot.mag" unit="mag"/>
-   <FIELD name="PhotChi2_Internal_HighSN" datatype="float" arraysize="1" ucd="stat.chi2;phot.mag" unit="mag"/>
-   <FIELD name="PhotNDets_Internal_HighSN" datatype="int" arraysize="1" ucd="meta.number;src"/>
-   <FIELD name="PhotSigma_Reference" datatype="float" arraysize="1" ucd="stat.error;phot.mag" unit="mag"/>
-   <FIELD name="PhotChi2_Reference" datatype="float" arraysize="1" ucd="stat.chi2;phot.mag" unit="mag"/>
-   <FIELD name="PhotNDets_Reference" datatype="int" arraysize="1" ucd="meta.number;src"/>
-   <FIELD name="PhotSigma_Reference_HighSN" datatype="float" arraysize="1" ucd="stat.error;phot.mag" unit="mag"/>
-   <FIELD name="PhotChi2_Reference_HighSN" datatype="float" arraysize="1" ucd="stat.chi2;phot.mag" unit="mag"/>
-   <FIELD name="PhotNDets_Reference_HighSN" datatype="int" arraysize="1" ucd="meta.number;src"/>
+   <FIELD name="PhotSigma_Internal" datatype="float" arraysize="2" ucd="stat.error;phot.mag" unit="mag"/>
+   <FIELD name="PhotChi2_Internal" datatype="float" arraysize="2" ucd="stat.chi2;phot.mag" unit="mag"/>
+   <FIELD name="PhotNDets_Internal" datatype="int" arraysize="2" ucd="meta.number;src"/>
+   <FIELD name="PhotSigma_Internal_HighSN" datatype="float" arraysize="2" ucd="stat.error;phot.mag" unit="mag"/>
+   <FIELD name="PhotChi2_Internal_HighSN" datatype="float" arraysize="2" ucd="stat.chi2;phot.mag" unit="mag"/>
+   <FIELD name="PhotNDets_Internal_HighSN" datatype="int" arraysize="2" ucd="meta.number;src"/>
+   <FIELD name="PhotSigma_Reference" datatype="float" arraysize="2" ucd="stat.error;phot.mag" unit="mag"/>
+   <FIELD name="PhotChi2_Reference" datatype="float" arraysize="2" ucd="stat.chi2;phot.mag" unit="mag"/>
+   <FIELD name="PhotNDets_Reference" datatype="int" arraysize="2" ucd="meta.number;src"/>
+   <FIELD name="PhotSigma_Reference_HighSN" datatype="float" arraysize="2" ucd="stat.error;phot.mag" unit="mag"/>
+   <FIELD name="PhotChi2_Reference_HighSN" datatype="float" arraysize="2" ucd="stat.chi2;phot.mag" unit="mag"/>
+   <FIELD name="PhotNDets_Reference_HighSN" datatype="int" arraysize="2" ucd="meta.number;src"/>
    <DATA><TABLEDATA>
    <TR>
      <TD>G1</TD><TD>1</TD><TD>6</TD>
      <TD>2</TD><TD>0</TD><TD>1</TD>
-     <TD>90.33152769 14.43329892</TD><TD>0.506283  0.506283</TD><TD>48.5863</TD>
+     <TD>36.01669151 -82.35938137</TD><TD>0.506068  0.506068</TD><TD>48.5992</TD>
      <TD>file</TD><TD>1</TD>
-     <TD>0.0782761 0.0766979</TD><TD>0.0508357</TD><TD>1.57322</TD><TD>18045</TD>
-     <TD>0.0280926 0.0296459</TD><TD>0.841797</TD><TD>5.39105</TD><TD>1100</TD>
-     <TD>-0.0132698 -0.0525898</TD><TD>1.45308 1.49811</TD><TD>-0.00489185</TD><TD>2.12486e-05</TD><TD>816</TD>
-     <TD>0.0522055 -0.0154947</TD><TD>1.29629 1.70975</TD><TD>-0.137646</TD><TD>5.16678e-06</TD><TD>29</TD>
-     <TD>P1</TD>
-     <TD>0.0871792</TD><TD>1.98557</TD><TD>17972</TD>
-     <TD>0.0116016</TD><TD>1.76599</TD><TD>1100</TD>
-     <TD>0</TD><TD>0</TD><TD>0</TD>
-     <TD>0</TD><TD>0</TD><TD>0</TD>
+     <TD>0.0668722 0.074791</TD><TD>0.0552503</TD><TD>2.36162</TD><TD>10727</TD>
+     <TD>0.0309014 0.0311166</TD><TD>0.641482</TD><TD>10.5162</TD><TD>861</TD>
+     <TD>-0.208115 0.383223</TD><TD>1.49431 0.897328</TD><TD>-0.076188</TD><TD>0.000135018</TD><TD>985</TD>
+     <TD>-0.0325251 0.378292</TD><TD>1.46469 0.897606</TD><TD>-0.949939</TD><TD>0.000475657</TD><TD>79</TD>
+     <TD>P1,P2</TD>
+     <TD>0.0776582 0.0731232</TD><TD>1.60958 1.5332</TD><TD>5870 4820</TD>
+     <TD>0.00844965 0.00859043</TD><TD>1.19358 1.32794</TD><TD>512 349</TD>
+     <TD>0 0</TD><TD>0 0</TD><TD>0 0</TD>
+     <TD>0 0</TD><TD>0 0</TD><TD>0 0</TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
   <TABLE ID="Astrometric_Instruments" name="Astrometric_Instruments">
    <DESCRIPTION>Data gathered by SCAMP for every  astrometric instrument identified</DESCRIPTION>
-   <PARAM name="NAstromInstru" datatype="int" ucd="meta.number;meta.dataset" value="1"/>
+   <PARAM name="NAstromInstru" datatype="int" ucd="meta.number;meta.dataset" value="2"/>
    <FIELD name="Name" datatype="char" arraysize="*" ucd="meta.id;meta.dataset"/>
    <FIELD name="Index" datatype="int" ucd="meta.record;meta.dataset"/>
    <FIELD name="NFields" datatype="int" ucd="meta.number;meta.dataset"/>
@@ -220,14 +220,18 @@
    <FIELD name="Keys" datatype="char" arraysize="*" ucd="meta.note"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>A1</TD><TD>1</TD><TD>6</TD><TD>1</TD>
-     <TD>2</TD><TD>FILTER  = 'm875    '            ,QRUNID  =                       </TD>
+     <TD>A1</TD><TD>1</TD><TD>3</TD><TD>1</TD>
+     <TD>2</TD><TD>FILTER  = 'm750    '            ,QRUNID  =                       </TD>
+    </TR>
+    <TR>
+     <TD>A2</TD><TD>2</TD><TD>3</TD><TD>1</TD>
+     <TD>2</TD><TD>FILTER  = 'm775    '            ,QRUNID  =                       </TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
   <TABLE ID="Photometric_Instruments" name="Photometric_Instruments">
    <DESCRIPTION>Data gathered by SCAMP for every  photometric instrument identified</DESCRIPTION>
-   <PARAM name="NPhotomInstru" datatype="int" ucd="meta.number;meta.dataset" value="1"/>
+   <PARAM name="NPhotomInstru" datatype="int" ucd="meta.number;meta.dataset" value="2"/>
    <FIELD name="Name" datatype="char" arraysize="*" ucd="meta.id;meta.dataset"/>
    <FIELD name="Index" datatype="int" ucd="meta.record;meta.dataset"/>
    <FIELD name="NFields" datatype="int" ucd="meta.number;meta.dataset"/>
@@ -236,8 +240,12 @@
    <FIELD name="Keys" datatype="char" arraysize="*" ucd="meta.note"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>P1</TD><TD>1</TD><TD>6</TD><TD>0</TD>
-     <TD>1</TD><TD>FILTER  = 'm875    '            </TD>
+     <TD>P1</TD><TD>1</TD><TD>3</TD><TD>0</TD>
+     <TD>1</TD><TD>FILTER  = 'm750    '            </TD>
+    </TR>
+    <TR>
+     <TD>P2</TD><TD>2</TD><TD>3</TD><TD>0</TD>
+     <TD>1</TD><TD>FILTER  = 'm775    '            </TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -247,19 +255,19 @@
    <FIELD name="Time" datatype="char" arraysize="*" ucd="meta;time.end"/>
    <FIELD name="Msg" datatype="char" arraysize="*" ucd="meta"/>
    <DATA><TABLEDATA>
-    <TR><TD>2024-11-06</TD><TD>21:01:45</TD><TD>This executable has been compiled using a version of the ATLAS library without sPerformance will be degraded.</TD></TR>
-    <TR><TD>2024-11-06</TD><TD>21:01:45</TD><TD>FLAGS parameter not found in catalog T23665.fits</TD></TR>
+    <TR><TD>2024-11-09</TD><TD>10:13:30</TD><TD>This executable has been compiled using a version of the ATLAS library without sPerformance will be degraded.</TD></TR>
+    <TR><TD>2024-11-09</TD><TD>10:13:30</TD><TD>FLAGS parameter not found in catalog T00174.fits</TD></TR>
    </TABLEDATA></DATA>
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>SCAMP configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="scamp -c /home/gp/gppy/config/7dt.scamp @/large_data/factory/7dt13/2024-10-27_gain2750/T23665.cat.scamp.list -ASTREF_CATALOG FILE -ASTREFCAT_NAME /large_data/factory/ref_scamp/T23665.fits"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="scamp -c /home/gp/gppy/config/7dt.scamp @/large_data/factory/7dt09/2024-11-08_gain2750/T00174.cat.scamp.list -ASTREF_CATALOG FILE -ASTREFCAT_NAME /large_data/factory/ref_scamp/T00174.fits"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="/home/gp/gppy/config/7dt.scamp"/>
    <PARAM name="Ref_Server" datatype="char" arraysize="*" ucd="meta.ref.url" value="vizier.unistra.fr"/>
    <PARAM name="Ref_TimeOut" unit="s" datatype="double" arraysize="1" ucd="meta;time.duration" value="10"/>
    <PARAM name="AstRef_Catalog" datatype="char" arraysize="*" ucd="meta.code;meta.file" value="FILE"/>
    <PARAM name="AstRef_Band" datatype="char" arraysize="*" ucd="instr.bandpass" value="DEFAULT"/>
-   <PARAM name="AstRefCat_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file;meta.dataset" value="/large_data/factory/ref_scamp/T23665.fits"/>
+   <PARAM name="AstRefCat_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file;meta.dataset" value="/large_data/factory/ref_scamp/T00174.fits"/>
    <PARAM name="AstRefCent_Keys" datatype="char" arraysize="*" ucd="meta.id;pos.eq" value="RA_ICRS,DE_ICRS"/>
    <PARAM name="AstRefErr_Keys" datatype="char" arraysize="*" ucd="meta.id;pos.errorEllipse" value="e_RA_ICRS,e_DE_ICRS,ERRTHETA_WORLD"/>
    <PARAM name="AstRefMag_Key" datatype="char" arraysize="*" ucd="meta.id;phot.mag" value="Gmag"/>
