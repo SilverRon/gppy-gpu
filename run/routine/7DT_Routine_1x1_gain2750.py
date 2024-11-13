@@ -104,6 +104,7 @@ n_binning = 1
 verbose_sex = False
 verbose_gpu = False
 local_astref = False
+debug = False
 
 #	N cores for Multiprocessing
 # try:
@@ -143,7 +144,7 @@ path_base = upaths['path_base']  # '/home/snu/gppyTest_dhhyun/factory'  # '/larg
 path_obsdata = f'{path_base}/../obsdata' if upaths['path_obsdata'] == '' else upaths['path_obsdata']
 path_processed = f'{path_base}/../processed_{n_binning}x{n_binning}_gain2750' if upaths['path_processed'] == '' else upaths['path_processed']
 path_refcat = f'{path_base}/ref_cat' if upaths['path_refcat'] == '' else upaths['path_refcat']
-path_ref_scamp = f'{path_base}/ref_scamp' if upaths['path_ref_scamp'] == '' else upaths['path_ref_scamp']
+path_ref_scamp = f'{path_base}/ref_scamp' if 'path_ref_scamp' not in upaths or upaths['path_ref_scamp'] == '' else upaths['path_ref_scamp']
 path_log = f'{path_base}/log/{obs.lower()}.log' if 'key' not in upaths or upaths['key'] == '' else upaths['path_log']
 	
 
@@ -1136,7 +1137,7 @@ i.close()
 # os.system(scampcom)
 
 #	SCAMP (input CATALOG)
-print(f"= = = = = = = = = = = = Astrometry Correction = = = = = = = = = = = =")
+print(f"= = = = = = = = = = = = Astrometric Correction = = = = = = = = = = = =")
 for oo, obj in enumerate(objarr):
 	print(f"[{oo+1}/{len(objarr)}] {obj}")
 
@@ -1148,7 +1149,11 @@ for oo, obj in enumerate(objarr):
 	s.close()
 
 	if local_astref and (re.match(tile_name_pattern, obj)) and (obj not in ['T04231', 'T04409', 'T04590']):
-		astrefcat = f"{path_ref_scamp}/{obj}.fits"
+		astrefcat = f"{path_ref_scamp}/{obj}.fits" if 'path_astrefcat' not in upaths or upaths['path_astrefcat'] == '' else upaths['path_astrefcat']
+		if debug:
+			print('='*79)
+			print('astrefcat', astrefcat)
+			print('='*79)
 		scamp_addcom = f"-ASTREF_CATALOG FILE -ASTREFCAT_NAME {astrefcat}"
 	else:
 		scamp_addcom = f"-REFOUT_CATPATH {path_ref_scamp}"
@@ -1160,6 +1165,8 @@ for oo, obj in enumerate(objarr):
 
 	# Run with subprocess
 	scampcom = ["scamp", "-c", f"{path_config}/7dt.scamp", f"@{path_cat_scamp_list}"]
+	# if debug:
+	# 	scampcom = ["scamp", "-c", f"{path_config}/7dt.scamp_vanilla", f"@{path_cat_scamp_list}"]
 	scampcom += scamp_addcom.split()
 	print(" ".join(scampcom))  # Join the command list for printing
 

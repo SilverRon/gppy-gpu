@@ -1,10 +1,11 @@
 {
     "path_base": "/large_data/factory_dhhyun",
     "path_obsdata": "/large_data/obsdata",
-    "path_processed": "/large_data/factory_dhhyun/processed",
+    "path_processed": "/large_data/factory_dhhyun/processed_newastref_direct2",
     "path_refcat": "",
-    "path_ref_scamp": "/large_data/factory/ref_scamp",
+    "path_ref_scamp": "/large_data/factory_dhhyun/ref_scamp",
     "path_log": "",
     "tile": "9038",
+    "path_astrefcat": "/large_data/factory_dhhyun/ref_scamp/T09038_edr3_2.fits",
     "_comment": "Name it 'path.json', and put it in run/routine or run/custom. path_base is required while others are optional, and a default file structure will be used if blank. Paths will be generated if they don't exist, so mind any typos."
 }
