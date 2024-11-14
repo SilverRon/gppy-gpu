@@ -230,7 +230,8 @@ if not os.path.exists(path_log):
 #------------------------------------------------------------
 #	Table
 #------------------------------------------------------------
-logtbl = ascii.read(path_log)#, delimiter=',', format='csv')
+# logtbl = ascii.read(path_log)#, delimiter=',', format='csv')
+logtbl = Table.read(path_log, format='csv')
 datalist = np.copy(logtbl['date'])
 obstbl = ascii.read(path_obs)
 hdrtbl = ascii.read(path_changehdr)
