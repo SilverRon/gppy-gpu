@@ -221,7 +221,7 @@ if not os.path.exists(path_log):
 	# columns
 	f.write('date,start,end,note\n')  # f.write('date\n19941026')
 	# example line
-	f.write('/large_data/obsdata/7DT01/1994-10-26_1x1_gain2750,1994-10-26_00:00:00_(KST),1994-10-26_00:01:00_(KST),-\n')
+	f.write('/lyman/data1/obsdata/7DT01/1994-10-26_1x1_gain2750,1994-10-26_00:00:00_(KST),1994-10-26_00:01:00_(KST),-\n')
 	f.close()
 #------------------------------------------------------------
 #	Constant
