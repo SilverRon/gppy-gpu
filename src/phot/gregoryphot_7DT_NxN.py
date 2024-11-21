@@ -786,15 +786,15 @@ try:
 except:
 	path_base = '.'
 
-path_refcat	= f'/large_data/factory/ref_cat'
+path_refcat	= f'/lyman/data1/factory/ref_cat'
 path_config = str(path_root / 'config')  # '/home/gp/gppy/config'
 path_to_filterset = f"{path_config}/filterset"
 path_obs = f'{path_config}/obs.dat'
 # path_target = './transient.dat'
 path_gphot = f'{path_base}/gphot.config'
 path_default_gphot = f'{path_config}/gphot.config'
-# path_calibration_field = "/large_data/Calibration/7DT-Calibration/output/Calibration_Field"
-path_calibration_field = "/large_data/Calibration/7DT-Calibration/output/Calibration_Tile"
+# path_calibration_field = "/lyman/data1/Calibration/7DT-Calibration/output/Calibration_Field"
+path_calibration_field = "/lyman/data1/Calibration/7DT-Calibration/output/Calibration_Tile"
 
 #------------------------------------------------------------
 print(path_gphot)
