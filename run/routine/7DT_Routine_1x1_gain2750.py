@@ -103,8 +103,11 @@ start_localtime = time.strftime('%Y-%m-%d_%H:%M:%S_(%Z)', time.localtime())
 n_binning = 1
 verbose_sex = False
 verbose_gpu = False
-local_astref = False
+slack_report = True
+local_astref = True
 debug = False
+if debug:
+	slack_report = False
 
 #	N cores for Multiprocessing
 # try:
@@ -444,17 +447,18 @@ print(f"[{project}] {obsmode}")
 # - Slack notification
 
 # %%
-OAuth_Token = keytbl['key'][keytbl['name']=='slack'].item()
+if slack_report:
+	OAuth_Token = keytbl['key'][keytbl['name']=='slack'].item()
 
-channel = '#pipeline'
-text = f'[`gpPy`+GPU/{project}-{obsmode}] Start Processing {obs} {os.path.basename(path_new)} Data ({nobj} objects) with {ncore} cores'
+	channel = '#pipeline'
+	text = f'[`gpPy`+GPU/{project}-{obsmode}] Start Processing {obs} {os.path.basename(path_new)} Data ({nobj} objects) with {ncore} cores'
 
-param_slack = dict(
-	token = OAuth_Token,
-	channel = channel,
-	text = text,
-)
-tool.slack_bot(**param_slack)
+	param_slack = dict(
+		token = OAuth_Token,
+		channel = channel,
+		text = text,
+	)
+	tool.slack_bot(**param_slack)
 #
 if len(glob.glob(f"{path_new}/*.fits")) == 0:
 
@@ -1164,9 +1168,8 @@ for oo, obj in enumerate(objarr):
 	# os.system(scampcom)
 
 	# Run with subprocess
-	scampcom = ["scamp", "-c", f"{path_config}/7dt.scamp", f"@{path_cat_scamp_list}"]
-	# if debug:
-	# 	scampcom = ["scamp", "-c", f"{path_config}/7dt.scamp_vanilla", f"@{path_cat_scamp_list}"]
+	path_scampconfig = f"{path_config}/7dt.scamp" if 'path_scampconfig' not in upaths or upaths['path_scampconfig'] == '' else upaths['path_scampconfig']
+	scampcom = ["scamp", "-c", path_scampconfig, f"@{path_cat_scamp_list}"]
 	scampcom += scamp_addcom.split()
 	print(" ".join(scampcom))  # Join the command list for printing
 
@@ -1995,21 +1998,21 @@ objtbl.write(f"{path_data}/data_processing.log", format='csv')
 #	Slack message
 #======================================================================
 # delt_total = round(timetbl['time'][timetbl['process']=='total'].item()/60., 1)
-delt_total = (time.time() - starttime)
-timetbl['status'][timetbl['process']=='total'] = True
-timetbl['time'][timetbl['process']=='total'] = delt_total
-#   Time Table
-timetbl['time'].format = '1.3f'
-timetbl.write(f'{path_data}/obs.summary.log', format='csv', overwrite=True)
+if slack_report:
+	delt_total = (time.time() - starttime)
+	timetbl['status'][timetbl['process']=='total'] = True
+	timetbl['time'][timetbl['process']=='total'] = delt_total
+	#   Time Table
+	timetbl['time'].format = '1.3f'
+	timetbl.write(f'{path_data}/obs.summary.log', format='csv', overwrite=True)
 
-channel = '#pipeline'
-text = f'[`gpPy`+GPU/{project}-{obsmode}] Processing Complete {obs} {os.path.basename(path_new)} Data ({nobj} objects) with {ncore} cores taking {delt_total/60.:.1f} mins'
+	channel = '#pipeline'
+	text = f'[`gpPy`+GPU/{project}-{obsmode}] Processing Complete {obs} {os.path.basename(path_new)} Data ({nobj} objects) with {ncore} cores taking {delt_total/60.:.1f} mins'
 
-param_slack = dict(
-	token = OAuth_Token,
-	channel = channel,
-	text = text,
-)
+	param_slack = dict(
+		token = OAuth_Token,
+		channel = channel,
+		text = text,
+	)
 
-tool.slack_bot(**param_slack)
-# %%
+	tool.slack_bot(**param_slack)
