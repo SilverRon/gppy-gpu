@@ -284,17 +284,47 @@ timetbl['time'] = 0.0 * u.second
 #	Main Body
 #------------------------------------------------------------
 #============================================================
-
-# revision. s for string
-newlist = [os.path.abspath(s) for s in rawlist if (s not in datalist) & (s+'/' not in datalist)]
-if len(newlist) == 0:
-	print('No new data')
-	sys.exit()
+# If sys.argv[2]: path is declared
+if len(sys.argv) > 2:
+    path_new = os.path.abspath(sys.argv[2])
+    if not Path(path_new).exists():
+        print('Provided path does not exist')
+        sys.exit()
 else:
-	if len(sys.argv) < 3:
-		for ff, folder in enumerate(newlist):
-			print(f"[{ff:0>2}] {folder}")
-#%%
+	# Find new data
+    newlist = [os.path.abspath(s) for s in calimlist if (s not in calimlist) and (s+'/' not in calimlist)]
+    if len(newlist) == 0:
+        print('No new data')
+        sys.exit()
+    else:
+        for ff, folder in enumerate(newlist):
+            print(f"[{ff:0>2}] {folder}")
+        user_input = input("Path or Index To Process:")
+        # input --> digit (index)
+        if user_input.isdigit():
+            index = int(user_input)
+            path_new = newlist[index]
+        # input --> path (including '/')
+        elif '/' in user_input:
+            path_new = user_input
+        # other
+        else:
+            print("Wrong path or index")
+            sys.exit()
+
+print(f"Selected Path: {path_new}")
+
+
+# # revision. s for string
+# newlist = [os.path.abspath(s) for s in rawlist if (s not in datalist) & (s+'/' not in datalist)]
+# if len(newlist) == 0:
+# 	print('No new data')
+# 	sys.exit()
+# else:
+# 	if len(sys.argv) < 3:
+# 		for ff, folder in enumerate(newlist):
+# 			print(f"[{ff:0>2}] {folder}")
+
 """
 # path = newlist[-1]
 # path = newlist[3]
@@ -302,25 +332,25 @@ else:
 # path_raw = newlist[0]
 
 """
-try:
-	path_new = os.path.abspath(sys.argv[2])
-	#revision
-	if not Path(path_new).exists():
-		print('Provided path does not exist')
-		raise IndexError
-except:
-	user_input = input("Path or Index To Process:")
-	# 입력값이 숫자인 경우
-	if user_input.isdigit():
-		index = int(user_input)
-		path_new = newlist[index]
-	# 입력값이 경로 문자열인 경우 (여기서는 간단하게 '/'를 포함하는지만 확인)
-	elif '/' in user_input:
-		path_new = user_input
-	# 그 외의 경우
-	else:
-		print("Wrong path or index")
-		sys.exit()
+# try:
+# 	path_new = os.path.abspath(sys.argv[2])
+# 	#revision
+# 	if not Path(path_new).exists():
+# 		print('Provided path does not exist')
+# 		raise IndexError
+# except:
+# 	user_input = input("Path or Index To Process:")
+# 	# 입력값이 숫자인 경우
+# 	if user_input.isdigit():
+# 		index = int(user_input)
+# 		path_new = newlist[index]
+# 	# 입력값이 경로 문자열인 경우 (여기서는 간단하게 '/'를 포함하는지만 확인)
+# 	elif '/' in user_input:
+# 		path_new = user_input
+# 	# 그 외의 경우
+# 	else:
+# 		print("Wrong path or index")
+# 		sys.exit()
 
 # path = '/large_data/factory/../obsdata/7DT01/2023-00-00'
 # path = '/large_data/factory/../obsdata/7DT01/2023-10-15'
@@ -1240,8 +1270,19 @@ for inim , _inhead in zip(calimlist, outheadlist):
 # 		# 변경 사항 저장
 # 		hdul.flush()
 
+
+
+#	Update Coordinate on the Image
+#------------------------------------------------------------
+##	TAN --> TPV Projection
+##	Center RA & Dec
+##	RA, Dec Polygons
+##	Rotation angle
+#------------------------------------------------------------
+print(f"Update Center & Polygon Info ...")
+t0_get_polygon_info = time.time()
+
 #	Correct CTYPE (TAN --> TPV)
-# FITS 파일 열기
 for inim in calimlist:
 	with fits.open(inim, mode='update') as hdul:
 		# 헤더 데이터 불러오기
@@ -1253,34 +1294,46 @@ for inim in calimlist:
 		# 변경된 내용 저장
 		hdul.flush()
 
-#	Update Coordinate on the Image
-##	Center RA & Dec
-##	RA, Dec Polygons
-print(f"Update Center & Polygon Info ...")
-t0_get_polygon_info = time.time()
-
 # t0_wcs = time.time()
 for cc, calim in enumerate(calimlist):
-	center, vertices = tool.get_wcs_coordinates(calim)
+	# Extract WCS information (center, CD matrix)
+	center, vertices, cd_matrixs = tool.get_wcs_coordinates(calim)
+	cd1_1, cd1_2, cd2_1, cd2_2 = cd_matrixs
 
-	# fits.setval(calim, "RACENT", value=round(center[0].item(), 3), comment="RA CENTER [deg]")	
-	# fits.setval(calim, "DECCENT", value=round(center[1].item(), 3), comment="DEC CENTER [deg]")	
-	
-	# for ii, (_ra, _dec) in enumerate(vertices):
-	# 	fits.setval(calim, f"RAPOLY{ii}", value=round(_ra, 3), comment=f"RA POLYGON {ii} [deg]")	
-	# 	fits.setval(calim, f"DEPOLY{ii}", value=round(_dec, 3), comment=f"DEC POLYGON {ii} [deg]")
-
-	# 헤더 업데이트를 위한 정보 저장
+	# updates = [
+	# 	("CTYPE1", 'RA---TPV', 'WCS projection type for this axis'),
+	# 	("CTYPE2", 'DEC--TPV', 'WCS projection type for this axis')
+	# ]
+	# Define header list to udpate
 	updates = [
 		("RACENT", round(center[0].item(), 3), "RA CENTER [deg]"),
 		("DECCENT", round(center[1].item(), 3), "DEC CENTER [deg]")
 	]
 
+	# updates.append(("RACENT", round(center[0].item(), 3), "RA CENTER [deg]"))
+	# updates.append(("DECCENT", round(center[1].item(), 3), "DEC CENTER [deg]"))
+
+	# RA, Dec Polygons
 	for ii, (_ra, _dec) in enumerate(vertices):
 		updates.append((f"RAPOLY{ii}", round(_ra, 3), f"RA POLYGON {ii} [deg]"))
 		updates.append((f"DEPOLY{ii}", round(_dec, 3), f"DEC POLYGON {ii} [deg]"))
 
-	# FITS 헤더에 값을 한 번에 저장
+	# Field Rotation
+	try:
+		if (cd1_1 != 0) and (cd1_2 != 0) and (cd2_1 != 0) and (cd2_2 != 0):
+			rotation_angle_1, rotation_angle_2 = tool.calculate_field_rotation(cd1_1, cd1_2, cd2_1, cd2_2)
+		else:
+			rotation_angle_1, rotation_angle_2 = float('nan'), float('nan')
+	except Exception as e:
+		print(f'Error: {e}')
+		print(f'Image: {calim}')
+		rotation_angle_1, rotation_angle_2 = float('nan'), float('nan')
+
+	# Update rotation angle
+	updates.append(('ROTANG1', rotation_angle_1, 'Rotation angle from North [deg]'))
+	updates.append(('ROTANG2', rotation_angle_2, 'Rotation angle from East [deg]'))
+
+	# FITS header update
 	with fits.open(calim, mode='update') as hdul:
 		for key, value, comment in updates:
 			hdul[0].header[key] = (value, comment)
@@ -1289,62 +1342,6 @@ for cc, calim in enumerate(calimlist):
 delt_get_polygon_info = time.time() - t0_get_polygon_info
 timetbl['status'][timetbl['process']=='get_polygon_info'] = True
 timetbl['time'][timetbl['process']=='get_polygon_info'] = delt_get_polygon_info
-
-# delt_wcs = time.time() - t0_wcs
-# print(f'Done ({delt_wcs:.1f}s)')
-
-#------------------------------------------------------------
-#	Rotation Angle
-#------------------------------------------------------------
-def calculate_field_rotation(cd1_1, cd1_2, cd2_1, cd2_2):
-    """
-    Calculate the field rotation angle based on the given CD matrix elements.
-    The field rotation angles indicate how much the image is rotated with respect
-    to the North and East directions in the celestial coordinate system.
-
-    Parameters:
-    - cd1_1: CD1_1 value from the FITS header
-    - cd1_2: CD1_2 value from the FITS header
-    - cd2_1: CD2_1 value from the FITS header
-    - cd2_2: CD2_2 value from the FITS header
-
-    Returns:
-    - rotation_angle_1: The rotation angle of the image's x-axis (typically Right Ascension)
-      from the North in degrees. A positive value indicates a clockwise rotation from North.
-    - rotation_angle_2: The rotation angle of the image's y-axis (typically Declination)
-      from the East in degrees. A positive value indicates a counterclockwise rotation from East.
-
-    The rotation angles help in understanding how the image is aligned with the celestial coordinate system,
-    which is crucial for accurate star positioning and data alignment in astronomical observations.
-    """
-    rotation_angle_1 = np.degrees(np.arctan(cd1_2 / cd1_1))
-    rotation_angle_2 = np.degrees(np.arctan(cd2_1 / cd2_2))
-
-    return rotation_angle_1, rotation_angle_2
-
-for inim in calimlist:
-	with fits.open(inim, mode='update') as hdul:
-		header = hdul[0].header
-
-		# CD 행렬 값 추출
-		cd1_1 = header.get('CD1_1', 0)
-		cd1_2 = header.get('CD1_2', 0)
-		cd2_1 = header.get('CD2_1', 0)
-		cd2_2 = header.get('CD2_2', 0)
-
-		# 필드 회전 계산
-		try:
-			if (cd1_1 != 0) & (cd1_2 != 0) & (cd2_1 != 0) & (cd2_2 !=0):
-				rotation_angle_1, rotation_angle_2 = calculate_field_rotation(cd1_1, cd1_2, cd2_1, cd2_2)
-			else:
-				rotation_angle_1, rotation_angle_2 = None, None
-		except Exception as e:
-			print(f'Error: {e}')
-			print(f'Image: {inim}')
-		# 헤더 업데이트
-		header.set('ROTANG1', rotation_angle_1, 'Rotation angle from North [deg]')
-		header.set('ROTANG2', rotation_angle_2, 'Rotation angle from East [deg]')
-
 
 #------------------------------------------------------------
 #	Photometry
