@@ -1263,12 +1263,29 @@ t0_get_polygon_info = time.time()
 for cc, calim in enumerate(calimlist):
 	center, vertices = tool.get_wcs_coordinates(calim)
 
-	fits.setval(calim, "RACENT", value=round(center[0].item(), 3), comment="RA CENTER [deg]")	
-	fits.setval(calim, "DECCENT", value=round(center[1].item(), 3), comment="DEC CENTER [deg]")	
+	# fits.setval(calim, "RACENT", value=round(center[0].item(), 3), comment="RA CENTER [deg]")	
+	# fits.setval(calim, "DECCENT", value=round(center[1].item(), 3), comment="DEC CENTER [deg]")	
 	
+	# for ii, (_ra, _dec) in enumerate(vertices):
+	# 	fits.setval(calim, f"RAPOLY{ii}", value=round(_ra, 3), comment=f"RA POLYGON {ii} [deg]")	
+	# 	fits.setval(calim, f"DEPOLY{ii}", value=round(_dec, 3), comment=f"DEC POLYGON {ii} [deg]")
+
+	# 헤더 업데이트를 위한 정보 저장
+	updates = [
+		("RACENT", round(center[0].item(), 3), "RA CENTER [deg]"),
+		("DECCENT", round(center[1].item(), 3), "DEC CENTER [deg]")
+	]
+
 	for ii, (_ra, _dec) in enumerate(vertices):
-		fits.setval(calim, f"RAPOLY{ii}", value=round(_ra, 3), comment=f"RA POLYGON {ii} [deg]")	
-		fits.setval(calim, f"DEPOLY{ii}", value=round(_dec, 3), comment=f"DEC POLYGON {ii} [deg]")
+		updates.append((f"RAPOLY{ii}", round(_ra, 3), f"RA POLYGON {ii} [deg]"))
+		updates.append((f"DEPOLY{ii}", round(_dec, 3), f"DEC POLYGON {ii} [deg]"))
+
+	# FITS 헤더에 값을 한 번에 저장
+	with fits.open(calim, mode='update') as hdul:
+		for key, value, comment in updates:
+			hdul[0].header[key] = (value, comment)
+		hdul.flush()  # 변경 사항을 디스크에 저장
+
 delt_get_polygon_info = time.time() - t0_get_polygon_info
 timetbl['status'][timetbl['process']=='get_polygon_info'] = True
 timetbl['time'][timetbl['process']=='get_polygon_info'] = delt_get_polygon_info
