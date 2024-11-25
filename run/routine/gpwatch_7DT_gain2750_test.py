@@ -140,7 +140,7 @@ while True:
                 time.sleep(interval)
                 
             # 메모리 사용량 최적화를 위해 변수 삭제 및 가비지 컬렉터 호출
-            del current_size
+            # del current_size
             gc.collect()
     else:
         del data_to_process  # 사용하지 않는 리스트 삭제

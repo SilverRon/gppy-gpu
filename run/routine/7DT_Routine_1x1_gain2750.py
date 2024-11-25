@@ -37,31 +37,31 @@ from astropy.coordinates import SkyCoord
 from astropy.time import Time
 #------------------------------------------------------------
 def find_gppy_gpu_src(depth=3):
-    """Searches up and down 3 levels from the CWD for the 'gppy-gpu/src' directory."""
-    cwd = Path(os.getcwd()).resolve()
-    search_dir = 'gppy-gpu/src'
+	"""Searches up and down 3 levels from the CWD for the 'gppy-gpu/src' directory."""
+	cwd = Path(os.getcwd()).resolve()
+	search_dir = 'gppy-gpu/src'
 
-    # Search upwards from the CWD
-    for up_level in range(depth + 1):
-        try:
-            search_path_up = cwd.parents[up_level] / search_dir
-            if search_path_up.exists() and search_path_up.is_dir():
-                return search_path_up
-        except IndexError:
-            # Stop when trying to access beyond the root directory
-            break
+	# Search upwards from the CWD
+	for up_level in range(depth + 1):
+		try:
+			search_path_up = cwd.parents[up_level] / search_dir
+			if search_path_up.exists() and search_path_up.is_dir():
+				return search_path_up
+		except IndexError:
+			# Stop when trying to access beyond the root directory
+			break
 
-    # Search downwards from the CWD (within depth)
-    for root, dirs, _ in os.walk(cwd):
-        current_depth = len(Path(root).relative_to(cwd).parts)
-        if current_depth <= depth:
-            # Now check if the full path contains the 'gppy-gpu/src'
-            search_path_down = Path(root) / search_dir
-            if search_path_down.exists() and search_path_down.is_dir():
-                return search_path_down
+	# Search downwards from the CWD (within depth)
+	for root, dirs, _ in os.walk(cwd):
+		current_depth = len(Path(root).relative_to(cwd).parts)
+		if current_depth <= depth:
+			# Now check if the full path contains the 'gppy-gpu/src'
+			search_path_down = Path(root) / search_dir
+			if search_path_down.exists() and search_path_down.is_dir():
+				return search_path_down
 
-    # If not found
-    return None
+	# If not found
+	return None
 
 # Path Setup for Custom Packages
 try:
@@ -138,7 +138,7 @@ print(f'# Observatory : {obs.upper()}')
 #------------------------------------------------------------
 #   Main Paths from path.json
 with open(Path_run / 'path.json', 'r') as jsonfile:
-    upaths = json.load(jsonfile)
+	upaths = json.load(jsonfile)
 
 path_base = upaths['path_base']  # '/home/snu/gppyTest_dhhyun/factory'  # '/large_data/factory'
 path_obsdata = f'{path_base}/../obsdata' if upaths['path_obsdata'] == '' else upaths['path_obsdata']
@@ -286,31 +286,33 @@ timetbl['time'] = 0.0 * u.second
 #============================================================
 # If sys.argv[2]: path is declared
 if len(sys.argv) > 2:
-    path_new = os.path.abspath(sys.argv[2])
-    if not Path(path_new).exists():
-        print('Provided path does not exist')
-        sys.exit()
+	path_new = os.path.abspath(sys.argv[2])
+	if not Path(path_new).exists():
+		print('Provided path does not exist')
+		sys.exit()
 else:
 	# Find new data
-    newlist = [os.path.abspath(s) for s in calimlist if (s not in calimlist) and (s+'/' not in calimlist)]
-    if len(newlist) == 0:
-        print('No new data')
-        sys.exit()
-    else:
-        for ff, folder in enumerate(newlist):
-            print(f"[{ff:0>2}] {folder}")
-        user_input = input("Path or Index To Process:")
-        # input --> digit (index)
-        if user_input.isdigit():
-            index = int(user_input)
-            path_new = newlist[index]
-        # input --> path (including '/')
-        elif '/' in user_input:
-            path_new = user_input
-        # other
-        else:
-            print("Wrong path or index")
-            sys.exit()
+	datalist = np.copy(logtbl['date'])
+	rawlist = sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))
+	newlist = [os.path.abspath(s) for s in rawlist if (s not in datalist) and (s+'/' not in datalist)]
+	if len(newlist) == 0:
+		print('No new data')
+		sys.exit()
+	else:
+		for ff, folder in enumerate(newlist):
+			print(f"[{ff:0>2}] {folder}")
+		user_input = input("Path or Index To Process:")
+		# input --> digit (index)
+		if user_input.isdigit():
+			index = int(user_input)
+			path_new = newlist[index]
+		# input --> path (including '/')
+		elif '/' in user_input:
+			path_new = user_input
+		# other
+		else:
+			print("Wrong path or index")
+			sys.exit()
 
 print(f"Selected Path: {path_new}")
 
@@ -431,10 +433,10 @@ except:
 #	Dark Number
 #------------------------------------------------------------
 try:
-    darkexptimelist = sorted(list(set(ic1.filter(imagetyp='dark').summary['exptime'])))
-    darknumb = len(darkexptimelist)
+	darkexptimelist = sorted(list(set(ic1.filter(imagetyp='dark').summary['exptime'])))
+	darknumb = len(darkexptimelist)
 except:
-    darknumb = 0
+	darknumb = 0
 #------------------------------------------------------------
 #	Flat Number
 #------------------------------------------------------------
@@ -1475,70 +1477,70 @@ def calc_alignment_shift(incat1, incat2, matching_sep=1,):
 
 
 def group_images(time_list, threshold):
-    groups = []
-    index_groups = []
-    current_group = [time_list[0]]
-    current_index_group = [0]  # 시작 인덱스
+	groups = []
+	index_groups = []
+	current_group = [time_list[0]]
+	current_index_group = [0]  # 시작 인덱스
 
-    for i in range(1, len(time_list)):
-        if time_list[i] - time_list[i-1] <= threshold:
-            current_group.append(time_list[i])
-            current_index_group.append(i)
-        else:
-            groups.append(current_group)
-            index_groups.append(current_index_group)
-            current_group = [time_list[i]]
-            current_index_group = [i]
+	for i in range(1, len(time_list)):
+		if time_list[i] - time_list[i-1] <= threshold:
+			current_group.append(time_list[i])
+			current_index_group.append(i)
+		else:
+			groups.append(current_group)
+			index_groups.append(current_index_group)
+			current_group = [time_list[i]]
+			current_index_group = [i]
 
-    groups.append(current_group)  # 마지막 그룹을 추가
-    index_groups.append(current_index_group)  # 마지막 인덱스 그룹을 추가
-    return groups, index_groups
+	groups.append(current_group)  # 마지막 그룹을 추가
+	index_groups.append(current_index_group)  # 마지막 인덱스 그룹을 추가
+	return groups, index_groups
 
 #	Image Stacking
 t0_image_stack = time.time()
 
 
 keywords_to_add = [
-    "IMAGETYP",
-    # "EXPOSURE",
-    # "EXPTIME",
-    # "DATE-LOC",
-    # "DATE-OBS",
-    "XBINNING",
-    "YBINNING",
-    "GAIN",
-    "EGAIN",
-    "XPIXSZ",
-    "YPIXSZ",
-    "INSTRUME",
-    "SET-TEMP",
-    "CCD-TEMP",
-    "TELESCOP",
-    "FOCALLEN",
-    "FOCRATIO",
-    "RA",
-    "DEC",
-    # "CENTALT",
-    # "CENTAZ",
-    # "AIRMASS",
-    "PIERSIDE",
-    "SITEELEV",
-    "SITELAT",
-    "SITELONG",
-    "FWHEEL",
-    "FILTER",
-    "OBJECT",
-    "OBJCTRA",
-    "OBJCTDEC",
-    "OBJCTROT",
-    "FOCNAME",
-    "FOCPOS",
-    "FOCUSPOS",
-    "FOCUSSZ",
-    "ROWORDER",
-    # "COMMENT",
-    "_QUINOX",
-    "SWCREATE"
+	"IMAGETYP",
+	# "EXPOSURE",
+	# "EXPTIME",
+	# "DATE-LOC",
+	# "DATE-OBS",
+	"XBINNING",
+	"YBINNING",
+	"GAIN",
+	"EGAIN",
+	"XPIXSZ",
+	"YPIXSZ",
+	"INSTRUME",
+	"SET-TEMP",
+	"CCD-TEMP",
+	"TELESCOP",
+	"FOCALLEN",
+	"FOCRATIO",
+	"RA",
+	"DEC",
+	# "CENTALT",
+	# "CENTAZ",
+	# "AIRMASS",
+	"PIERSIDE",
+	"SITEELEV",
+	"SITELAT",
+	"SITELONG",
+	"FWHEEL",
+	"FILTER",
+	"OBJECT",
+	"OBJCTRA",
+	"OBJCTDEC",
+	"OBJCTROT",
+	"FOCNAME",
+	"FOCPOS",
+	"FOCUSPOS",
+	"FOCUSSZ",
+	"ROWORDER",
+	# "COMMENT",
+	"_QUINOX",
+	"SWCREATE"
 ]
 
 
@@ -1861,13 +1863,23 @@ from functools import partial
 #     file_name = os.path.basename(file_path)
 #     shutil.move(file_path, f"{destination_folder}/{file_name}")
 def move_file(file_path, destination_folder):
-    file_name = os.path.basename(file_path)
-    destination_path = os.path.join(destination_folder, file_name)
-    shutil.move(file_path, destination_path)
-    print(f"Moved {file_path} to {destination_path}")
+	file_name = os.path.basename(file_path)
+	destination_path = os.path.join(destination_folder, file_name)
+	shutil.move(file_path, destination_path)
+	print(f"Moved {file_path} to {destination_path}")
 #----------------------------------------------------------------------
 ic_all = ImageFileCollection(path_data, glob_include='calib*.fits', keywords=['object', 'filter',])
-
+#----------------------------------------------------------------------
+#	Header File
+#----------------------------------------------------------------------
+image_files = [f"{path_data}/{inim}" for inim in ic_all.summary['file']]
+for ii, inim in enumerate(image_files):
+	header_file = inim.replace('fits', 'head')
+	imheadcom = f"imhead {inim} > {header_file}"
+	subprocess.run(imheadcom, shell=True)
+	print(f"[{ii:>4}/{len(image_files):>4}] {inim} --> {header_file}", end='\r')
+print()
+#----------------------------------------------------------------------
 objarr = np.unique(ic_all.summary['object'][~ic_all.summary['object'].mask])
 print(f"OBJECT Numbers: {len(objarr)}")
 
@@ -1881,13 +1893,15 @@ for oo, obj in enumerate(objarr):
 	for filte in _filterarr:
 		#	Path to Destination
 		path_destination = f'{path_processed}/{obj}/{obs}/{filte}'
+		#
 		path_phot = f"{path_destination}/phot"
 		path_transient = f"{path_destination}/transient"
 		path_transient_cand_png = f"{path_transient}/png_image"
 		path_transient_cand_fits = f"{path_transient}/fits_image"
+		path_header = f"{path_destination}/header"
 
 		#	Check save path
-		paths = [path_destination, path_phot, path_transient, path_transient_cand_png, path_transient_cand_fits]
+		paths = [path_destination, path_phot, path_transient, path_transient_cand_png, path_transient_cand_fits, path_header]
 		for path in paths:
 			if not os.path.exists(path):
 				os.makedirs(path)
@@ -1953,7 +1967,11 @@ for oo, obj in enumerate(objarr):
 		print(f"Transient Catalogs: {len(transient_catalogs)}")
 		transient_regions = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.subt.transient.reg"))
 		print(f"Transient Regions: {len(transient_regions)}")
-
+		#------------------------------------------------------------
+		#	Header Files
+		#------------------------------------------------------------
+		header_files = sorted(glob.glob(f"{path_data}/*.head"))
+		print(f"Header Files: {len(header_files)}")
 		#	Grouping files
 		files_to_base = single_frames + stack_frames
 		files_to_phot = single_phot_catalogs + single_phot_pngs \
@@ -1963,13 +1981,15 @@ for oo, obj in enumerate(objarr):
 			+ transient_catalogs + transient_regions + flag_tables
 		files_to_candidate_fits = sci_snapshots + ref_snapshots + sub_snapshots
 		files_to_candidate_png = sci_png_snapshots + ref_png_snapshots + sub_png_snapshots		
-		
+		files_to_header = header_files
+
 		destination_paths = [
 			path_destination, 
 			path_phot,
 			path_transient, 
 			path_transient_cand_fits, 
-			path_transient_cand_png
+			path_transient_cand_png,
+			path_header,
 			]
 
 		all_files = [
@@ -1977,7 +1997,8 @@ for oo, obj in enumerate(objarr):
 			files_to_phot,
 			files_to_transient, 
 			files_to_candidate_fits, 
-			files_to_candidate_png
+			files_to_candidate_png,
+			files_to_header,
 			]
 		#	Move
 		# with ThreadPoolExecutor(max_workers=ncore) as executor:
