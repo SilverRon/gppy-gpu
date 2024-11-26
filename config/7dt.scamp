@@ -22,18 +22,18 @@ ASTREF_CATALOG         GAIA-EDR3       # NONE,FILE,USNO-A2,USNO-B1,GSC-2.3,
 ASTREF_BAND            DEFAULT         # Photom. band for astr.ref.magnitudes
                                        # or DEFAULT, BLUEST, or REDDEST
 ASTREFCAT_NAME         astrefcat.cat   # Local astrometric reference catalogs
-ASTREFCENT_KEYS        RA_ICRS,DE_ICRS # Local ref.cat. centroid parameters
-ASTREFERR_KEYS         e_RA_ICRS, e_DE_ICRS, ERRTHETA_WORLD
+ASTREFCENT_KEYS        ra,dec # Local ref.cat. centroid parameters
+ASTREFERR_KEYS         ra_error, dec_error, ERRTHETA_WORLD
                                        # Local ref.cat. err. ellipse params
-ASTREFPROP_KEYS        pmRA, pmDE # Local ref.cat. PM params
-ASTREFPROPERR_KEYS     e_pmRA, e_pmDE
+ASTREFPROP_KEYS        pmra, pmdec # Local ref.cat. PM params
+ASTREFPROPERR_KEYS     pmra_error, pmdec_error
                                        # Local ref.cat. PM err. params
-ASTREFMAG_KEY          Gmag             # Local ref.cat. magnitude parameter
-ASTREFMAGERR_KEY       e_Gmag          # Local ref.cat. mag. error parameter
-ASTREFOBSDATE_KEY      OBSDATE         # Local ref.cat. obs. date parameter
+ASTREFMAG_KEY          phot_g_mean_mag             # Local ref.cat. magnitude parameter
+ASTREFMAGERR_KEY       phot_g_mean_mag_error          # Local ref.cat. mag. error parameter
+ASTREFOBSDATE_KEY      ref_epoch         # Local ref.cat. obs. date parameter
 ASTREFMAG_LIMITS       -99.0,99.0      # Select magnitude range in ASTREF_BAND
 SAVE_REFCATALOG        Y               # Save ref catalogs in FITS-LDAC format?
-REFOUT_CATPATH         /large_data/factory/ref_scamp               # Save path for reference catalogs
+REFOUT_CATPATH         /lyman/data1/factory/ref_scamp               # Save path for reference catalogs
  
 #--------------------------- Merged output catalogs ---------------------------
  
