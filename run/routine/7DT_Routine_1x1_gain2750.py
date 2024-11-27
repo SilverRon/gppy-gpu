@@ -105,7 +105,7 @@ verbose_sex = False
 verbose_gpu = False
 slack_report = True
 local_astref = True
-debug = False
+debug = True
 if debug:
 	slack_report = False
 

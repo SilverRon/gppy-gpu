@@ -19,6 +19,10 @@ import dhutil as dh
 import healpy as hp
 from time import time
 from tqdm import tqdm
+import gc
+
+# only for astro zoom
+import ligo.skymap.plot
 
 #%%
 
@@ -163,11 +167,6 @@ def read_healpix_gaia(fpath, extract=True):
     with open(colname_path, 'r') as f:
         colnames = [line.strip() for line in f]
 
-    df = pd.read_csv(fpath, header=None, dtype={151: 'str'}, names=colnames, low_memory=False)
-    if not extract:
-        return df
-    
-    # extract useful columns
     columns_to_extract = [
         "ra",
         "dec",
@@ -182,8 +181,21 @@ def read_healpix_gaia(fpath, extract=True):
         "phot_g_mean_mag",  # CAUTION: its error should be derived later
         "ref_epoch"
     ]
+    # df = pd.read_csv(fpath, header=None, dtype={151: 'str'}, names=colnames)  #, low_memory=False)
+    # if not extract:
+    #     return df
+    # df = df[columns_to_extract]  # slow
 
-    df = df[columns_to_extract]
+    columns_to_extract_indices = [colnames.index(col) for col in columns_to_extract]
+
+    # Load only required columns
+    df = pd.read_csv(
+        fpath,
+        header=None,
+        dtype={151: 'str'},
+        names=colnames,
+        usecols=columns_to_extract_indices
+    )
 
     # cal mag err
     df['phot_g_mean_mag_error'] = 2.5 / np.log(10) * df['phot_g_mean_flux_error'] / df['phot_g_mean_flux']
@@ -358,16 +370,21 @@ def save_as_fits_ldac(outbl, tablename):
 #     return transformed_ra, transformed_dec
 
 
-def run_single(tile_idx, matching_r=4, show=False):
+def run_single(tile_idx, matching_r=2, show=False):
     # matching_r  in deg
+    start = time()
 
     fpaths = find_healpix_tiles(tile_idx, matching_r)  # relevant hp tile filenames
+    # print(len(fpaths), fpaths)
+
     # load all as a single df
     dfs = []
     for f in fpaths:
         df = read_healpix_gaia(f)
         dfs.append(df)
     df = pd.concat(dfs, ignore_index=True)
+    del dfs
+    gc.collect()  # Force garbage collection
 
     center = dh.get_tiles(tile_idx, center=True)
     center = SkyCoord(ra=center['ra'], dec=center['dec'], unit='deg')
@@ -383,12 +400,13 @@ def run_single(tile_idx, matching_r=4, show=False):
     df_sel.loc[:, 'dec_error'] = df_sel['dec_error'] / (3600 * 10**3)
 
     if show:
-        import ligo.skymap.plot
+        ra, dec = (df_sel['ra'], df_sel['dec'])
+        plt.scatter(ra, dec, s=0.1)
+        plt.show()
 
         plt.figure(dpi=300)
         ax = plt.axes(projection='astro zoom', center='9h -90d', radius='5 deg')
 
-        ra, dec = (df_sel['ra'], df_sel['dec'])
         ax.scatter(ra, dec, transform=ax.get_transform('world'))
         ax.grid()
         ax.coords[0].set_format_unit(u.deg)  # ra axis hour to deg
@@ -397,25 +415,41 @@ def run_single(tile_idx, matching_r=4, show=False):
         dh.overlay_tiles(fontsize = 6, color='k', fontweight='bold')
         plt.xlabel('RA (deg)')
         plt.ylabel('Dec (deg)')
+        # plt.savefig('test.png')
 
     outbl = Table.from_pandas(df_sel)  # to astropy Table
+    del df_sel
+    gc.collect()  # Force garbage collection
     tablename = f'/lyman/data1/factory/catalog/gaia_dr3_7DT/T{tile_idx:05}.fits'
     save_as_fits_ldac(outbl, tablename)
+    print(tablename, f"{time() - start:.2f} s")
 
 
 #%%
 
 if __name__ == '__main__':
     import multiprocessing
+    from tqdm.contrib.concurrent import process_map
 
-    # run_single(0, show=True)
     start = time()
-    tiles = list(dh.get_tiles(center=True)['id'])
 
-    nthread = 96
+    nthread = 64
+    tiles = list(dh.get_tiles(center=True)['id'])
+    globbed = glob(f'/lyman/data1/factory/catalog/gaia_dr3_7DT/T*.fits')
+    existing = [int(Path(s).stem[1:]) for s in globbed]
+    tiles = [item for item in tiles if item not in existing]
+
     with multiprocessing.Pool(processes=nthread) as pool:
-        # Map the function across the tiles
         # results = pool.map(run_single, tiles)
         results = list(tqdm(pool.imap(run_single, tiles), total=len(tiles)))
 
+    # results = process_map(run_single, tiles, max_workers=nthread, chunksize=1)
+
+    # print(tiles[0])
+    # run_single(tiles[0], show=True)
+
     print(time() - start, 's elapsed')
+
+# ulimit -v 314572800
+# nice -n 10 python ref_cat_generator2.py 
+# pkill -u snu -f python
