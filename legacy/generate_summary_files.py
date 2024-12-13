@@ -1,11 +1,17 @@
 import glob
 from ccdproc import ImageFileCollection
 
-path_proc = '/large_data/processed'
+path_proc = '/lyman/data1/processed_1x1_gain2750'
 
 # obj = 'UDS'
 obj = input(f"Type Field Name (UDS):")
-telesopes = sorted(glob.glob(f'{path_proc}/{obj}/7DT??'))
+if obj == 'RIS':
+	objkey = '*'
+else:
+	objkey = obj
+
+
+telesopes = sorted(glob.glob(f'{path_proc}/{objkey}/7DT??'))
 for tel in telesopes: print(tel)
 
 for tel in telesopes:

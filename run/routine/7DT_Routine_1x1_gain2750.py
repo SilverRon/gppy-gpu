@@ -37,31 +37,31 @@ from astropy.coordinates import SkyCoord
 from astropy.time import Time
 #------------------------------------------------------------
 def find_gppy_gpu_src(depth=3):
-    """Searches up and down 3 levels from the CWD for the 'gppy-gpu/src' directory."""
-    cwd = Path(os.getcwd()).resolve()
-    search_dir = 'gppy-gpu/src'
+	"""Searches up and down 3 levels from the CWD for the 'gppy-gpu/src' directory."""
+	cwd = Path(os.getcwd()).resolve()
+	search_dir = 'gppy-gpu/src'
 
-    # Search upwards from the CWD
-    for up_level in range(depth + 1):
-        try:
-            search_path_up = cwd.parents[up_level] / search_dir
-            if search_path_up.exists() and search_path_up.is_dir():
-                return search_path_up
-        except IndexError:
-            # Stop when trying to access beyond the root directory
-            break
+	# Search upwards from the CWD
+	for up_level in range(depth + 1):
+		try:
+			search_path_up = cwd.parents[up_level] / search_dir
+			if search_path_up.exists() and search_path_up.is_dir():
+				return search_path_up
+		except IndexError:
+			# Stop when trying to access beyond the root directory
+			break
 
-    # Search downwards from the CWD (within depth)
-    for root, dirs, _ in os.walk(cwd):
-        current_depth = len(Path(root).relative_to(cwd).parts)
-        if current_depth <= depth:
-            # Now check if the full path contains the 'gppy-gpu/src'
-            search_path_down = Path(root) / search_dir
-            if search_path_down.exists() and search_path_down.is_dir():
-                return search_path_down
+	# Search downwards from the CWD (within depth)
+	for root, dirs, _ in os.walk(cwd):
+		current_depth = len(Path(root).relative_to(cwd).parts)
+		if current_depth <= depth:
+			# Now check if the full path contains the 'gppy-gpu/src'
+			search_path_down = Path(root) / search_dir
+			if search_path_down.exists() and search_path_down.is_dir():
+				return search_path_down
 
-    # If not found
-    return None
+	# If not found
+	return None
 
 # Path Setup for Custom Packages
 try:
@@ -141,7 +141,7 @@ print(f'# Observatory : {obs.upper()}')
 #------------------------------------------------------------
 #   Main Paths from path.json
 with open(Path_run / 'path.json', 'r') as jsonfile:
-    upaths = json.load(jsonfile)
+	upaths = json.load(jsonfile)
 
 path_base = upaths['path_base']  # '/home/snu/gppyTest_dhhyun/factory'  # '/large_data/factory'
 path_obsdata = f'{path_base}/../obsdata' if upaths['path_obsdata'] == '' else upaths['path_obsdata']
@@ -287,17 +287,49 @@ timetbl['time'] = 0.0 * u.second
 #	Main Body
 #------------------------------------------------------------
 #============================================================
-
-# revision. s for string
-newlist = [os.path.abspath(s) for s in rawlist if (s not in datalist) & (s+'/' not in datalist)]
-if len(newlist) == 0:
-	print('No new data')
-	sys.exit()
+# If sys.argv[2]: path is declared
+if len(sys.argv) > 2:
+	path_new = os.path.abspath(sys.argv[2])
+	if not Path(path_new).exists():
+		print('Provided path does not exist')
+		sys.exit()
 else:
-	if len(sys.argv) < 3:
+	# Find new data
+	datalist = np.copy(logtbl['date'])
+	rawlist = sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))
+	newlist = [os.path.abspath(s) for s in rawlist if (s not in datalist) and (s+'/' not in datalist)]
+	if len(newlist) == 0:
+		print('No new data')
+		sys.exit()
+	else:
 		for ff, folder in enumerate(newlist):
 			print(f"[{ff:0>2}] {folder}")
-#%%
+		user_input = input("Path or Index To Process:")
+		# input --> digit (index)
+		if user_input.isdigit():
+			index = int(user_input)
+			path_new = newlist[index]
+		# input --> path (including '/')
+		elif '/' in user_input:
+			path_new = user_input
+		# other
+		else:
+			print("Wrong path or index")
+			sys.exit()
+
+print(f"Selected Path: {path_new}")
+
+
+# # revision. s for string
+# newlist = [os.path.abspath(s) for s in rawlist if (s not in datalist) & (s+'/' not in datalist)]
+# if len(newlist) == 0:
+# 	print('No new data')
+# 	sys.exit()
+# else:
+# 	if len(sys.argv) < 3:
+# 		for ff, folder in enumerate(newlist):
+# 			print(f"[{ff:0>2}] {folder}")
+
 """
 # path = newlist[-1]
 # path = newlist[3]
@@ -305,25 +337,25 @@ else:
 # path_raw = newlist[0]
 
 """
-try:
-	path_new = os.path.abspath(sys.argv[2])
-	#revision
-	if not Path(path_new).exists():
-		print('Provided path does not exist')
-		raise IndexError
-except:
-	user_input = input("Path or Index To Process:")
-	# 입력값이 숫자인 경우
-	if user_input.isdigit():
-		index = int(user_input)
-		path_new = newlist[index]
-	# 입력값이 경로 문자열인 경우 (여기서는 간단하게 '/'를 포함하는지만 확인)
-	elif '/' in user_input:
-		path_new = user_input
-	# 그 외의 경우
-	else:
-		print("Wrong path or index")
-		sys.exit()
+# try:
+# 	path_new = os.path.abspath(sys.argv[2])
+# 	#revision
+# 	if not Path(path_new).exists():
+# 		print('Provided path does not exist')
+# 		raise IndexError
+# except:
+# 	user_input = input("Path or Index To Process:")
+# 	# 입력값이 숫자인 경우
+# 	if user_input.isdigit():
+# 		index = int(user_input)
+# 		path_new = newlist[index]
+# 	# 입력값이 경로 문자열인 경우 (여기서는 간단하게 '/'를 포함하는지만 확인)
+# 	elif '/' in user_input:
+# 		path_new = user_input
+# 	# 그 외의 경우
+# 	else:
+# 		print("Wrong path or index")
+# 		sys.exit()
 
 # path = '/large_data/factory/../obsdata/7DT01/2023-00-00'
 # path = '/large_data/factory/../obsdata/7DT01/2023-10-15'
@@ -404,10 +436,10 @@ except:
 #	Dark Number
 #------------------------------------------------------------
 try:
-    darkexptimelist = sorted(list(set(ic1.filter(imagetyp='dark').summary['exptime'])))
-    darknumb = len(darkexptimelist)
+	darkexptimelist = sorted(list(set(ic1.filter(imagetyp='dark').summary['exptime'])))
+	darknumb = len(darkexptimelist)
 except:
-    darknumb = 0
+	darknumb = 0
 #------------------------------------------------------------
 #	Flat Number
 #------------------------------------------------------------
@@ -1243,8 +1275,19 @@ for inim , _inhead in zip(calimlist, outheadlist):
 # 		# 변경 사항 저장
 # 		hdul.flush()
 
+
+
+#	Update Coordinate on the Image
+#------------------------------------------------------------
+##	TAN --> TPV Projection
+##	Center RA & Dec
+##	RA, Dec Polygons
+##	Rotation angle
+#------------------------------------------------------------
+print(f"Update Center & Polygon Info ...")
+t0_get_polygon_info = time.time()
+
 #	Correct CTYPE (TAN --> TPV)
-# FITS 파일 열기
 for inim in calimlist:
 	with fits.open(inim, mode='update') as hdul:
 		# 헤더 데이터 불러오기
@@ -1256,81 +1299,54 @@ for inim in calimlist:
 		# 변경된 내용 저장
 		hdul.flush()
 
-#	Update Coordinate on the Image
-##	Center RA & Dec
-##	RA, Dec Polygons
-print(f"Update Center & Polygon Info ...")
-t0_get_polygon_info = time.time()
-
 # t0_wcs = time.time()
 for cc, calim in enumerate(calimlist):
-	center, vertices = tool.get_wcs_coordinates(calim)
+	# Extract WCS information (center, CD matrix)
+	center, vertices, cd_matrixs = tool.get_wcs_coordinates(calim)
+	cd1_1, cd1_2, cd2_1, cd2_2 = cd_matrixs
 
-	fits.setval(calim, "RACENT", value=round(center[0].item(), 3), comment="RA CENTER [deg]")	
-	fits.setval(calim, "DECCENT", value=round(center[1].item(), 3), comment="DEC CENTER [deg]")	
-	
+	# updates = [
+	# 	("CTYPE1", 'RA---TPV', 'WCS projection type for this axis'),
+	# 	("CTYPE2", 'DEC--TPV', 'WCS projection type for this axis')
+	# ]
+	# Define header list to udpate
+	updates = [
+		("RACENT", round(center[0].item(), 3), "RA CENTER [deg]"),
+		("DECCENT", round(center[1].item(), 3), "DEC CENTER [deg]")
+	]
+
+	# updates.append(("RACENT", round(center[0].item(), 3), "RA CENTER [deg]"))
+	# updates.append(("DECCENT", round(center[1].item(), 3), "DEC CENTER [deg]"))
+
+	# RA, Dec Polygons
 	for ii, (_ra, _dec) in enumerate(vertices):
-		fits.setval(calim, f"RAPOLY{ii}", value=round(_ra, 3), comment=f"RA POLYGON {ii} [deg]")	
-		fits.setval(calim, f"DEPOLY{ii}", value=round(_dec, 3), comment=f"DEC POLYGON {ii} [deg]")
+		updates.append((f"RAPOLY{ii}", round(_ra, 3), f"RA POLYGON {ii} [deg]"))
+		updates.append((f"DEPOLY{ii}", round(_dec, 3), f"DEC POLYGON {ii} [deg]"))
+
+	# Field Rotation
+	try:
+		if (cd1_1 != 0) and (cd1_2 != 0) and (cd2_1 != 0) and (cd2_2 != 0):
+			rotation_angle_1, rotation_angle_2 = tool.calculate_field_rotation(cd1_1, cd1_2, cd2_1, cd2_2)
+		else:
+			rotation_angle_1, rotation_angle_2 = float('nan'), float('nan')
+	except Exception as e:
+		print(f'Error: {e}')
+		print(f'Image: {calim}')
+		rotation_angle_1, rotation_angle_2 = float('nan'), float('nan')
+
+	# Update rotation angle
+	updates.append(('ROTANG1', rotation_angle_1, 'Rotation angle from North [deg]'))
+	updates.append(('ROTANG2', rotation_angle_2, 'Rotation angle from East [deg]'))
+
+	# FITS header update
+	with fits.open(calim, mode='update') as hdul:
+		for key, value, comment in updates:
+			hdul[0].header[key] = (value, comment)
+		hdul.flush()  # 변경 사항을 디스크에 저장
+
 delt_get_polygon_info = time.time() - t0_get_polygon_info
 timetbl['status'][timetbl['process']=='get_polygon_info'] = True
 timetbl['time'][timetbl['process']=='get_polygon_info'] = delt_get_polygon_info
-
-# delt_wcs = time.time() - t0_wcs
-# print(f'Done ({delt_wcs:.1f}s)')
-
-#------------------------------------------------------------
-#	Rotation Angle
-#------------------------------------------------------------
-def calculate_field_rotation(cd1_1, cd1_2, cd2_1, cd2_2):
-    """
-    Calculate the field rotation angle based on the given CD matrix elements.
-    The field rotation angles indicate how much the image is rotated with respect
-    to the North and East directions in the celestial coordinate system.
-
-    Parameters:
-    - cd1_1: CD1_1 value from the FITS header
-    - cd1_2: CD1_2 value from the FITS header
-    - cd2_1: CD2_1 value from the FITS header
-    - cd2_2: CD2_2 value from the FITS header
-
-    Returns:
-    - rotation_angle_1: The rotation angle of the image's x-axis (typically Right Ascension)
-      from the North in degrees. A positive value indicates a clockwise rotation from North.
-    - rotation_angle_2: The rotation angle of the image's y-axis (typically Declination)
-      from the East in degrees. A positive value indicates a counterclockwise rotation from East.
-
-    The rotation angles help in understanding how the image is aligned with the celestial coordinate system,
-    which is crucial for accurate star positioning and data alignment in astronomical observations.
-    """
-    rotation_angle_1 = np.degrees(np.arctan(cd1_2 / cd1_1))
-    rotation_angle_2 = np.degrees(np.arctan(cd2_1 / cd2_2))
-
-    return rotation_angle_1, rotation_angle_2
-
-for inim in calimlist:
-	with fits.open(inim, mode='update') as hdul:
-		header = hdul[0].header
-
-		# CD 행렬 값 추출
-		cd1_1 = header.get('CD1_1', 0)
-		cd1_2 = header.get('CD1_2', 0)
-		cd2_1 = header.get('CD2_1', 0)
-		cd2_2 = header.get('CD2_2', 0)
-
-		# 필드 회전 계산
-		try:
-			if (cd1_1 != 0) & (cd1_2 != 0) & (cd2_1 != 0) & (cd2_2 !=0):
-				rotation_angle_1, rotation_angle_2 = calculate_field_rotation(cd1_1, cd1_2, cd2_1, cd2_2)
-			else:
-				rotation_angle_1, rotation_angle_2 = None, None
-		except Exception as e:
-			print(f'Error: {e}')
-			print(f'Image: {inim}')
-		# 헤더 업데이트
-		header.set('ROTANG1', rotation_angle_1, 'Rotation angle from North [deg]')
-		header.set('ROTANG2', rotation_angle_2, 'Rotation angle from East [deg]')
-
 
 #------------------------------------------------------------
 #	Photometry
@@ -1464,70 +1480,70 @@ def calc_alignment_shift(incat1, incat2, matching_sep=1,):
 
 
 def group_images(time_list, threshold):
-    groups = []
-    index_groups = []
-    current_group = [time_list[0]]
-    current_index_group = [0]  # 시작 인덱스
+	groups = []
+	index_groups = []
+	current_group = [time_list[0]]
+	current_index_group = [0]  # 시작 인덱스
 
-    for i in range(1, len(time_list)):
-        if time_list[i] - time_list[i-1] <= threshold:
-            current_group.append(time_list[i])
-            current_index_group.append(i)
-        else:
-            groups.append(current_group)
-            index_groups.append(current_index_group)
-            current_group = [time_list[i]]
-            current_index_group = [i]
+	for i in range(1, len(time_list)):
+		if time_list[i] - time_list[i-1] <= threshold:
+			current_group.append(time_list[i])
+			current_index_group.append(i)
+		else:
+			groups.append(current_group)
+			index_groups.append(current_index_group)
+			current_group = [time_list[i]]
+			current_index_group = [i]
 
-    groups.append(current_group)  # 마지막 그룹을 추가
-    index_groups.append(current_index_group)  # 마지막 인덱스 그룹을 추가
-    return groups, index_groups
+	groups.append(current_group)  # 마지막 그룹을 추가
+	index_groups.append(current_index_group)  # 마지막 인덱스 그룹을 추가
+	return groups, index_groups
 
 #	Image Stacking
 t0_image_stack = time.time()
 
 
 keywords_to_add = [
-    "IMAGETYP",
-    # "EXPOSURE",
-    # "EXPTIME",
-    # "DATE-LOC",
-    # "DATE-OBS",
-    "XBINNING",
-    "YBINNING",
-    "GAIN",
-    "EGAIN",
-    "XPIXSZ",
-    "YPIXSZ",
-    "INSTRUME",
-    "SET-TEMP",
-    "CCD-TEMP",
-    "TELESCOP",
-    "FOCALLEN",
-    "FOCRATIO",
-    "RA",
-    "DEC",
-    # "CENTALT",
-    # "CENTAZ",
-    # "AIRMASS",
-    "PIERSIDE",
-    "SITEELEV",
-    "SITELAT",
-    "SITELONG",
-    "FWHEEL",
-    "FILTER",
-    "OBJECT",
-    "OBJCTRA",
-    "OBJCTDEC",
-    "OBJCTROT",
-    "FOCNAME",
-    "FOCPOS",
-    "FOCUSPOS",
-    "FOCUSSZ",
-    "ROWORDER",
-    # "COMMENT",
-    "_QUINOX",
-    "SWCREATE"
+	"IMAGETYP",
+	# "EXPOSURE",
+	# "EXPTIME",
+	# "DATE-LOC",
+	# "DATE-OBS",
+	"XBINNING",
+	"YBINNING",
+	"GAIN",
+	"EGAIN",
+	"XPIXSZ",
+	"YPIXSZ",
+	"INSTRUME",
+	"SET-TEMP",
+	"CCD-TEMP",
+	"TELESCOP",
+	"FOCALLEN",
+	"FOCRATIO",
+	"RA",
+	"DEC",
+	# "CENTALT",
+	# "CENTAZ",
+	# "AIRMASS",
+	"PIERSIDE",
+	"SITEELEV",
+	"SITELAT",
+	"SITELONG",
+	"FWHEEL",
+	"FILTER",
+	"OBJECT",
+	"OBJCTRA",
+	"OBJCTDEC",
+	"OBJCTROT",
+	"FOCNAME",
+	"FOCPOS",
+	"FOCUSPOS",
+	"FOCUSSZ",
+	"ROWORDER",
+	# "COMMENT",
+	"_QUINOX",
+	"SWCREATE"
 ]
 
 
@@ -1850,13 +1866,23 @@ from functools import partial
 #     file_name = os.path.basename(file_path)
 #     shutil.move(file_path, f"{destination_folder}/{file_name}")
 def move_file(file_path, destination_folder):
-    file_name = os.path.basename(file_path)
-    destination_path = os.path.join(destination_folder, file_name)
-    shutil.move(file_path, destination_path)
-    print(f"Moved {file_path} to {destination_path}")
+	file_name = os.path.basename(file_path)
+	destination_path = os.path.join(destination_folder, file_name)
+	shutil.move(file_path, destination_path)
+	print(f"Moved {file_path} to {destination_path}")
 #----------------------------------------------------------------------
 ic_all = ImageFileCollection(path_data, glob_include='calib*.fits', keywords=['object', 'filter',])
-
+#----------------------------------------------------------------------
+#	Header File
+#----------------------------------------------------------------------
+image_files = [f"{path_data}/{inim}" for inim in ic_all.summary['file']]
+for ii, inim in enumerate(image_files):
+	header_file = inim.replace('fits', 'head')
+	imheadcom = f"imhead {inim} > {header_file}"
+	subprocess.run(imheadcom, shell=True)
+	print(f"[{ii:>4}/{len(image_files):>4}] {inim} --> {header_file}", end='\r')
+print()
+#----------------------------------------------------------------------
 objarr = np.unique(ic_all.summary['object'][~ic_all.summary['object'].mask])
 print(f"OBJECT Numbers: {len(objarr)}")
 
@@ -1870,13 +1896,15 @@ for oo, obj in enumerate(objarr):
 	for filte in _filterarr:
 		#	Path to Destination
 		path_destination = f'{path_processed}/{obj}/{obs}/{filte}'
+		#
 		path_phot = f"{path_destination}/phot"
 		path_transient = f"{path_destination}/transient"
 		path_transient_cand_png = f"{path_transient}/png_image"
 		path_transient_cand_fits = f"{path_transient}/fits_image"
+		path_header = f"{path_destination}/header"
 
 		#	Check save path
-		paths = [path_destination, path_phot, path_transient, path_transient_cand_png, path_transient_cand_fits]
+		paths = [path_destination, path_phot, path_transient, path_transient_cand_png, path_transient_cand_fits, path_header]
 		for path in paths:
 			if not os.path.exists(path):
 				os.makedirs(path)
@@ -1942,7 +1970,11 @@ for oo, obj in enumerate(objarr):
 		print(f"Transient Catalogs: {len(transient_catalogs)}")
 		transient_regions = sorted(glob.glob(f"{path_data}/calib_*_{obj}_*_*_{filte}_*.com.subt.transient.reg"))
 		print(f"Transient Regions: {len(transient_regions)}")
-
+		#------------------------------------------------------------
+		#	Header Files
+		#------------------------------------------------------------
+		header_files = sorted(glob.glob(f"{path_data}/*.head"))
+		print(f"Header Files: {len(header_files)}")
 		#	Grouping files
 		files_to_base = single_frames + stack_frames
 		files_to_phot = single_phot_catalogs + single_phot_pngs \
@@ -1952,13 +1984,15 @@ for oo, obj in enumerate(objarr):
 			+ transient_catalogs + transient_regions + flag_tables
 		files_to_candidate_fits = sci_snapshots + ref_snapshots + sub_snapshots
 		files_to_candidate_png = sci_png_snapshots + ref_png_snapshots + sub_png_snapshots		
-		
+		files_to_header = header_files
+
 		destination_paths = [
 			path_destination, 
 			path_phot,
 			path_transient, 
 			path_transient_cand_fits, 
-			path_transient_cand_png
+			path_transient_cand_png,
+			path_header,
 			]
 
 		all_files = [
@@ -1966,7 +2000,8 @@ for oo, obj in enumerate(objarr):
 			files_to_phot,
 			files_to_transient, 
 			files_to_candidate_fits, 
-			files_to_candidate_png
+			files_to_candidate_png,
+			files_to_header,
 			]
 		#	Move
 		# with ThreadPoolExecutor(max_workers=ncore) as executor:

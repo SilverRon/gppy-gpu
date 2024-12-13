@@ -51,25 +51,27 @@ for filte, c in zip(mfilters, mcolors):
 	filter_color_palette_dict[filte] = c
 
 # %%
-path_data = '/large_data/processed_1x1_gain2750'
+path_data = '/lyman/data1/processed_1x1_gain2750'
+path_data_past = '/lyman/data1/processed'
+path_save = '/lyman/data1/factory/catalog/single_frame_summary' # hard coded
 
 # %%
-tile_folders = sorted(glob.glob(f"{path_data}/T*"))
-print(f"{len(tile_folders)} tile folders found")
+tile_folders = sorted(glob.glob(f"{path_data}/T*"))+sorted(glob.glob(f"{path_data_past}/T*"))
+print(f"{len(tile_folders):,} tile folders found")
 # %%
 # Pick Single Tile Folder
 n_tile = 0
 tile_folder = tile_folders[n_tile]
 tile_folder
 # %%
-images = sorted(glob.glob(f"{tile_folder}/7DT??/*/calib_*com.fits"))
-print(f"{len(images)} images found")
+# images = sorted(glob.glob(f"{tile_folder}/7DT??/*/calib_*0.fits"))
+# print(f"{len(images)} images found")
 # %%
 # Bulk iteration - gather image lists
 all_images = [
-	image for tile_folder in tile_folders for image in sorted(glob.glob(f"{tile_folder}/7DT??/*/calib_*com.fits"))
+	image for tile_folder in tile_folders for image in sorted(glob.glob(f"{tile_folder}/7DT??/*/calib_*0.fits"))
 	]
-print(f"{len(all_images):_} images found")
+print(f"{len(all_images):,} images found")
 # %%
 from datetime import datetime
 
@@ -82,146 +84,147 @@ ic = ImageFileCollection(filenames=all_images)
 print("Done!")
 
 print("Saving the table...")
-ic.summary.write(f"/large_data/factory/RIS_{current_date}_summary.csv", format='csv', overwrite=True)
+ic.summary.write(f"{path_save}/RIS_{current_date}_summary.csv", format='csv', overwrite=True)
 print("Done!")
 # %%
-keys = [
-	'file',
-	'simple',
-	'bitpix',
-	'naxis',
-	'naxis1',
-	'naxis2',
-	'extend',
-	'equinox',
-	'mjd-obs',
-	'radesys',
-	'ctype1',
-	'cunit1',
-	'crval1',
-	'crpix1',
-	'cd1_1',
-	'cd1_2',
-	'ctype2',
-	'cunit2',
-	'crval2',
-	'crpix2',
-	'cd2_1',
-	'cd2_2',
-	'exptime',
-	'gain',
-	'saturate',
-	'softname',
-	'softvers',
-	'softdate',
-	'softauth',
-	'softinst',
-	'author',
-	'origin',
-	'date',
-	'combinet',
-	'imagetyp',
-	'xbinning',
-	'ybinning',
-	'egain',
-	'xpixsz',
-	'ypixsz',
-	'instrume',
-	'set-temp',
-	'ccd-temp',
-	'telescop',
-	'focallen',
-	'ra',
-	'dec',
-	'siteelev',
-	'sitelat',
-	'sitelong',
-	'filter',
-	'object',
-	'objctra',
-	'objctdec',
-	'focuspos',
-	'resampt1',
-	'centert1',
-	'pscalet1',
-	'resampt2',
-	'centert2',
-	'pscalet2',
-	'file0001',
-	'intf0001',
-	'subf0001',
-	'bckt0001',
-	'bcks0001',
-	'bkfs0001',
-	'file0002',
-	'intf0002',
-	'subf0002',
-	'bckt0002',
-	'bcks0002',
-	'bkfs0002',
-	'file0003',
-	'intf0003',
-	'subf0003',
-	'bckt0003',
-	'bcks0003',
-	'bkfs0003',
-	'date-obs',
-	'date-loc',
-	'exposure',
-	'centalt',
-	'centaz',
-	'airmass',
-	'mjd',
-	'jd',
-	'photime',
-	'seeing',
-	'peeing',
-	'ellip',
-	'elong',
-	'skysig',
-	'skyval',
-	'refcat',
-	'maglow',
-	'magup',
-	'stdnumb',
-	'auto',
-	'aper',
-	'aper_1',
-	'aper_2',
-	'aper_3',
-	'aper_4',
-	'aper_5',
-	'zp_auto',
-	'ezp_auto',
-	'ul3_auto',
-	'ul5_auto',
-	'zp_0',
-	'ezp_0',
-	'ul3_0',
-	'ul5_0',
-	'zp_1',
-	'ezp_1',
-	'ul3_1',
-	'ul5_1',
-	'zp_2',
-	'ezp_2',
-	'ul3_2',
-	'ul5_2',
-	'zp_3',
-	'ezp_3',
-	'ul3_3',
-	'ul5_3',
-	'zp_4',
-	'ezp_4',
-	'ul3_4',
-	'ul5_4',
-	'zp_5',
-	'ezp_5',
-	'ul3_5',
-	'ul5_5',
-	]
+# keys = [
+# 	'file',
+# 	'simple',
+# 	'bitpix',
+# 	'naxis',
+# 	'naxis1',
+# 	'naxis2',
+# 	'extend',
+# 	'equinox',
+# 	'mjd-obs',
+# 	'radesys',
+# 	'ctype1',
+# 	'cunit1',
+# 	'crval1',
+# 	'crpix1',
+# 	'cd1_1',
+# 	'cd1_2',
+# 	'ctype2',
+# 	'cunit2',
+# 	'crval2',
+# 	'crpix2',
+# 	'cd2_1',
+# 	'cd2_2',
+# 	'exptime',
+# 	'gain',
+# 	'saturate',
+# 	'softname',
+# 	'softvers',
+# 	'softdate',
+# 	'softauth',
+# 	'softinst',
+# 	'author',
+# 	'origin',
+# 	'date',
+# 	'combinet',
+# 	'imagetyp',
+# 	'xbinning',
+# 	'ybinning',
+# 	'egain',
+# 	'xpixsz',
+# 	'ypixsz',
+# 	'instrume',
+# 	'set-temp',
+# 	'ccd-temp',
+# 	'telescop',
+# 	'focallen',
+# 	'ra',
+# 	'dec',
+# 	'siteelev',
+# 	'sitelat',
+# 	'sitelong',
+# 	'filter',
+# 	'object',
+# 	'objctra',
+# 	'objctdec',
+# 	'focuspos',
+# 	'resampt1',
+# 	'centert1',
+# 	'pscalet1',
+# 	'resampt2',
+# 	'centert2',
+# 	'pscalet2',
+# 	'file0001',
+# 	'intf0001',
+# 	'subf0001',
+# 	'bckt0001',
+# 	'bcks0001',
+# 	'bkfs0001',
+# 	'file0002',
+# 	'intf0002',
+# 	'subf0002',
+# 	'bckt0002',
+# 	'bcks0002',
+# 	'bkfs0002',
+# 	'file0003',
+# 	'intf0003',
+# 	'subf0003',
+# 	'bckt0003',
+# 	'bcks0003',
+# 	'bkfs0003',
+# 	'date-obs',
+# 	'date-loc',
+# 	'exposure',
+# 	'centalt',
+# 	'centaz',
+# 	'airmass',
+# 	'mjd',
+# 	'jd',
+# 	'photime',
+# 	'seeing',
+# 	'peeing',
+# 	'ellip',
+# 	'elong',
+# 	'skysig',
+# 	'skyval',
+# 	'refcat',
+# 	'maglow',
+# 	'magup',
+# 	'stdnumb',
+# 	'auto',
+# 	'aper',
+# 	'aper_1',
+# 	'aper_2',
+# 	'aper_3',
+# 	'aper_4',
+# 	'aper_5',
+# 	'zp_auto',
+# 	'ezp_auto',
+# 	'ul3_auto',
+# 	'ul5_auto',
+# 	'zp_0',
+# 	'ezp_0',
+# 	'ul3_0',
+# 	'ul5_0',
+# 	'zp_1',
+# 	'ezp_1',
+# 	'ul3_1',
+# 	'ul5_1',
+# 	'zp_2',
+# 	'ezp_2',
+# 	'ul3_2',
+# 	'ul5_2',
+# 	'zp_3',
+# 	'ezp_3',
+# 	'ul3_3',
+# 	'ul5_3',
+# 	'zp_4',
+# 	'ezp_4',
+# 	'ul3_4',
+# 	'ul5_4',
+# 	'zp_5',
+# 	'ezp_5',
+# 	'ul3_5',
+# 	'ul5_5',
+# 	]
 
-table = ic.summary[keys]
+# table = ic.summary[keys]
+table = ic.summary
 # %%
 filters = list(np.unique(table['filter']))
 print(f"{len(filters)} filters: {filters}")
@@ -239,6 +242,9 @@ mosaic = f"""
 {alphabet_string[15:20]}
 """
 
+
+# 
+plt.close('all')
 fig, ax = plt.subplot_mosaic(
 	mosaic, figsize=(16, 12),
 	empty_sentinel="x",
@@ -246,84 +252,36 @@ fig, ax = plt.subplot_mosaic(
 		wspace=0.0, hspace=0.0,
 	)
 )
-
-# 
 for ff, (filte, alphabet) in enumerate(zip(filters, alphabet_string[:20])):
-	if filte != 'r':
-		# print(filte)
-		color = filter_color_palette_dict[filte]
-		values = [float(val) for val in table['seeing'][table['filter'] == filte]]
-		med_value = np.nanmedian(values)
 
-		# Main Axe
-		ax[alphabet].hist(values, histtype='step', lw=6, color='k', alpha=1.0, zorder=0)
-		ax[alphabet].hist(values, histtype='step', lw=3, color=color, alpha=1.0, label=f"""Seeing={med_value:.1f}""")
-		ax[alphabet].axvline(x=med_value, ls='-', lw=2, color='k')
+	# print(filte)
+	color = filter_color_palette_dict[filte]
+	values = [float(val) for val in table['seeing'][table['filter'] == filte]]
+	med_value = np.nanmedian(values)
 
-		# ax[alphabet].set_xlim([xr, xl])
-		if alphabet == 'R':
-			ax[alphabet].set_xlabel("""Seeing ["]""")
-		
-		ax[alphabet].set_xlim([0.5, 6.0])
-		ax[alphabet].set_xticks(np.arange(1.0, 5.+1., 1.0))
+	# Main Axe
+	ax[alphabet].hist(values, histtype='step', lw=6, color='k', alpha=1.0, zorder=0)
+	ax[alphabet].hist(values, histtype='step', lw=3, color=color, alpha=1.0, label=f"""Seeing={med_value:.1f}""")
+	ax[alphabet].axvline(x=med_value, ls='-', lw=2, color='k')
+
+	# ax[alphabet].set_xlim([xr, xl])
+	if alphabet == 'R':
+		ax[alphabet].set_xlabel("""Seeing ["]""")
+	
+	ax[alphabet].set_xlim([0.5, 6.0])
+	ax[alphabet].set_xticks(np.arange(1.0, 5.+1., 1.0))
 
 
-		# ax[alphabet].set_ylabel(r'5$\sigma$ Depth [AB mag]')
-		# ax[alphabet].grid('both', ls='--', alpha=0.5, color='silver', zorder=0)
-		# ax[alphabet].legend(loc='upper left', fontsize=14, framealpha=1.0)
+	# ax[alphabet].set_ylabel(r'5$\sigma$ Depth [AB mag]')
+	# ax[alphabet].grid('both', ls='--', alpha=0.5, color='silver', zorder=0)
+	# ax[alphabet].legend(loc='upper left', fontsize=14, framealpha=1.0)
 
-		# Remove tick labels for cleaner look
-		# ax[alphabet].tick_params(labelbottom=False)
-		ax[alphabet].tick_params(labelleft=False)
-		ax[alphabet].legend(loc='upper right')
+	# Remove tick labels for cleaner look
+	# ax[alphabet].tick_params(labelbottom=False)
+	ax[alphabet].tick_params(labelleft=False)
+	ax[alphabet].legend(loc='upper right')
 
 # Add a title
-# plt.suptitle(f"{obj} ({filte})", fontsize=20)
 fig.tight_layout()
-
 # Save the figure
-# fig.savefig(f"{path_output}/select.png")
-
-# %%
-
-fig, ax = plt.subplot_mosaic(
-	mosaic, figsize=(16, 12),
-	empty_sentinel="x",
-	gridspec_kw=dict(
-		wspace=0.0, hspace=0.0,
-	)
-)
-
-# 
-for ff, (filte, alphabet) in enumerate(zip(filters, alphabet_string[:20])):
-	if filte != 'r':
-		# print(filte)
-		color = filter_color_palette_dict[filte]
-		values = [float(val) for val in table['ul5_1'][table['filter'] == filte]]
-		med_value = np.nanmedian(values)
-
-		# Main Axe
-		ax[alphabet].hist(values, histtype='step', lw=6, color='k', alpha=1.0, zorder=0)
-		ax[alphabet].hist(values, histtype='step', lw=3, color=color, alpha=1.0, label=f"""Depth={med_value:.1f}""")
-		ax[alphabet].axvline(x=med_value, ls='-', lw=2, color='k')
-
-		# ax[alphabet].set_xlim([xr, xl])
-		if alphabet == 'R':
-			ax[alphabet].set_xlabel("""5 Sigma Depth""")
-		
-		ax[alphabet].set_xlim([16, 20.5])
-		# ax[alphabet].set_xticks(np.arange(1.0, 5.+1., 1.0))
-
-
-		# ax[alphabet].set_ylabel(r'5$\sigma$ Depth [AB mag]')
-		# ax[alphabet].grid('both', ls='--', alpha=0.5, color='silver', zorder=0)
-		# ax[alphabet].legend(loc='upper left', fontsize=14, framealpha=1.0)
-
-		# Remove tick labels for cleaner look
-		# ax[alphabet].tick_params(labelbottom=False)
-		ax[alphabet].tick_params(labelleft=False)
-		ax[alphabet].legend(loc='upper left')
-
-# Add a title
-# plt.suptitle(f"{obj} ({filte})", fontsize=20)
-fig.tight_layout()
+fig.savefig(f"{path_save}/select_{filte}.png")

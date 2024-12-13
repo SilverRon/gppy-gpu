@@ -1816,30 +1816,62 @@ from astropy.wcs import WCS
 import numpy as np
 
 def get_wcs_coordinates(filename):
-    # fits 파일을 메모리 매핑을 사용하여 열기
-    with fits.open(filename, memmap=True) as hdulist:
-        wcs_header = WCS(hdulist[0].header)
-        # 데이터의 형태만 가져오기 위해 메모리에 로드하지 않고 헤더 정보 사용
-        data_shape = hdulist[0].shape
+	# fits 파일을 메모리 매핑을 사용하여 열기
+	with fits.open(filename, memmap=True) as hdulist:
+		header = hdulist[0].header
+		wcs_header = WCS(header)
+		# 데이터의 형태만 가져오기 위해 메모리에 로드하지 않고 헤더 정보 사용
+		data_shape = hdulist[0].shape
 
-    # 중심 좌표 계산
-    center_x = data_shape[1] // 2
-    center_y = data_shape[0] // 2
-    center_ra, center_dec = wcs_header.all_pix2world(center_x, center_y, 0)
+		cd1_1 = header.get('CD1_1', 0)
+		cd1_2 = header.get('CD1_2', 0)
+		cd2_1 = header.get('CD2_1', 0)
+		cd2_2 = header.get('CD2_2', 0)
 
-    # 꼭짓점 좌표 계산
-    corners = np.array([[0, 0],
-                        [data_shape[1] - 1, 0],
-                        [0, data_shape[0] - 1],
-                        [data_shape[1] - 1, data_shape[0] - 1]])
-    # 모든 꼭짓점에 대한 월드 좌표를 한 번에 계산
-    world_coordinates = wcs_header.all_pix2world(corners, 0)
+	# 중심 좌표 계산
+	center_x = data_shape[1] // 2
+	center_y = data_shape[0] // 2
+	center_ra, center_dec = wcs_header.all_pix2world(center_x, center_y, 0)
 
-    # 꼭짓점 좌표를 1차원 배열로 변환
-    vertices = world_coordinates
+	# 꼭짓점 좌표 계산
+	corners = np.array([[0, 0],
+						[data_shape[1] - 1, 0],
+						[0, data_shape[0] - 1],
+						[data_shape[1] - 1, data_shape[0] - 1]])
+	# 모든 꼭짓점에 대한 월드 좌표를 한 번에 계산
+	world_coordinates = wcs_header.all_pix2world(corners, 0)
 
-    # 결과 반환
-    return (center_ra, center_dec), vertices
+	# 꼭짓점 좌표를 1차원 배열로 변환
+	vertices = world_coordinates
+
+	# 결과 반환
+	return (center_ra, center_dec), vertices, (cd1_1, cd1_2, cd2_1, cd2_2)
+
+def calculate_field_rotation(cd1_1, cd1_2, cd2_1, cd2_2):
+    """
+    Calculate the field rotation angle based on the given CD matrix elements.
+    The field rotation angles indicate how much the image is rotated with respect
+    to the North and East directions in the celestial coordinate system.
+
+    Parameters:
+    - cd1_1: CD1_1 value from the FITS header
+    - cd1_2: CD1_2 value from the FITS header
+    - cd2_1: CD2_1 value from the FITS header
+    - cd2_2: CD2_2 value from the FITS header
+
+    Returns:
+    - rotation_angle_1: The rotation angle of the image's x-axis (typically Right Ascension)
+      from the North in degrees. A positive value indicates a clockwise rotation from North.
+    - rotation_angle_2: The rotation angle of the image's y-axis (typically Declination)
+      from the East in degrees. A positive value indicates a counterclockwise rotation from East.
+
+    The rotation angles help in understanding how the image is aligned with the celestial coordinate system,
+    which is crucial for accurate star positioning and data alignment in astronomical observations.
+    """
+    rotation_angle_1 = np.degrees(np.arctan(cd1_2 / cd1_1))
+    rotation_angle_2 = np.degrees(np.arctan(cd2_1 / cd2_2))
+
+    return rotation_angle_1, rotation_angle_2
 
 #------------------------------------------------------------
 def wcsremap_lite(inim, refim, outim, path_com='/data3/wcsremap/wcsremap-1.0.1/wcsremap'):
