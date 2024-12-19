@@ -133,6 +133,9 @@ while True:
                     print(f"Pipeline executed successfully:\n{result.stdout}")
                 except subprocess.CalledProcessError as e:
                     print(f"Error occurred while executing pipeline:\n{e.stderr}")
+                except KeyboardInterrupt:
+                    print("Process interrupted by user. Exiting safely...")
+                    sys.exit(1)  # 안전한 종료
                 except Exception as e:
                     print(f"Unexpected error: {str(e)}")
                 check = False
