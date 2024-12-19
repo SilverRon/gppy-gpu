@@ -11,6 +11,7 @@ import os
 import sys
 import re
 import time
+import gc
 import glob
 import json
 from pathlib import Path
@@ -102,7 +103,8 @@ start_localtime = time.strftime('%Y-%m-%d_%H:%M:%S_(%Z)', time.localtime())
 # n_binning = 2
 n_binning = 1
 verbose_sex = False
-verbose_gpu = False
+# verbose_gpu = False
+verbose_gpu = True
 local_astref = False
 debug = False
 
@@ -578,8 +580,8 @@ if biasnumb != 0:
 	plt.close('all')
 
 	#	Clear the momory pool
-	mempool.free_all_blocks()
 	del bfc
+	mempool.free_all_blocks()
 	if verbose_gpu:
 		print(f"Check the cleared GPU Memory Usage : {mempool.used_bytes()*1e-6:1.1f} Mbytes")
 	timetbl['status'][timetbl['process']=='master_frame_bias'] = True
@@ -673,8 +675,9 @@ if (darknumb > 0):
 		if verbose_gpu: print(f"dark combine GPU Memory Usage : {mempool.used_bytes()*1e-6:1.1f} Mbytes")
 
 		#	Clear the momory pool
-		mempool.free_all_blocks()
 		del dfc
+		mempool.free_all_blocks()
+		gc.collect()
 		if verbose_gpu: print(f"Check the cleared GPU Memory Usage : {mempool.used_bytes()*1e-6:1.1f} Mbytes")
 		darkdict[str(int(exptime))] = mdark
 
@@ -691,6 +694,8 @@ if (darknumb > 0):
 		os.system(cpcom)
 		plt.close('all')
 		del mdark
+		mempool.free_all_blocks()
+		gc.collect()
 
 	timetbl['status'][timetbl['process']=='master_frame_dark'] = True
 else:
@@ -813,9 +818,10 @@ if flatnumb > 0:
 		if verbose_gpu: print(f"flat combine GPU Memory Usage : {mempool.used_bytes()*1e-6:1.1f} Mbytes")
 
 		#	Clear the momory pool
-		mempool.free_all_blocks()
 		del _ffc
 		del mflat
+		mempool.free_all_blocks()
+		gc.collect()
 
 		if verbose_gpu: print(f"Check the cleared GPU Memory Usage : {mempool.used_bytes()*1e-6:1.1f} Mbytes")
 
@@ -906,22 +912,30 @@ for filte in np.unique(objtbl['filter']):
 				with fits.open(tmpflat, mode='readonly') as hdul:
 					mflat = cp.asarray(hdul[0].data, dtype='float32')
 				flatdict[filte] = mflat
+				del mflat
+				mempool.free_all_blocks()
 
 			#	Reduction
 			ofc.data = reduction(ofc.data, mbias, darkdict[str(int(closest_dark_exptime))], flatdict[filte])
 			ofc.write(batch_outfnames, overwrite=True)
 			del ofc
+			mempool.free_all_blocks()
+			# gc.collect()
 			if verbose_gpu: print(f"Object correction GPU Memory Usage : {mempool.used_bytes()*1e-6:1.1f} Mbytes")
 
 #	Check Memory pool
 if verbose_gpu: print(f"Check the cleared GPU Memory Usage : {mempool.used_bytes()*1e-6:1.1f} Mbytes")
 #	Clear all momories pool
 mempool.free_all_blocks()
-# del ofc
+#	Bias
 del mbias
-# del mdark
-# del mflat
+#	Dark Dictionary
+for key in list(darkdict.keys()):
+    del darkdict[key]
 del darkdict
+#	Dark Dictionary
+for key in list(flatdict.keys()):
+    del flatdict[key]
 del flatdict
 mempool.free_all_blocks()
 if verbose_gpu: print(f"Check the cleared GPU Memory Usage : {mempool.used_bytes()*1e-6:1.1f} Mbytes")
@@ -1057,6 +1071,25 @@ print(f"Memory Usage is below {memory_threshold}% - Start the Astrometry!!!")
 with ProcessPoolExecutor(max_workers=ncore) as executor:
 	# results = list(executor.map(calib.astrometry, fnamelist, objectlist, ralist, declist, fovlist, cpulimitlist, cfglist, _))
 	results = list(executor.map(calib.astrometry, fnamelist, objectlist, ralist, declist, fovlist, cpulimitlist, _, _))
+
+# WCS 계산 실패 체크
+failed_wcs_images = []
+for fname, result in zip(fnamelist, results):
+    solved_file = fname.replace('.fits', '.solved')  # solve-field가 생성하는 solved 파일
+    if not os.path.exists(solved_file):  # solved 파일이 없으면 실패로 간주
+        failed_wcs_images.append(fname)
+
+# 실패 이미지 처리
+if failed_wcs_images:
+	fail_wcs_log = open(f"{path_data}/solve_field_fail.txt", 'w')
+	print(f"Astrometry failed for {len(failed_wcs_images)} images:")
+	for img in failed_wcs_images:
+		print(f"  - {img}")
+		fail_wcs_log.write(f"{img}\n")
+	fail_wcs_log.close()
+else:
+	print("All images passed the astrometry step successfully.")
+
 
 
 delt = time.time() - st_
@@ -1234,7 +1267,9 @@ timetbl['status'][timetbl['process']=='missfits'] = True
 timetbl['time'][timetbl['process']=='missfits'] = delt_missfits
 
 #	Rename fdz*.fits (scamp astrometry) --> calib*.fits
-for inim in fdzimlist: calib.fnamechange(inim, obs)
+for inim in fdzimlist:
+	if inim not in failed_wcs_images:
+		calib.fnamechange(inim, obs)
 calimlist = sorted(glob.glob(f"{path_data}/calib*.fits"))
 
 for inim , _inhead in zip(calimlist, outheadlist):
