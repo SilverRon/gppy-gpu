@@ -1777,14 +1777,16 @@ t0_transient_searh = time.time()
 #======================================================================
 #	Generate Mask Images
 #======================================================================
-def create_mask_images(input_image, mask_suffix="mask.fits"):
-	data = fits.getdata(input_image)
-	mask = np.zeros_like(data, dtype=int)
-	mask[data == 0] = 1
-	mask[data != 0] = 0
+def create_mask_images(input_image, mask_suffix="mask.fits", force_run=False):
 	mask_filename = input_image.replace("fits", mask_suffix)
-	fits.writeto(mask_filename, mask.astype(np.int8), overwrite=True)
+	if (not os.path.exists(mask_filename)) | (force_run == True):
+		data = fits.getdata(input_image)
+		mask = np.zeros_like(data, dtype=int)
+		mask[data == 0] = 1
+		mask[data != 0] = 0
+		fits.writeto(mask_filename, mask.astype(np.int8), overwrite=True)
 	return mask_filename
+
 
 def combine_or_mask(in_mask_image, ref_mask_image, mask_suffix="all_mask.fits"):
 	inmask = fits.getdata(in_mask_image)
@@ -1808,7 +1810,8 @@ for stack_image in stacked_images:
 	# for ref_src in ['7DT', 'PS1']: ref_PS1_T14548_00000000_000000_r_0.fits
 	_reference_images_ps1 = glob.glob(f"{path_ref_frame}/ref_PS1_{obj}_*_*_{filte}_0.fits")
 	_reference_images_7dt = glob.glob(f"{path_ref_frame}/ref_7DT_{obj}_*_*_{filte}_*.fits")
-	_reference_images = _reference_images_7dt = _reference_images_ps1
+	_reference_images = _reference_images_7dt + _reference_images_ps1
+	_reference_images = [ref for ref in _reference_images if 'mask' not in ref]
 
 	if len(_reference_images) > 0:
 		ref_image = _reference_images[0]
@@ -1850,10 +1853,10 @@ for ss, (inim, refim, inmask_image, refmask_image, allmask_image) in enumerate(z
 		phot_subt_com = f"python {path_phot_sub} {hdim} {inmask_image}"
 		print(phot_subt_com)
 		os.system(phot_subt_com)
-		#	Transient Search Command
-		search_com = f"python {path_find} {inim} {refim} {hcim} {hdim}"
-		print(search_com)
-		os.system(search_com)
+		#	Transient Search Command --> Skip
+		# search_com = f"python {path_find} {inim} {refim} {hcim} {hdim}"
+		# print(search_com)
+		# os.system(search_com)
 
 delt_transient_searh = time.time() - t0_transient_searh
 timetbl['status'][timetbl['process']=='transient_searh'] = True
