@@ -1,5 +1,6 @@
 #============================================================
 import os
+import subprocess
 import glob
 import sys
 import time
@@ -125,7 +126,18 @@ while True:
                 delt = time.time() - t0
                 print(f" --> Done! ({delt:.1f} sec)\n")
                 print(gpcom)
-                os.system(gpcom)
+                # os.system(gpcom)
+                #   Run Pipeline
+                try:
+                    result = subprocess.run(gpcom.split(), check=True, capture_output=True, text=True)
+                    print(f"Pipeline executed successfully:\n{result.stdout}")
+                except subprocess.CalledProcessError as e:
+                    print(f"Error occurred while executing pipeline:\n{e.stderr}")
+                except KeyboardInterrupt:
+                    print("Process interrupted by user. Exiting safely...")
+                    sys.exit(1)  # 안전한 종료
+                except Exception as e:
+                    print(f"Unexpected error: {str(e)}")
                 check = False
                 # break
             else:
