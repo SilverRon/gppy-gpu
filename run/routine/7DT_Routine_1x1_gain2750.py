@@ -19,6 +19,7 @@ from datetime import datetime, timezone, timedelta
 from itertools import repeat
 import subprocess
 import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
 import warnings
 warnings.filterwarnings(action='ignore')
 #------------------------------------------------------------
@@ -401,6 +402,7 @@ obsinfo = calib.getobsinfo(obs, obstbl)
 
 ic1 = ImageFileCollection(path_new, keywords='*')
 if 'tile' not in upaths or upaths['tile'] == "":
+	print('Processing all tiles for the given date')
 	pass
 else:
 	try:
@@ -408,10 +410,18 @@ else:
 		file_list = [str(f) for f in ic1.summary['file']]
 		pattern = re.compile(fr'(?=.*{tile}|FLAT|DARK|BIAS)')
 		filtered_files = [f for f in file_list if pattern.search(f)]
+		if len(filtered_files) == 0:
+			print(f'No T{tile:05} in the given date')
+			sys.exit(1)
 		filtered_ic = ImageFileCollection(path_new, filenames=filtered_files)
 		ic1 = filtered_ic
+		print("\n#------------------------------------------------------------",
+			  f"#	T{tile:05} Selected",
+			  "#-----------------------------------------------------------\n",
+			  sep = '\n',
+		)
 	except Exception as e:
-		print('Tile Selection Failed\n', e)
+		print('Tile Selection Failed\nProcessing All.', e)
 #%%
 #------------------------------------------------------------
 #	Count the number of Light Frame
@@ -985,7 +995,6 @@ cp.cuda.set_allocator(None)
 #------------------------------------------------------------
 t0_astrometry_solve_field = time.time()
 #------------------------------------------------------------
-from concurrent.futures import ProcessPoolExecutor
 
 fnamelist = [f"{path_data}/{_fname}" for _fname in ic_fdzobj.summary['file']]
 pixscale = obsinfo['pixscale']*n_binning
@@ -1141,7 +1150,7 @@ def run_pre_sextractor(inim, outcat, param_simple, conv_simple, nnw_simple, pixs
 	print(sexcom)
 	# os.system(sexcom)
 	if verbose_sex:
-		os.system(cpcom_default_cfg)
+		os.system(sexcom)
 	else:
 		# Redirect SE output to a tmp log
 		os.system(log2tmp(sexcom, "presex"))
