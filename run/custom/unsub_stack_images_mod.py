@@ -327,7 +327,7 @@ class SwarpCom:
             path_imagelist = path_save / "images_to_stack.txt"
             self.path_imagelist = path_imagelist
 
-            path_bkgsub = path_save / "bkgsub"
+            path_bkgsub = path_save / "bkgunsub"
             if not path_bkgsub.exists():
                 path_bkgsub.mkdir()
             self.path_bkgsub = path_bkgsub
@@ -343,13 +343,13 @@ class SwarpCom:
             self.path_resamp = path_resamp
 
         else:
-            path_save = f"/lyman/data1/factory_whlee/selection/{self.obj}/{self.filte}"
+            path_save = f"/lyman/data1/factory_whlee/selection/{self.obj}/{self.filte}/unsub"
             self.path_save = path_save
             # 	Image List for SWarp
             path_imagelist = f"{path_save}/images_to_stack.txt"
             self.path_imagelist = path_imagelist
             # 	Background Subtracted
-            path_bkgsub = f"{path_save}/bkgsub"
+            path_bkgsub = f"{path_save}/bkgunsub"
             if not os.path.exists(path_bkgsub):
                 os.makedirs(path_bkgsub)
             self.path_bkgsub = path_bkgsub
@@ -381,7 +381,7 @@ class SwarpCom:
                     _data = hdul[0].data  # 데이터 접근
                     _hdr = hdul[0].header  # 헤더 접근
                     # _bkg = np.median(_data)
-                    _data -= _bkg
+                    # _data -= _bkg  # act like background subtraction but not actually subtracting
                     print(f"- {_bkg:.3f}")
                     fits.writeto(nim, _data, header=_hdr, overwrite=True)
             bkg_subtracted_images.append(nim)
@@ -552,7 +552,7 @@ if __name__ == "__main__":
 """
 
 if __name__ == "__main__":
-    mid_flt = ['m'+str(int(i)) for i in np.linspace(400, 875, 20)]
+    mid_flt = [int(i) for i in np.linspace(400, 875, 20)]
     broad_flt = ['u', 'g', 'r', 'i', 'z']
 
     parser = argparse.ArgumentParser()
@@ -582,8 +582,7 @@ if __name__ == "__main__":
             print(color.RED+' Need filter types, Terminate the program'+color.END)
             exit()
     if args.selection:
-        sig_num = float(args.selection)
-        type_select = f'{sig_num:.1f}sigma'
+        type_select = args.selection
         print('Use '+color.YELLOW+f'{type_select}'+color.END+' cut criteria')
     else:
         type_select = 'median'  # default
@@ -593,9 +592,8 @@ if __name__ == "__main__":
 
 
     # 이미지 리스트 파일들의 경로를 리스트로 저장
-    avail_image_lists = [f"/lyman/data1/factory_whlee/selection/{obj}/{filters}/select_{type_select}.txt" for filters in flt]
+    avail_image_lists = [f"/lyman/data1/factory_whlee/selection/{obj}/m{filters}/select_{type_select}.txt" for filters in flt]
     image_lists = [_file for _file in avail_image_lists if os.path.isfile(_file)]
-    print(image_lists)
 
     # 각 이미지 리스트 파일에 대해 SwarpCom 클래스를 실행
     for image_list in image_lists:
