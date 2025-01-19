@@ -10,6 +10,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+import argparse
 
 # time.sleep(60*60*2)
 from datetime import datetime
@@ -20,7 +21,8 @@ from astropy.io import fits
 from astropy.time import Time
 
 # ------------------------------------------------------------
-# from preprocess import calib
+sys.path.append('../../src/preprocess/')
+import calib
 
 # from util import tool
 
@@ -38,6 +40,18 @@ mpl.rcParams["axes.titlesize"] = 14
 mpl.rcParams["axes.labelsize"] = 20
 plt.rcParams["savefig.dpi"] = 500
 plt.rc("font", family="serif")
+
+class color:
+	PURPLE = '\033[95m'
+	CYAN = '\033[96m'
+	DARKCYAN = '\033[36m'
+	BLUE = '\033[94m'
+	GREEN = '\033[92m'
+	YELLOW = '\033[93m'
+	RED = '\033[91m'
+	BOLD = '\033[1m'
+	UNDERLINE = '\033[4m'
+	END = '\033[0m'
 
 
 # ------------------------------------------------------------
@@ -133,7 +147,7 @@ class SwarpCom:
         # ------------------------------------------------------------
         # 	Path
         # ------------------------------------------------------------
-        self.path_config = "./config"
+        self.path_config = "/home/snu/wohylee_gpPy/gppy-gpu/config" # Hard coded
 
         if imagelist_file_to_stack is None:
             imagelist_file_to_stack = input(f"Image List to Stack (/data/data.txt):")
@@ -313,7 +327,7 @@ class SwarpCom:
             path_imagelist = path_save / "images_to_stack.txt"
             self.path_imagelist = path_imagelist
 
-            path_bkgsub = path_save / "bkgsub"
+            path_bkgsub = path_save / "bkgunsub"
             if not path_bkgsub.exists():
                 path_bkgsub.mkdir()
             self.path_bkgsub = path_bkgsub
@@ -329,13 +343,13 @@ class SwarpCom:
             self.path_resamp = path_resamp
 
         else:
-            path_save = f"/large_data/Commission/{self.obj}/{self.filte}"
+            path_save = f"/lyman/data1/factory_whlee/selection/{self.obj}/{self.filte}/unsub"
             self.path_save = path_save
             # 	Image List for SWarp
             path_imagelist = f"{path_save}/images_to_stack.txt"
             self.path_imagelist = path_imagelist
             # 	Background Subtracted
-            path_bkgsub = f"{path_save}/bkgsub"
+            path_bkgsub = f"{path_save}/bkgunsub"
             if not os.path.exists(path_bkgsub):
                 os.makedirs(path_bkgsub)
             self.path_bkgsub = path_bkgsub
@@ -367,7 +381,7 @@ class SwarpCom:
                     _data = hdul[0].data  # 데이터 접근
                     _hdr = hdul[0].header  # 헤더 접근
                     # _bkg = np.median(_data)
-                    _data -= _bkg
+                    # _data -= _bkg  # act like background subtraction but not actually subtracting
                     print(f"- {_bkg:.3f}")
                     fits.writeto(nim, _data, header=_hdr, overwrite=True)
             bkg_subtracted_images.append(nim)
@@ -537,7 +551,50 @@ if __name__ == "__main__":
     # imcom.run()
 """
 
-# imagelist_file_to_stack = sys.argv[1]
 if __name__ == "__main__":
-    imagelist_file_to_stack = input("Image File List:")
-    SwarpCom(imagelist_file_to_stack).run()
+    mid_flt = [int(i) for i in np.linspace(400, 875, 20)]
+    broad_flt = ['u', 'g', 'r', 'i', 'z']
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--selection", "-s", type=str, nargs='?', help="Standard deviation cut of images\n\t'median': median cut \
+                        \n\t'nsigma': +n sigma cut, n for specific float.")
+    parser.add_argument("--filter", "-f", type=str, nargs='?', help="Filter type to stack\n\t'all': use all filters \
+                        \n\t'medium': use only medium filters\n\t'broad': use only broad filters")
+    parser.add_argument("--object", "-o", type=str, nargs='?', help="Target object name")
+    parser.add_argument("--verbose", "-v", type=bool, nargs='?', help="Print outputs")
+
+    verbose = False
+
+    args = parser.parse_args()
+    if args.object:
+        obj = args.object
+    else: 
+        print(color.RED+' Need object name, Terminate the program'+color.END)
+        exit()
+    if args.filter:
+        if args.filter == 'medium':
+            flt = mid_flt
+        elif args.filter == 'broad':
+            flt = broad_flt
+        elif args.filter == 'all':
+            flt = mid_flt + broad_flt
+        else:
+            print(color.RED+' Need filter types, Terminate the program'+color.END)
+            exit()
+    if args.selection:
+        type_select = args.selection
+        print('Use '+color.YELLOW+f'{type_select}'+color.END+' cut criteria')
+    else:
+        type_select = 'median'  # default
+        print('Use '+color.YELLOW+f'{type_select}'+color.END+' cut criteria')
+    if args.verbose:
+        verbose = args.verbose
+
+
+    # 이미지 리스트 파일들의 경로를 리스트로 저장
+    avail_image_lists = [f"/lyman/data1/factory_whlee/selection/{obj}/m{filters}/select_{type_select}.txt" for filters in flt]
+    image_lists = [_file for _file in avail_image_lists if os.path.isfile(_file)]
+
+    # 각 이미지 리스트 파일에 대해 SwarpCom 클래스를 실행
+    for image_list in image_lists:
+        SwarpCom(image_list).run()
