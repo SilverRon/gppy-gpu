@@ -1,12 +1,12 @@
 {
-    "path_base": "/lyman/data1/factory_dhhyun",
-    "path_obsdata": "/lyman/data1/obsdata",
-    "path_processed": "/lyman/data1/factory_dhhyun/processed_ellipastref",
+    "path_base": "/data/pipeline_reform/factory_test",
+    "path_obsdata": "/data/pipeline_reform/obsdata_test",
+    "path_processed": "/data/pipeline_reform/processed_test",
     "path_refcat": "",
-    "path_ref_scamp": "/lyman/data1/factory_dhhyun/ref_scamp",
+    "path_ref_scamp": "",
     "path_log": "",
-    "tile": "9038",
-    "path_astrefcat": "/lyman/data1/factory/catalog/gaia_dr3_7DT/T09038.fits",
+    "tile": "",
+    "path_astrefcat": "",
     "path_scampconfig": "",
     "_comment": "Name it 'path.json', and put it in run/routine or run/custom. path_base is required while others are optional, and a default file structure will be used if blank. Paths will be generated if they don't exist, so mind any typos."
 }
