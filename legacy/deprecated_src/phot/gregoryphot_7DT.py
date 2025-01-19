@@ -337,7 +337,8 @@ def phot_routine(inim):
 
 	add_aperture_dict = {}
 	for key in list(aperture_dict.keys()):
-		add_aperture_dict[key.replace('MAG_', '')] = (round(aperture_dict[key][0], 3), aperture_dict[key][1])
+		# add_aperture_dict[key.replace('MAG_', '')] = (round(aperture_dict[key][0], 3), aperture_dict[key][1])
+		add_aperture_dict[key.replace('MAG_', '')] = (aperture_dict[key][0], aperture_dict[key][1])
 	#	MAG KEY
 	inmagkeys = list(aperture_dict.keys())
 	#	MAG ERROR KEY
@@ -473,12 +474,19 @@ def phot_routine(inim):
 		'JD': (jd, 'Julian Date of the observation'),
 		'MJD': (mjd, 'Modified Julian Date of the observation'),
 		#	Image Definition
-		'SEEING': (round(seeing, 3), 'SEEING [arcsec]'),
-		'PEEING': (round(peeing, 3), 'SEEING [pixel]'),
-		'ELLIP': (round(ellipticity, 3), 'ELLIPTICITY 1-B/A [0-1]'),
-		'ELONG': (round(elongation, 3), 'ELONGATION A/B [1-]'),
-		'SKYSIG': (round(skysig, 3), 'SKY SIGMA VALUE'),
-		'SKYVAL': (round(skymed, 3), 'SKY MEDIAN VALUE'),
+		# 'SEEING': (round(seeing, 3), 'SEEING [arcsec]'),
+		# 'PEEING': (round(peeing, 3), 'SEEING [pixel]'),
+		# 'ELLIP': (round(ellipticity, 3), 'ELLIPTICITY 1-B/A [0-1]'),
+		# 'ELONG': (round(elongation, 3), 'ELONGATION A/B [1-]'),
+		# 'SKYSIG': (round(skysig, 3), 'SKY SIGMA VALUE'),
+		# 'SKYVAL': (round(skymed, 3), 'SKY MEDIAN VALUE'),
+		#	No rounding
+		'SEEING': (seeing, 'SEEING [arcsec]'),
+		'PEEING': (peeing, 'SEEING [pixel]'),
+		'ELLIP': (ellipticity, 'ELLIPTICITY 1-B/A [0-1]'),
+		'ELONG': (elongation, 'ELONGATION A/B [1-]'),
+		'SKYSIG': (skysig, 'SKY SIGMA VALUE'),
+		'SKYVAL': (skymed, 'SKY MEDIAN VALUE'),
 		#	Reference Source Conditions for ZP
 		'REFCAT': (refcatname, 'REFERENCE CATALOG NAME'),
 		'MAGLOW': (refmaglower, 'REF MAG RANGE, LOWER LIMIT'),
@@ -565,10 +573,10 @@ def phot_routine(inim):
 
 
 		#	Formatting
-		setbl[_calmagkey].format = '.3f'
-		setbl[_calmagerrkey].format = '.3f'
-		setbl[_calfluxkey].format = '.3f'
-		setbl[_calfluxerrkey].format = '.3f'
+		# setbl[_calmagkey].format = '.3f'
+		# setbl[_calmagerrkey].format = '.3f'
+		# setbl[_calfluxkey].format = '.3f'
+		# setbl[_calfluxerrkey].format = '.3f'
 
 		#	Depth Calculation
 		aperture_size = aperture_dict[inmagkey][0]
@@ -599,10 +607,14 @@ def phot_routine(inim):
 
 
 		_zp_dict = {
-			_zpkey: (round(zp, 3), f'ZERO POINT for {inmagkey}'),
-			_zperrkey: (round(zperr, 3), f'ZERO POINT ERROR for {inmagkey}'),
-			_ul3key: (round(ul_3sig, 3), f'3 SIGMA LIMITING MAG FOR {inmagkey}'),
-			_ul5key: (round(ul_5sig, 3), f'5 SIGMA LIMITING MAG FOR {inmagkey}'),
+			# _zpkey: (round(zp, 3), f'ZERO POINT for {inmagkey}'),
+			# _zperrkey: (round(zperr, 3), f'ZERO POINT ERROR for {inmagkey}'),
+			# _ul3key: (round(ul_3sig, 3), f'3 SIGMA LIMITING MAG FOR {inmagkey}'),
+			# _ul5key: (round(ul_5sig, 3), f'5 SIGMA LIMITING MAG FOR {inmagkey}'),
+			_zpkey: (zp, f'ZERO POINT for {inmagkey}'),
+			_zperrkey: (zperr, f'ZERO POINT ERROR for {inmagkey}'),
+			_ul3key: (ul_3sig, f'3 SIGMA LIMITING MAG FOR {inmagkey}'),
+			_ul5key: (ul_5sig, f'5 SIGMA LIMITING MAG FOR {inmagkey}'),
 		}
 
 		# _zp_dict
