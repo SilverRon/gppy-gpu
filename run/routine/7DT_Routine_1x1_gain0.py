@@ -140,12 +140,12 @@ with open(Path_run / 'path.json', 'r') as jsonfile:
 
 path_base = upaths['path_base']  # '/home/snu/gppyTest_dhhyun/factory'  # '/large_data/factory'
 path_obsdata = f'{path_base}/../obsdata' if upaths['path_obsdata'] == '' else upaths['path_obsdata']
-path_gal = f'{path_base}/../processed' if upaths['path_gal'] == '' else upaths['path_gal']
+path_processed = f'{path_base}/../processed' if upaths['path_processed'] == '' else upaths['path_processed']
 path_refcat = f'{path_base}/ref_cat' if upaths['path_refcat'] == '' else upaths['path_refcat']
-path_ref_scamp = f'{path_base}/ref_scamp' if upaths['path_ref_scamp'] == '' else upaths['path_ref_scamp']
+path_ref_scamp = f'{path_base}/ref_scamp' if 'path_ref_scamp' not in upaths or upaths['path_ref_scamp'] == '' else upaths['path_ref_scamp']
 
-# path_gal = f'{path_base}/../processed'
-# path_gal = f'{path_base}/../processed_{n_binning}x{n_binning}'
+# path_processed = f'{path_base}/../processed'
+# path_processed = f'{path_base}/../processed_{n_binning}x{n_binning}'
 # path_refcat = '/data4/gecko/factory/ref_frames/LOAO'
 #------------------------------------------------------------
 
@@ -172,7 +172,8 @@ path_find = str(Path_src / 'phot/gregoryfind_7DT.py')
 #------------------------------------------------------------
 path_raw = f'{path_obsdata}/{obs.upper()}'
 # rawlist = sorted(glob.glob(f'{path_raw}/2???-??-??_gain2750'))
-rawlist = [os.path.abspath(path) for path in sorted(glob.glob(f'{path_raw}/2???-??-??'))]
+# rawlist = [os.path.abspath(path) for path in sorted(glob.glob(f'{path_raw}/2???-??-??'))]
+rawlist = [os.path.abspath(path) for path in sorted(glob.glob(f'{path_raw}/2???-??-??_gain0'))]  # dhhyun ad-hoc
 #------------------------------------------------------------
 path_obs = f'{path_config}/obs.dat'
 path_changehdr = f'{path_config}/changehdr.dat'
@@ -226,7 +227,8 @@ if not os.path.exists(path_log):
 #------------------------------------------------------------
 #	Table
 #------------------------------------------------------------
-logtbl = ascii.read(path_log)#, delimiter=',', format='csv')
+# logtbl = ascii.read(path_log)#, delimiter=',', format='csv')
+logtbl = Table.read(path_log, format='csv')
 datalist = np.copy(logtbl['date'])
 obstbl = ascii.read(path_obs)
 hdrtbl = ascii.read(path_changehdr)
@@ -1839,7 +1841,7 @@ for oo, obj in enumerate(objarr):
 	#	Filter
 	for filte in _filterarr:
 		#	Path to Destination
-		path_destination = f'{path_gal}/{obj}/{obs}/{filte}'
+		path_destination = f'{path_processed}/{obj}/{obs}/{filte}'
 		path_phot = f"{path_destination}/phot"
 		path_transient = f"{path_destination}/transient"
 		path_transient_cand_png = f"{path_transient}/png_image"
