@@ -20,7 +20,7 @@ from astropy.io import fits
 from astropy.time import Time
 
 # ------------------------------------------------------------
-from preprocess import calib
+# from preprocess import calib
 
 # from util import tool
 
@@ -538,5 +538,6 @@ if __name__ == "__main__":
 """
 
 # imagelist_file_to_stack = sys.argv[1]
-imagelist_file_to_stack = input("Image File List:")
-SwarpCom(imagelist_file_to_stack).run()
+if __name__ == "__main__":
+    imagelist_file_to_stack = input("Image File List:")
+    SwarpCom(imagelist_file_to_stack).run()
