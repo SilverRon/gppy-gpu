@@ -207,6 +207,8 @@ if not os.path.exists(path_factory):
 	os.makedirs(path_factory)
 if not os.path.exists(path_refcat):
 	os.makedirs(path_refcat)
+if not os.path.exists(path_ref_scamp):
+	os.makedirs(path_ref_scamp)
 # if not os.path.exists(path_save):
 # 	os.makedirs(path_save)
 for imagetyp in ['zero', 'flat', 'dark']:
