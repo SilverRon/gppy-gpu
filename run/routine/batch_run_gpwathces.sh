@@ -5,7 +5,8 @@ NUM_REPETITIONS=15
 
 # 첫 번째 탭부터 반복하여 실행
 for i in $(seq 1 $NUM_REPETITIONS); do
-    gnome-terminal --tab -- bash -c "python gpwatch_7DT_gain2750_test.py 7DT$(printf "%02d" $i); exec bash"
+    TAB_NAME=$(printf "7DT%02d" $i)
+    gnome-terminal --tab --title="$TAB_NAME" -- bash -c "python gpwatch_7DT_gain2750_test.py 7DT$(printf "%02d" $i); exec bash"
     sleep 10  # 각 탭 실행 사이에 N초 대기
 done
 
