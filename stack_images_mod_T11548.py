@@ -560,8 +560,9 @@ def process_image_list(image_list_file, center=center):
 if __name__ == "__main__":
     # 이미지 리스트 파일들의 경로를 리스트로 저장
     image_lists = [
-        "/lyman/data1/Commission/T11548/m800/select.txt",
-        "/lyman/data1/Commission/T11548/m825/select.txt",
+        # "/lyman/data1/Commission/T11548/m800/select.txt",
+        # "/lyman/data1/Commission/T11548/m825/select.txt",
+        "/lyman/data1/Commission/T11548/clear/select.txt",
     ]
 
     # 각 이미지 리스트 파일에 대해 SwarpCom 클래스를 실행

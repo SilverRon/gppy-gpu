@@ -38,7 +38,7 @@ def get_input():
     else:
         return input("OBS? (e.g. 7DT01): ")
 #------------------------------------------------------------
-obs = get_input()
+obs = get_input().upper()
 print(f"="*60)
 print(f"Start to Monitor {obs} Data")
 # obs = '7DT01'
@@ -125,10 +125,11 @@ while True:
             if current_size == last_size:
                 delt = time.time() - t0
                 print(f" --> Done! ({delt:.1f} sec)\n")
-                print(gpcom)
+                # print(gpcom)
                 # os.system(gpcom)
                 #   Run Pipeline
                 try:
+                    print(f"Run Pipeline: {gpcom}")
                     result = subprocess.run(gpcom.split(), check=True, capture_output=True, text=True)
                     print(f"Pipeline executed successfully:\n{result.stdout}")
                 except subprocess.CalledProcessError as e:
