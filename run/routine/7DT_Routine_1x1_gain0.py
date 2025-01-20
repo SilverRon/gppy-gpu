@@ -1236,14 +1236,49 @@ t0_get_polygon_info = time.time()
 
 # t0_wcs = time.time()
 for cc, calim in enumerate(calimlist):
-	center, vertices = tool.get_wcs_coordinates(calim)
+	# Extract WCS information (center, CD matrix)
+	center, vertices, cd_matrixs = tool.get_wcs_coordinates(calim)
+	cd1_1, cd1_2, cd2_1, cd2_2 = cd_matrixs
 
-	fits.setval(calim, "RACENT", value=round(center[0].item(), 3), comment="RA CENTER [deg]")	
-	fits.setval(calim, "DECCENT", value=round(center[1].item(), 3), comment="DEC CENTER [deg]")	
-	
+	# updates = [
+	# 	("CTYPE1", 'RA---TPV', 'WCS projection type for this axis'),
+	# 	("CTYPE2", 'DEC--TPV', 'WCS projection type for this axis')
+	# ]
+	# Define header list to udpate
+	updates = [
+		("RACENT", round(center[0].item(), 3), "RA CENTER [deg]"),
+		("DECCENT", round(center[1].item(), 3), "DEC CENTER [deg]")
+	]
+
+	# updates.append(("RACENT", round(center[0].item(), 3), "RA CENTER [deg]"))
+	# updates.append(("DECCENT", round(center[1].item(), 3), "DEC CENTER [deg]"))
+
+	# RA, Dec Polygons
 	for ii, (_ra, _dec) in enumerate(vertices):
-		fits.setval(calim, f"RAPOLY{ii}", value=round(_ra, 3), comment=f"RA POLYGON {ii} [deg]")	
-		fits.setval(calim, f"DEPOLY{ii}", value=round(_dec, 3), comment=f"DEC POLYGON {ii} [deg]")
+		updates.append((f"RAPOLY{ii}", round(_ra, 3), f"RA POLYGON {ii} [deg]"))
+		updates.append((f"DEPOLY{ii}", round(_dec, 3), f"DEC POLYGON {ii} [deg]"))
+
+	# Field Rotation
+	try:
+		if (cd1_1 != 0) and (cd1_2 != 0) and (cd2_1 != 0) and (cd2_2 != 0):
+			rotation_angle_1, rotation_angle_2 = tool.calculate_field_rotation(cd1_1, cd1_2, cd2_1, cd2_2)
+		else:
+			rotation_angle_1, rotation_angle_2 = float('nan'), float('nan')
+	except Exception as e:
+		print(f'Error: {e}')
+		print(f'Image: {calim}')
+		rotation_angle_1, rotation_angle_2 = float('nan'), float('nan')
+
+	# Update rotation angle
+	updates.append(('ROTANG1', rotation_angle_1, 'Rotation angle from North [deg]'))
+	updates.append(('ROTANG2', rotation_angle_2, 'Rotation angle from East [deg]'))
+
+	# FITS header update
+	with fits.open(calim, mode='update') as hdul:
+		for key, value, comment in updates:
+			hdul[0].header[key] = (value, comment)
+		hdul.flush()  # 변경 사항을 디스크에 저장
+
 delt_get_polygon_info = time.time() - t0_get_polygon_info
 timetbl['status'][timetbl['process']=='get_polygon_info'] = True
 timetbl['time'][timetbl['process']=='get_polygon_info'] = delt_get_polygon_info
