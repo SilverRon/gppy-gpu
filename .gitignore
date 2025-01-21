@@ -169,4 +169,4 @@ coadd.weight.fits
 **/missfits.xml
 **/scamp.xml
 **/swarp.xml
-mprofile_*.dat
+**/mprofile_*.dat
