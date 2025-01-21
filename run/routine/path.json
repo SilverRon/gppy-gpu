@@ -1,7 +1,7 @@
 {
     "path_base": "/data/pipeline_reform/factory_test",
     "path_obsdata": "/data/pipeline_reform/obsdata_test",
-    "path_processed": "/data/pipeline_reform/processed_test",
+    "path_processed": "/data/pipeline_reform/processed_test_light",
     "path_refcat": "",
     "path_ref_scamp": "",
     "path_log": "",

@@ -14,12 +14,15 @@ import time
 import gc
 import glob
 import json
+import shutil
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from itertools import repeat
 import subprocess
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 import warnings
 warnings.filterwarnings(action='ignore')
 #------------------------------------------------------------
@@ -89,7 +92,6 @@ from util.path_manager import log2tmp
 #------------------------------------------------------------
 plt.ioff()
 InteractiveShell.ast_node_interactivity = "last_expr"
-#------------------------------------------------------------
 mpl.rcParams["axes.titlesize"] = 14
 mpl.rcParams["axes.labelsize"] = 20
 plt.rcParams['savefig.dpi'] = 500
@@ -122,11 +124,12 @@ ncore = 4
 print(f"- Number of Cores: {ncore}")
 
 memory_threshold = 50
+
 #------------------------------------------------------------
 #	Ready
 #------------------------------------------------------------
 #	OBS
-# revision
+# This is for running the script with jupyter
 try:
 	obs = (sys.argv[1]).upper() # raises IndexError if fed no arguments
 	if not bool(re.match(r"7DT\d{2}", obs)):
@@ -139,7 +142,7 @@ except Exception as e:
 	print(f'Unexpected behavior. Check parameter obs')
 
 print(f'# Observatory : {obs.upper()}')
-#%%
+
 #------------------------------------------------------------
 #	Path
 #------------------------------------------------------------
@@ -169,7 +172,8 @@ path_factory = f'{path_base}/{obs.lower()}'
 # path_config = '/home/paek/config'
 path_config = str(Path_root / 'config')  # '../../config'
 path_keys = path_config  # f'../../config'
-path_default_gphot = f'{path_config}/gphot.{obs.lower()}_{n_binning}x{n_binning}.config'
+# path_default_gphot = f'{path_config}/gphot.{obs.lower()}_{n_binning}x{n_binning}.config'
+path_default_gphot = f'{path_config}/gphot.7dt_{n_binning}x{n_binning}.config'
 path_mframe = f'{path_base}/master_frame_{n_binning}x{n_binning}_gain2750'
 # path_calib = f'{path_base}/calib'
 #------------------------------------------------------------
@@ -287,7 +291,7 @@ timetbl['process'] = [
 ]
 timetbl['status'] = False
 timetbl['time'] = 0.0 * u.second
-#%%
+
 #============================================================
 #------------------------------------------------------------
 #	Main Body
@@ -391,15 +395,17 @@ print(f"-"*60)
 
 if os.path.exists(path_data):
 	#	Remove old folder and re-copy folder
-	rmcom = f'rm -rf {path_data}'
-	print(rmcom)
-	os.system(rmcom)
-else:
-	pass
+	# rmcom = f'rm -rf {path_data}'
+	# print(rmcom)
+	# os.system(rmcom)
+	print(f"Removing existing factory dir: {path_data}")
+	shutil.rmtree(path_data)
+
 
 if not os.path.exists(path_data):
 	os.makedirs(path_data)
 obsinfo = calib.getobsinfo(obs, obstbl)
+
 #%%
 # Added Tile Selection Feature
 
@@ -425,7 +431,8 @@ else:
 		)
 	except Exception as e:
 		print('Tile Selection Failed\nProcessing All.', e)
-#%%
+
+
 #------------------------------------------------------------
 #	Count the number of Light Frame
 #------------------------------------------------------------
@@ -469,7 +476,7 @@ except:
 #------------------------------------------------------------
 # ### Marking the `GECKO` data
 
-# %%
+
 # testobj = 'S190425z'
 # project = "7DT"
 # obsmode = "MONITORING" # Default
@@ -494,7 +501,6 @@ print(f"[{project}] {obsmode}")
 
 # - Slack notification
 
-# %%
 if slack_report:
 	OAuth_Token = keytbl['key'][keytbl['name']=='slack'].item()
 
@@ -519,10 +525,12 @@ if len(glob.glob(f"{path_new}/*.fits")) == 0:
 
 	print(f"[EXIT!] {note}")
 	sys.exit()
+
+
+# %%
 # ### Master Frame
 # - Bias
 
-# %%
 # st = time.time()
 #   GPU
 #============================================================
@@ -1907,10 +1915,6 @@ for file_to_remove_pattern in file_to_remove_pattern_list:
 #	File Transfer
 #======================================================================
 t0_data_transfer = time.time()
-
-from concurrent.futures import ThreadPoolExecutor
-import shutil
-from functools import partial
 
 # def move_file(file_path, destination_folder):
 #     file_name = os.path.basename(file_path)
