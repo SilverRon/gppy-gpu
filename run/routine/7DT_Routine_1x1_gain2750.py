@@ -1279,7 +1279,7 @@ t0_missfits = time.time()
 
 ##	Single-Thread MissFits Compile
 # missfitscom = f"missfits @{path_image_missfits_list} @{path_head_missfits_list}"
-missfitscom = f"missfits @{path_image_missfits_list}"
+missfitscom = f"missfits -c {path_config}/7dt.missfits @{path_image_missfits_list}"
 ##	Multi-Threads MissFits Compile
 # missfitscom = f"missfits @{path_image_missfits_list} @{path_head_missfits_list} -NTHREADS {ncore}"
 print(missfitscom)
