@@ -107,7 +107,7 @@ verbose_sex = False
 # verbose_gpu = False
 slack_report = True
 verbose_gpu = True
-local_astref = True
+local_astref = False
 debug = True
 if debug:
 	slack_report = False
@@ -2083,14 +2083,14 @@ objtbl.write(f"{path_data}/data_processing.log", format='csv')
 #	Slack message
 #======================================================================
 # delt_total = round(timetbl['time'][timetbl['process']=='total'].item()/60., 1)
-if slack_report:
-	delt_total = (time.time() - starttime)
-	timetbl['status'][timetbl['process']=='total'] = True
-	timetbl['time'][timetbl['process']=='total'] = delt_total
-	#   Time Table
-	timetbl['time'].format = '1.3f'
-	timetbl.write(f'{path_data}/obs.summary.log', format='csv', overwrite=True)
+delt_total = (time.time() - starttime)
+timetbl['status'][timetbl['process']=='total'] = True
+timetbl['time'][timetbl['process']=='total'] = delt_total
+#   Time Table
+timetbl['time'].format = '1.3f'
+timetbl.write(f'{path_data}/obs.summary.log', format='csv', overwrite=True)
 
+if slack_report:
 	channel = '#pipeline'
 	text = f'[`gpPy`+GPU/{project}-{obsmode}] Processing Complete {obs} {os.path.basename(path_new)} Data ({nobj} objects) with {ncore} cores taking {delt_total/60.:.1f} mins'
 
