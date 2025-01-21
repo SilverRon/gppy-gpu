@@ -74,6 +74,7 @@ try:
 	Path_src = Path_root / 'src'
 	Path_run = path_thisfile.parent
 except NameError:
+	# in case for ipython
 	Path_src = find_gppy_gpu_src()
 	Path_root = Path(Path_src).parent 
 	Path_run = Path_root / 'run' / 'routine'
@@ -108,7 +109,7 @@ verbose_sex = False
 slack_report = True
 verbose_gpu = True
 local_astref = False
-debug = True
+debug = False  # True
 if debug:
 	slack_report = False
 
