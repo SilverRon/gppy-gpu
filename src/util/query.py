@@ -28,6 +28,7 @@ from astropy.table import unique
 path_thisfile = Path(__file__).resolve()
 path_root = path_thisfile.parent.parent.parent
 sys.path.append(str(path_root / 'src'))
+path_to_filterset = str(path_root / 'config' / 'filterset')  # '/home/gp/gppy/config/filterset'
 # sys.path.append('..')
 from util import tool
 from phot import gpphot
@@ -970,9 +971,8 @@ def query_gaiaxp_continuous_raw(radeg, decdeg, query_radius, fname, mode='defaul
 	data.write(fname, format='csv', overwrite=True)
 
 	return ids.to_pandas()
+
 #-------------------------------------------------------------------------#
-# path_to_filterset = '/home/gp/gppy/config/filterset'
-path_to_filterset = str(path_root / 'config/filterset')
 PhotometricSystem = load_additional_systems(path_to_filterset)
 #-------------------------------------------------------------------------#
 def convert_gaiaxp_to_7DT_synphot(fname, metadf,):
