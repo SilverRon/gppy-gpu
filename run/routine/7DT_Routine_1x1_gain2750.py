@@ -551,10 +551,15 @@ hdr = ast.astrom(path_data, ic_fdzobj, obsinfo, n_binning, path_config, memory_t
 #	Photometry
 #------------------------------------------------------------
 from refactor import photometry as ph
+from refactor import combine as cm
 
-stacked_images = ph.phot(path_data, path_default_gphot, path_phot_mp, ncore, n_binning, timetbl,
-						 path_config, tile_name_pattern, skygrid_table, obs, hdr)
+path_new_gphot, timetbl, lines = \
+	ph.phot(path_data, path_default_gphot, path_phot_mp, ncore, n_binning, timetbl)
 
+timetbl, stacked_images = cm.stack(path_config, path_data, tile_name_pattern, skygrid_table, obs, hdr, timetbl)
+
+# after stack
+timetbl = ph.phot_com(path_new_gphot, lines, path_data, path_phot_mp, ncore, n_binning, timetbl)
 
 # %%
 
