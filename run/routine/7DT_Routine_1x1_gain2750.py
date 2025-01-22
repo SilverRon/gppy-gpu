@@ -108,7 +108,6 @@ start_localtime = time.strftime('%Y-%m-%d_%H:%M:%S_(%Z)', time.localtime())
 # n_binning = 2
 n_binning = 1
 verbose_sex = False
-# verbose_gpu = False
 slack_report = True
 verbose_gpu = True
 local_astref = False
@@ -123,6 +122,10 @@ if debug:
 # 	ncore = 2
 ncore = 4
 print(f"- Number of Cores: {ncore}")
+
+project = '7DT/7DS'
+obsmode = 'COMISSION'
+print(f"[{project}] {obsmode}")
 
 memory_threshold = 50
 
@@ -381,7 +384,7 @@ if not os.path.exists(path_save_all_log):
 	print(f"Creat {path_save_all_log}")
 	os.makedirs(path_save_all_log)
 
-#	Skil Test Data
+#	Skip Test Data
 if '2023-00' in path_new:
 	print(f"This is Test Data --> Skip All Report")
 	pass
@@ -407,10 +410,10 @@ if not os.path.exists(path_data):
 	os.makedirs(path_data)
 obsinfo = calib.getobsinfo(obs, obstbl)
 
-#%%
-# Added Tile Selection Feature
+
 
 ic1 = ImageFileCollection(path_new, keywords='*')
+# Tile Selection
 if 'tile' not in upaths or upaths['tile'] == "":
 	print('Processing all tiles for the given date')
 	pass
@@ -423,8 +426,7 @@ else:
 		if len(filtered_files) == 0:
 			print(f'No T{tile:05} in the given date')
 			sys.exit(1)
-		filtered_ic = ImageFileCollection(path_new, filenames=filtered_files)
-		ic1 = filtered_ic
+		ic1 = ImageFileCollection(path_new, filenames=filtered_files)
 		print("\n#------------------------------------------------------------",
 			  f"#	T{tile:05} Selected",
 			  "#-----------------------------------------------------------\n",
@@ -495,9 +497,6 @@ except:
 # 			pass
 # else:
 # 	pass
-project = '7DT/7DS'
-obsmode = 'COMISSION'
-print(f"[{project}] {obsmode}")
 
 
 # - Slack notification
@@ -529,8 +528,9 @@ if len(glob.glob(f"{path_new}/*.fits")) == 0:
 
 
 # %%
-# ### Master Frame
-
+#------------------------------------------------------------
+#	Preprocessing
+#------------------------------------------------------------
 from refactor import preprocessing as pp
 
 ic_fdzobj, fdzimlist, objtbl = pp.preproc(obs, path_data, path_mframe, path_log,
@@ -955,6 +955,8 @@ delt_get_polygon_info = time.time() - t0_get_polygon_info
 timetbl['status'][timetbl['process']=='get_polygon_info'] = True
 timetbl['time'][timetbl['process']=='get_polygon_info'] = delt_get_polygon_info
 
+# %%
+
 #------------------------------------------------------------
 #	Photometry
 #------------------------------------------------------------
@@ -1053,8 +1055,6 @@ def calc_mean_dateloc(dateloclist):
 	# 필요한 경우, datetime 객체를 ISOT 형식의 문자열로 변환
 	mean_isot_time = mean_datetime.isoformat()
 	return mean_isot_time
-
-
 
 
 def calc_alignment_shift(incat1, incat2, matching_sep=1,):
