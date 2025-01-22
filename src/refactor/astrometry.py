@@ -1,3 +1,29 @@
+def run_pre_sextractor(inim, outcat, conf_simple, param_simple, conv_simple, nnw_simple, pixscale, verbose_sex=False):
+    import os
+    import sys
+    from pathlib import Path
+
+    # Path Setup for Custom Packages
+    path_thisfile = Path(__file__).resolve()  # /gppy-gpu/src/refactor/preprocessing.py
+    Path_root = path_thisfile.parents[2]  # gppu-gpu
+    Path_src = Path_root / 'src'
+    if Path_src not in map(Path, sys.path):
+        sys.path.append(str(Path_src)) 
+    from util.path_manager import log2tmp
+
+    # outhead = inim.replace('fits', 'head')
+    # outcat = inim.replace('fits', 'pre.cat')
+
+    #	Pre-Source EXtractor
+    sexcom = f"source-extractor -c {conf_simple} {inim} -CATALOG_NAME {outcat} -CATALOG_TYPE FITS_LDAC -PARAMETERS_NAME {param_simple} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PIXEL_SCALE {pixscale}"
+    print(sexcom)
+    # os.system(sexcom)
+    if verbose_sex:
+        os.system(sexcom)
+    else:
+        # Redirect SE output to a tmp log
+        os.system(log2tmp(sexcom, "presex"))
+
 def astrom(path_data, ic_fdzobj, obsinfo, n_binning, path_config, memory_threshold,
            ncore, fdzimlist, timetbl, objtbl, verbose_sex, objarr, local_astref,
            tile_name_pattern, path_ref_scamp, upaths, debug, obs):
@@ -20,7 +46,6 @@ def astrom(path_data, ic_fdzobj, obsinfo, n_binning, path_config, memory_thresho
         sys.path.append(str(Path_src)) 
     from preprocess import calib
     from util import tool
-    from util.path_manager import log2tmp
 
     #------------------------------------------------------------
     #	ASTROMETRY
@@ -185,19 +210,6 @@ def astrom(path_data, ic_fdzobj, obsinfo, n_binning, path_config, memory_thresho
     #------------------------------------------------------------
     #	Astrometry Correction
     #------------------------------------------------------------
-    def run_pre_sextractor(inim, outcat, param_simple, conv_simple, nnw_simple, pixscale):
-        # outhead = inim.replace('fits', 'head')
-        # outcat = inim.replace('fits', 'pre.cat')
-
-        #	Pre-Source EXtractor
-        sexcom = f"source-extractor -c {conf_simple} {inim} -CATALOG_NAME {outcat} -CATALOG_TYPE FITS_LDAC -PARAMETERS_NAME {param_simple} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PIXEL_SCALE {pixscale}"
-        print(sexcom)
-        # os.system(sexcom)
-        if verbose_sex:
-            os.system(sexcom)
-        else:
-            # Redirect SE output to a tmp log
-            os.system(log2tmp(sexcom, "presex"))
 
     outcatlist = []
     outheadlist = []
@@ -216,7 +228,7 @@ def astrom(path_data, ic_fdzobj, obsinfo, n_binning, path_config, memory_thresho
     st_ = time.time()
     with ProcessPoolExecutor(max_workers=ncore) as executor:
         # results = list(executor.map(run_pre_sextractor, calimlist, outcatlist, [param_simple]*len(outcatlist), [conv_simple]*len(outcatlist), [nnw_simple]*len(outcatlist)))
-        results = list(executor.map(run_pre_sextractor, afdzimlist, outcatlist, [param_simple]*len(outcatlist), [conv_simple]*len(outcatlist), [nnw_simple]*len(outcatlist), [pixscale]*len(outcatlist)))
+        results = list(executor.map(run_pre_sextractor, afdzimlist, outcatlist, [conf_simple]*len(outcatlist), [param_simple]*len(outcatlist), [conv_simple]*len(outcatlist), [nnw_simple]*len(outcatlist), [pixscale]*len(outcatlist), [verbose_sex]*len(outcatlist)))
     delt = time.time() - st_
     # print(f"Pre-SExtractor Done: {delt:.3f} sec/{len(calimlist)} (ncroe={ncore})")
     print(f"Pre-SExtractor Done: {delt:.3f} sec/{len(afdzimlist)} (ncroe={ncore})")
@@ -435,3 +447,5 @@ def astrom(path_data, ic_fdzobj, obsinfo, n_binning, path_config, memory_thresho
     delt_get_polygon_info = time.time() - t0_get_polygon_info
     timetbl['status'][timetbl['process']=='get_polygon_info'] = True
     timetbl['time'][timetbl['process']=='get_polygon_info'] = delt_get_polygon_info
+
+    return hdr
