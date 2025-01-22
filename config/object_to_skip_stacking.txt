@@ -20,4 +20,5 @@ NGC1599               blank
 # NGC6514               blank
 WASP-74b              Exoplanet
 WASP-178b             Exoplanet
+WASP-121b             Exoplanet
 
