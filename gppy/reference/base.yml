@@ -1,0 +1,94 @@
+version: '2.0'  # legacy gppy is 1.0, gppy-gpu before refactoring is 1.1?
+
+settings:
+  project: 7DT/7DS
+  obsmode: COMISSION
+
+  max_threads: 8
+  ncore: 4
+  local_astref: False
+  gpu_enabled: True
+  verbose_gpu: True  # use logger later
+
+obs:
+  # OBS Info should be updated from header
+  n_binning: 
+  gain: 
+  unit: 
+  camera: 
+  filter:
+  object:
+  date:  # date of datetime - 12h. dirname of obsdata
+  datetime:  # UTC
+  ra:
+  dec:
+  exposure:
+  
+path:
+  # mandatory paths 
+  path_factory: /data/pipeline_reform/factory_test
+  path_raw: 
+  path_processed: 
+  path_fdz:
+  # optional paths 
+  path_refcat:
+  path_calib_field:
+  # path_ref_scamp:
+  # path_log:
+  # tile:
+  # path_astrefcat:
+  # path_scampconfig:
+
+file: 
+  raw_files: 
+  processed_files: 
+  combined_file:
+  
+cuda:
+  included: yes
+
+preprocess:
+  selection: default # closest, custom
+  mbias_link: # master_frame/2001-02-23_1x1_gain2750/7DT11/link_20250102_C3.bias
+  mdark_link: # master_frame/2001-02-23_1x1_gain2750/7DT11/link_20250102_100_C3.dark
+  mflat_link: # master_frame/2001-02-23_1x1_gain2750/7DT11/link_20250102_m625_C3.flat
+
+  mbias_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/C3_zero_20250102.fits
+  mdark_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/C3_dark_20250102_100s.fits
+  mflat_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/C3_flat_20250102_m625.fits
+
+photometry:
+  match_radius: 1.
+  photfraction:
+  refcatname:
+  refqueryradius:
+  refmaglower:
+  refmagupper:
+  refmagerupper:
+  inmagerupper:
+  flagcut:
+  DETECT_MINAREA:
+  DETECT_THRESH:
+  DEBLEND_NTHRESH:
+  DEBLEND_MINCONT:
+  BACK_SIZE:
+  BACK_FILTERSIZE:
+  BACKPHOTO_TYPE:
+  check:
+
+logging:
+  level: INFO
+  file: 
+  format: '[%(levelname)s] %(asctime)s - %(message)s'
+  handlers:
+    - console
+    - file
+
+flag:
+  preprocessing_done: false
+  astrometry_single_done: false
+  photometry_single_done: false
+  imcombine_done: false
+  astrometry_combined_done: false
+  photometry_combined_done: false
+  subtraction_done: false
