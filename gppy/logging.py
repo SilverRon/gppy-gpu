@@ -24,7 +24,7 @@ class Logger:
         log_file: Optional[str] = None,
         level: str = "INFO",
         log_format: str = "[%(levelname)s] %(asctime)s - %(message)s",
-        slack_channel: str = "pipeline",
+        slack_channel: str = "pipeline_report",
     ):
         self.name = name
         self._log_format = log_format

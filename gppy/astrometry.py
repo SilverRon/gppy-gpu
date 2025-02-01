@@ -122,6 +122,7 @@ class Astrometry:
 
 #
 
+# solve-field calib_7DT11_T00139_20250102_014643_m425_100s.fits --crpix-center --scale-unit arcsecperpix --scale-low '0.4949' --scale-high '0.5151' --no-plots --new-fits testout --overwrite --use-source-extractor --cpulimit 4
 
 # fmt: off
 def astrometry(inim, pixscale, ra=None, dec=None, fov=1, cpulimit=60, path_sex_cfg=None, path_cfg=None):

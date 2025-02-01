@@ -22,7 +22,7 @@ def load_data_gpu(fpath, ext=None):
     finally:
         del data  # Free GPU memory when the block is exited
         gc.collect()  # Force garbage collection
-        cp._default_memory_pool.free_all_blocks()  # Optional: Clear memory pool
+        cp.get_default_memory_pool().free_all_blocks()
 
 
 def read_link(link, timeout=1200, interval=10):

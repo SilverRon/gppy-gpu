@@ -14,6 +14,12 @@ from enum import Enum
 from contextlib import contextmanager
 import gc
 
+class classmethodproperty:
+    def __init__(self, func):
+        self.func = classmethod(func)
+    
+    def __get__(self, instance, owner):
+        return self.func.__get__(instance, owner)()
 
 class MemoryPriority(Enum):
     LOW = 0
@@ -56,9 +62,12 @@ class Task:
     timeout: float
     timestamp: datetime
     task_name: str
+    device: int
 
 class TaskResult:
-    def __init__(self, success: bool, result: Any = None, error: Exception = None):
+    def __init__(self, task_id:str, task_name:str, success: bool, result: Any = None, error: Exception = None):
+        self.task_id = task_id
+        self.task_name = task_name
         self.success = success
         self.result = result
         self.error = error
@@ -122,8 +131,7 @@ class QueueManager:
         
         # Memory tracking
         self.process = psutil.Process()
-        self.total_memory = psutil.virtual_memory().total / 1024 / 1024  # in MB
-        self.initial_memory = self.current_memory
+        self.initial_memory = self.current_memory["used"]
         self.peak_memory = self.initial_memory
         self.peak_memory_timestamp = datetime.now()
         
@@ -163,12 +171,19 @@ class QueueManager:
             return False
         return True
 
-    @property
-    def current_memory(self):
-        return self.process.memory_info().rss / 1024 / 1024
+    @classmethodproperty
+    def current_memory(cls): 
+        used = psutil.Process().memory_info().rss / 1024 / 1024
+        total = psutil.virtual_memory().total / 1024 / 1024 
+        return {
+            'total': total,
+            'used': used,
+            'free': total - used,
+            'percent': (used / total) *100
+        }
 
-    @property
-    def current_gpu_memory(self) -> Dict:
+    @classmethodproperty
+    def current_gpu_memory(cls) -> Dict:
         """Get GPU memory statistics for all available devices."""
         gpu_stats = {}
         if cp.cuda.runtime.getDeviceCount() > 0:
@@ -219,6 +234,7 @@ class QueueManager:
                  priority: MemoryPriority = MemoryPriority.MEDIUM, 
                  gpu: bool = False,
                  timeout: Optional[float] = None,
+                 device: int = None,
                  task_name: str = None) -> str:
         """
         Add a task to the queue with specified priority and execution target.
@@ -245,13 +261,14 @@ class QueueManager:
             kwargs=kwargs,
             priority=priority,
             gpu=gpu,
+            device=device,
             timeout=timeout or self.task_timeout,
             timestamp=datetime.now(),
-            task_name=task_name,
+            task_name=task_name
         )
         
         self.task_queues[priority].put(task)
-        self.logger.debug(f"Added task {task_id} with priority {priority}")
+        self.logger.debug(f"Added task {task_name} (id: {task_id}) with priority {priority}")
         return task_id
 
     def add_cpu_task(self, 
@@ -268,23 +285,47 @@ class QueueManager:
                      *args, 
                      priority: MemoryPriority = MemoryPriority.MEDIUM, 
                      task_name: str = None,
+                     device: int = None,
                      **kwargs) -> str:
         """Convenience method to add a GPU task."""
-        return self.add_task(func, args, kwargs, priority, gpu=True, task_name=task_name)
+        return self.add_task(func, args, kwargs, priority, gpu=True, device=device, task_name=task_name)
 
     def add_critical_task(self, 
                          func: Callable, 
                          *args, 
                          gpu: bool = False, 
                          task_name: str = None,
+                         device: int = None,
                          **kwargs) -> str:
         """Add a critical priority task."""
-        return self.add_task(func, args, kwargs, MemoryPriority.CRITICAL, gpu, task_name=task_name)
+        return self.add_task(func, args, kwargs, MemoryPriority.CRITICAL, gpu, device=device, task_name=task_name)
 
-    
+    def _choose_gpu_device(self):
+        """Choose a GPU device randomly weighted by available memory."""
+        import random
+
+        devices = []
+        total_free = 0
+        # Gather free memory info for each GPU
+        for dev_id in range(cp.cuda.runtime.getDeviceCount()):
+            with cp.cuda.Device(dev_id):
+                free, total = cp.cuda.runtime.memGetInfo()
+                devices.append((dev_id, free))
+                total_free += free
+        
+        # Randomly pick device based on free memory
+        r = random.uniform(0, total_free)
+        for dev_id, free in devices:
+            if r < free:
+                return dev_id
+            r -= free
+        return 0  # fallback
+
     @contextmanager
-    def gpu_context(self, device: int):
+    def gpu_context(self, device: int = None):
         """Context manager for safe GPU operations."""
+        if device is None:
+            device = self._choose_gpu_device()
         try:
             with cp.cuda.Device(device):
                 yield
@@ -395,11 +436,11 @@ class QueueManager:
                             executor = gpu_executor if task.gpu else cpu_executor
                             
                             if task.gpu:
-                                device = self.devices[len(self.results) % len(self.devices)]
+                                device_index = task.device if task.device is not None else self.devices[len(self.results) % len(self.devices)]
                                 future = executor.submit(
                                     self._execute_gpu_task,
                                     task,
-                                    device,
+                                    device_index,
                                     executor
                                 )
                             else:
@@ -432,16 +473,16 @@ class QueueManager:
             
             execution_time = time.time() - start_time
             self._update_task_metrics(execution_time)
-            
-            return TaskResult(success=True, result=result)
+            return TaskResult(task_id = task.id, task_name=task.task_name, success=True, result=result)
             
         except concurrent.futures.TimeoutError:
             return TaskResult(
+                task_id = task.id, task_name=task.task_name, 
                 success=False, 
                 error=TimeoutError(f"Task {task.id} exceeded timeout of {task.timeout}s")
             )
         except Exception as e:
-            return TaskResult(success=False, error=e)
+            return TaskResult(task_id = task.id, task_name=task.task_name, success=False, error=e)
 
     def _execute_gpu_task(self, task: Task, device: int, executor) -> TaskResult:
         """Execute a task on GPU with timeout."""
@@ -449,7 +490,7 @@ class QueueManager:
             with self.gpu_context(device):
                 return self._execute_task(task, executor)
         except Exception as e:
-            return TaskResult(success=False, error=e)
+            return TaskResult(task_id = task.id, task_name=task.task_name, success=False, error=e)
 
     def _handle_task_result(self, future: concurrent.futures.Future, task: Task):
         """Handle task completion and results."""
@@ -473,18 +514,20 @@ class QueueManager:
                 (current_avg * total_tasks + execution_time) / (total_tasks + 1)
             )
 
-    def get_task_status(self, task_id: str) -> Dict:
+    def get_task_status(self, task_id: str = None, task_name: str = None) -> Dict:
         """Get the status of a specific task."""
         for result in self.results:
-            if hasattr(result, 'task_id') and result.task_id == task_id:
+            if (hasattr(result, 'task_id') and result.task_id == task_id) \
+                or (hasattr(result, 'task_name') and result.task_name == task_name):
                 return {
-                    'task_id': task_id,
+                    'task_id': result.task_id,
+                    'task_name': result.task_name,
                     'status': 'completed' if result.success else 'failed',
                     'result': result.result if result.success else None,
                     'error': str(result.error) if result.error else None,
                     'timestamp': result.timestamp,
                 }
-        
+            
         # Check if task is still in queues
         for priority in MemoryPriority:
             try:
@@ -507,7 +550,7 @@ class QueueManager:
         """Start task processing and memory monitoring threads."""
         if self._processing_thread is None:
             # Log initial memory state before processing
-            memory_percent = (self.current_memory / self.total_memory) * 100
+            memory_percent = self.current_memory['percent']
             memory_state = self._get_memory_state(memory_percent)
             
             # Brief summary for info level
@@ -527,8 +570,8 @@ class QueueManager:
             debug_message.extend([
                 "System Memory:",
                 f"  Initial: {self.initial_memory:.1f} MB",
-                f"  Current: {current_memory:.1f} MB",
-                f"  Total: {self.total_memory:.1f} MB",
+                f"  Current: {self.current_memory['used']:.1f} MB",
+                f"  Total: {self.current_memory['total']:.1f} MB",
                 f"  State: {memory_state}"
             ])
             
@@ -700,7 +743,7 @@ class QueueManager:
         if not self.logger:
             return
             
-        memory_percent = (self.current_memory / self.total_memory) * 100
+        memory_percent = self.current_memory["percent"]
         memory_state = self._get_memory_state(memory_percent)
         
         # Brief summary for info level
@@ -714,16 +757,17 @@ class QueueManager:
                 gpu_summary.append(f"{device}: {percent:.1f}% (used {used_mb:.1f} MB, {gpu_state})")
         
         gpu_info = f", GPU [{', '.join(gpu_summary)}]" if gpu_summary else ""
-        self.logger.info(f"Memory usage report: System {memory_percent:.1f}% (used {self.current_memory:.1f} MB, {memory_state}){gpu_info}")
+        self.logger.info(f"Memory usage report: System {memory_percent:.1f}% (used {self.current_memory['used']:.1f} MB, {memory_state}){gpu_info}")
         
         # Detailed report for debug level
+        
         log_message = ["Detailed memory usage report:"]
         log_message.extend([
             "System Memory:",
             f"  Initial: {self.initial_memory:.1f} MB",
             f"  Peak: {self.peak_memory:.1f} MB",
-            f"  Current: {self.current_memory:.1f} MB ({memory_percent:.1f}%)",
-            f"  Total: {self.total_memory:.1f} MB",
+            f"  Current: {self.current_memory['used']:.1f} MB ({memory_percent:.1f}%)",
+            f"  Total: {self.current_memory['total']:.1f} MB",
             f"  State: {memory_state}"
         ])
         
@@ -830,12 +874,12 @@ class QueueManager:
         Returns:
             float: Current memory usage in MB
         """
-        if self.current_memory > self.peak_memory:
-            self.peak_memory = self.current_memory
+        if self.current_memory["used"] > self.peak_memory:
+            self.peak_memory = self.current_memory["used"]
             self.peak_memory_timestamp = datetime.now()
             
         if stage and self.logger:
-            self.logger.debug(f"Memory at {stage}: {self.current_memory:.2f} MB")
+            self.logger.debug(f"Memory at {stage}: {self.current_memory['used']:.2f} MB")
             
         return current
 
@@ -844,7 +888,7 @@ class QueueManager:
         current_time = datetime.now()
         
         # Get current memory stats
-        memory_percent = (self.current_memory / self.total_memory) * 100
+        memory_percent = self.current_memory["percent"]
         
         # Get GPU memory stats
         gpu_stats = self.current_gpu_memory
@@ -923,7 +967,7 @@ class QueueManager:
 
     def _update_memory_stats(self, event: str):
         """Update memory statistics."""
-        current_memory = self.process.memory_info().rss / 1024 / 1024  # MB
+        current_memory = self.current_memory['used']
         
         # Update max memory if current usage is higher
         if current_memory > self.peak_memory:

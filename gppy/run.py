@@ -5,9 +5,12 @@ from .photometry import Photometry
 from .logging import logger
 from .preprocess.masterframe import MasterFrameGenerator
 
+
 def run_masterframe_generator(unit, date, gain, n_binning, queue=True):
     with MasterFrameGenerator(unit, date, gain, n_binning, queue=queue) as master:
         master.run()
+    del master
+
 
 def run_pipeline(unit, date, obj, **kwargs):
     with Configuration(unit=unit, date=date, obj=obj, **kwargs) as config:

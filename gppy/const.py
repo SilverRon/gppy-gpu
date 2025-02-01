@@ -6,7 +6,8 @@ os.environ["RAWDATA_DIR"] = "/data/pipeline_reform/obsdata_test"
 os.environ["PROCESSED_DIR"] = "/data/pipeline_reform/processed_test_light"
 os.environ["MASTER_FRAME_DIR"] = "/data/pipeline_reform/master_frame_test"
 os.environ["FACTORY_DIR"] = "/data/pipeline_reform/factory_test"
-os.environ["SLACK_TOKEN"] = "xoxb-463145837843-2139189666645-fn76rVNOhiDRuWOIhfxW4RTD"
+os.environ["SLACK_TOKEN"] = "xoxb-4343183012295-8382638967284-a2oYskQhBRzUdgCdeNPRUOMB"
+# "xoxb-463145837843-2139189666645-fn76rVNOhiDRuWOIhfxW4RTD"
 
 SCRIPT_DIR = os.environ["SCRIPT_DIR"]
 RAWDATA_DIR = os.environ["RAWDATA_DIR"]

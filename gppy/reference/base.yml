@@ -53,9 +53,9 @@ preprocess:
   mdark_link: # master_frame/2001-02-23_1x1_gain2750/7DT11/link_20250102_100_C3.dark
   mflat_link: # master_frame/2001-02-23_1x1_gain2750/7DT11/link_20250102_m625_C3.flat
 
-  mbias_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/C3_zero_20250102.fits
-  mdark_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/C3_dark_20250102_100s.fits
-  mflat_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/C3_flat_20250102_m625.fits
+  mbias_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/bias_20250102_C3.fits
+  mdark_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/dark_20250102_100s_C3.fits
+  mflat_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/flat_20250102_m625_C3.fits
 
 photometry:
   match_radius: 1.

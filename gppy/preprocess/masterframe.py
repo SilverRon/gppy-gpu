@@ -30,12 +30,13 @@ class MasterFrameGenerator:
     unit, n_binning and gain have all identical cameras.
     """
 
-    def __init__(self, date, unit, n_binning, gain, queue=False):
+    def __init__(self, date, unit, n_binning, gain, device=None, queue=False):
 
         self.unit = unit
         self.date = date
         self.n_binning = n_binning
         self.gain = gain
+        self.device = device
 
         self.path_raw = find_raw_path(unit, date, n_binning, gain)
         self.path_fdz = os.path.join(
@@ -59,15 +60,16 @@ class MasterFrameGenerator:
         if queue:
             self.queue = QueueManager(
                 logger=logger,
-                max_memory_percent=80.0,  # Set reasonable memory limit
                 auto_cleanup=True,  # Enable automatic memory cleanup
-                check_interval=1.0,  # Check memory every second
             )
             self.queue.start_processing()
         else:
             self.queue = None
 
-    def __exit__(self):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
         if self.queue:
             self.queue.cleanup_memory(force=True)
         else:
@@ -77,6 +79,7 @@ class MasterFrameGenerator:
             cp.get_default_memory_pool().free_all_blocks()
             cp.get_default_pinned_memory_pool().free_all_blocks()
             gc.collect()
+        pass
 
     def _inventory_manifest(self):
         """Parses file names in the raw directory"""
@@ -220,7 +223,7 @@ class MasterFrameGenerator:
 
     @property
     def mbias_link(self):
-        """str"""
+        """str. Always generated even though no SCI frame exists"""
         return os.path.join(self.path_fdz, f"bias_{self.date_fdz}_{self.camera}.link")
 
     @property
@@ -238,16 +241,28 @@ class MasterFrameGenerator:
 
         if self.queue:
             # Add tasks with appropriate memory priorities
-            self.queue.add_task(
-                self.generate_mbias, priority=MemoryPriority.HIGH, gpu=True
+            task_id = self.queue.add_task(
+                self.generate_mbias,
+                priority=MemoryPriority.HIGH,
+                gpu=True,
+                task_name="generate_mbias",
+                device=self.device,
             )
             self.queue.wait_until_all_tasks_complete()
-            self.queue.add_task(
-                self.generate_mdark, priority=MemoryPriority.MEDIUM, gpu=True
+            task_id = self.queue.add_task(
+                self.generate_mdark,
+                priority=MemoryPriority.MEDIUM,
+                gpu=True,
+                task_name="generate_mdark",
+                device=self.device,
             )
             self.queue.wait_until_all_tasks_complete()
-            self.queue.add_task(
-                self.generate_mflat, priority=MemoryPriority.MEDIUM, gpu=True
+            task_id = self.queue.add_task(
+                self.generate_mflat,
+                priority=MemoryPriority.MEDIUM,
+                gpu=True,
+                task_name="generate_mflat",
+                device=self.device,
             )
             self.queue.wait_until_all_tasks_complete()
 
@@ -279,13 +294,30 @@ class MasterFrameGenerator:
         header_file = sorted(glob.glob(s))[0]
         return header_to_dict(header_file)
 
-    def _get_dark_scalar(self, filt):
+    def _get_flatdark(self, filt):
+        """If no raw DARK for the date, searches 100s mdark of previous dates"""
         flat_raw_exp_arr = [parse_exptime(s) for s in self.flat_input[filt]]  # float
         flat_exp_repr = np.median(flat_raw_exp_arr)
-        darkexptimes = [float(i) for i in self.mdark_link.keys()]
-        closest_dark_exp = darkexptimes[np.argmin(np.abs(darkexptimes - flat_exp_repr))]
-        dark_scaler = flat_exp_repr / closest_dark_exp
-        return dark_scaler, closest_dark_exp
+        if len(self.mdark_output) > 0:
+            mdarks_used = self.mdark_output
+            darkexptimes = [float(i) for i in self.mdark_link.keys()]
+            closest_dark_exp = darkexptimes[
+                np.argmin(np.abs(darkexptimes - flat_exp_repr))
+            ]
+            mdark_used = mdarks_used[closest_dark_exp]
+            dark_scaler = flat_exp_repr / closest_dark_exp
+        else:
+            logger.warn(
+                f"No master dark frame for the date. "
+                f"Searching previous dates for 100s mdark."
+            )
+            # master_frame/2001-02-23_1x1_gain2750/7DT11/dark_20250102_100s_C3.fits
+            search_template = os.path.join(
+                self.path_fdz, f"dark_{self.date_fdz}_100s_{self.camera}.fits"
+            )
+            mdark_used = search_with_date_offsets(search_template, future=False)
+            dark_scaler = flat_exp_repr / 100
+        return mdark_used, dark_scaler
 
     # def _borrow_file(self, dtype="bias", **kwargs):
     #     """returns path to master dtype"""
@@ -350,9 +382,10 @@ class MasterFrameGenerator:
                 bfc.data -= mbias
             # self.generate_bpmask(bfc.data)
         elif dtype == "flat":
-            dark_scaler, closest_dark_exp = self._get_dark_scalar(filt)
             mbias_used = read_link(self.mbias_link)
-            mdark_used = read_link(self.mdark_link[closest_dark_exp])
+            # dark_scaler, closest_dark_exp = self._get_dark_scalar(filt)
+            # mdark_used = read_link(self.mdark_link[closest_dark_exp])
+            mdark_used, dark_scaler = self._get_flatdark(filt)
             header = write_IMCMB_to_header(
                 header,
                 [mbias_used, mdark_used] + self.flat_input[filt],
@@ -363,6 +396,7 @@ class MasterFrameGenerator:
             with load_data_gpu(mdark_used) as mdark:
                 bfc.data -= mdark * dark_scaler
 
+            # Normalize Flats
             bfc.data /= cp.median(bfc.data, axis=(1, 2), keepdims=True)
 
         combined_data = ec.imcombine(
@@ -423,7 +457,7 @@ class MasterFrameGenerator:
         mask_stable = mask_stable.astype(int)
 
         # Save the file
-        if save_hot_pixel_mask == True:
+        if save_hot_pixel_mask:
             newhdu = fits.PrimaryHDU(mask_stable)
             newhdu.header['NHOTPIX'] = (np.sum(mask_stable), 'Number of hot pixels.')
             newhdu.header['NDARKIMG'] = (len(bias_sub_dark_names), 'Number of bias subtracted dark images used in sigma-clipped mean combine.')
@@ -492,6 +526,7 @@ class MasterFrameGenerator:
 
         for filt, mflat_link in self.mflat_link.items():
             search_template = os.path.splitext(mflat_link)[0] + ".fits"
+            # master_frame/2001-02-23_1x1_gain2750/7DT11/flat_20250102_m625_C3.fits
             mflat_file = search_with_date_offsets(search_template, future=False)
             write_link(mflat_link, mflat_file)
 
