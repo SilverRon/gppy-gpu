@@ -5,6 +5,8 @@ import numpy as np
 import cupy as cp
 from astropy.io import fits
 from contextlib import contextmanager
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 
 def write_link(fpath, content):
@@ -24,41 +26,79 @@ def load_data_gpu(fpath, ext=None):
         gc.collect()  # Force garbage collection
         cp.get_default_memory_pool().free_all_blocks()
 
+class FileCreationHandler(FileSystemEventHandler):
+    def __init__(self, target_file):
+        self.target_file = os.path.basename(target_file)
+        self.created = False
+    
+    def on_created(self, event):
+        if not event.is_directory and event.src_path.endswith(self.target_file):
+            self.created = True
 
-def read_link(link, timeout=1200, interval=10):
+def wait_for_masterframe(file_path, timeout=1800):
     """
-    Check if the link exists, wait for it if it doesn't, and then read its content.
+    Wait for a file to be created using watchdog with timeout.
+    
+    Args:
+        file_path (str): Path to the file to watch for
+        timeout (int): Maximum time to wait in seconds (default: 1800 seconds / 30 minutes)
+    
+    Returns:
+        bool: True if file was created, False if timeout occurred
+    """
+    # First check if file already exists
+    if os.path.exists(file_path):
+        return True
+
+    directory = os.path.dirname(file_path) or '.'
+    handler = FileCreationHandler(file_path)
+    observer = Observer()
+    observer.schedule(handler, directory, recursive=False)
+    observer.start()
+    
+    try:
+        start_time = time.time()
+        while not handler.created:
+            if time.time() - start_time > timeout:
+                return False
+            time.sleep(1)
+        return True
+    finally:
+        observer.stop()
+        observer.join()
+
+def read_link(link, timeout=1800):
+    """
+    Check if the link exists using watchdog, wait for it if it doesn't, and then read its content.
 
     Args:
         link (str): The file path to check and read.
         timeout (int, optional): Maximum time (in seconds) to wait for the file. Defaults to 1200.
-        interval (int, optional): Time interval (in seconds) between checks. Defaults to 10.
 
     Returns:
         str: The content of the file.
 
     Raises:
         FileNotFoundError: If the file is not found within the timeout period.
+        KeyboardInterrupt: If the user interrupts the waiting process.
     """
-    elapsed_time = 0
-
-    # Wait and watch for the file
     try:
-        while not os.path.exists(link):
-            if elapsed_time >= timeout:
-                raise FileNotFoundError(
-                    f"File '{link}' was not created within {timeout} seconds."
-                )
-            time.sleep(interval)
-            elapsed_time += interval
+        # Use wait_for_masterframe to watch for the file
+        if not wait_for_masterframe(link, timeout=timeout):
+            raise FileNotFoundError(
+                f"File '{link}' was not created within {timeout} seconds."
+            )
+        
+        # Small delay to ensure file is fully written
+        time.sleep(0.1)
+        
+        # Read and return the file content
+        with open(link, "r") as f:
+            return f.read().strip()
+            
     except KeyboardInterrupt:
         print("KeyboardInterrupt while watching for a link. Exiting...")
-        raise  # Re-raise the exception to terminate the followings
-
-    # Read and return the file content
-    with open(link, "r") as f:
-        return f.read().strip()
-
+        raise  # Re-raise the exception to terminate the following processes
 
 def link_to_file(link):
     """Reformat link filename, not reading it"""
@@ -69,7 +109,6 @@ def link_to_file(link):
         return os.path.splitext(link)[0] + ".fits"
     else:
         raise ValueError("Not a link")
-
 
 def search_with_date_offsets(template, max_offset=300, future=False):
     """
@@ -138,13 +177,11 @@ def write_IMCMB_to_header(header, inputlist, full_path=False):
         else:
             key = "IMCMB{:03X}"
             comment = "IMCMB keys are written in hexadecimal."
-            header.append("COMMENT", comment)
+            # header.append("COMMENT", comment)  # original eclaire line
+            header.add_comment(comment)
         for i, f in enumerate(inputlist, 1):
             header[key.format(i)] = f if full_path else os.path.basename(f)
     return header
-
-
-#
 
 
 # def calculate_average_date_obs(date_obs_list):
@@ -170,50 +207,3 @@ def write_IMCMB_to_header(header, inputlist, full_path=False):
 #     isot = yr + "-" + mo + "-" + da + "T00:00:00.000"  # 	ignore hour:min:sec
 #     t = Time(isot, format="isot", scale="utc")  # 	transform to MJD
 #     return t.mjd
-
-
-# from watchdog.observers import Observer
-# from watchdog.events import FileSystemEventHandler
-# import os
-# import time
-
-
-# class FileCreatedHandler(FileSystemEventHandler):
-#     def __init__(self, file, callback):
-#         self.file = file
-#         self.callback = callback
-
-#     def on_created(self, event):
-#         if event.src_path == self.file:
-#             print(f"File created: {self.file}")
-#             self.callback(self.file)
-
-
-# def load_pointer_file(file):
-#     def process_file(file):
-#         with open(file, "r") as f:
-#             mbias_file = f.read().strip()
-#         # strip() removes trailing whitespace or newlines
-#         print(f"Configuration updated with: {mbias_file}")
-#         observer.stop()
-
-#     # Check if the file already exists
-#     if os.path.exists(file):
-#         process_file(file)
-#         return
-
-#     # Set up the observer
-#     event_handler = FileCreatedHandler(file, process_file)
-#     observer = Observer()
-#     directory = os.path.dirname(file) or "."
-#     observer.schedule(event_handler, directory, recursive=False)
-
-#     try:
-#         print(f"Watching for the file: {file}")
-#         observer.start()
-#         while observer.is_alive():
-#             time.sleep(1)  # Keeps the script running efficiently
-#     except KeyboardInterrupt:
-#         print("Stopping pointer file observer...")
-#         observer.stop()
-#     observer.join()

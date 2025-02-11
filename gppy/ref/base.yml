@@ -1,17 +1,17 @@
 version: '2.0'  # legacy gppy is 1.0, gppy-gpu before refactoring is 1.1?
-
+name: 
 settings:
   project: 7DT/7DS
-  obsmode: COMISSION
-
-  max_threads: 8
-  ncore: 4
-  local_astref: False
+  obsmode:  # Deep Spec Color Search Single
+  header_pad: 5  # assuming final header is 5 * 2880 bytes long. 6 to include polygon info
+  local_astref: 
+  combine:
   gpu_enabled: True
   verbose_gpu: True  # use logger later
 
 obs:
   # OBS Info should be updated from header
+  pixscale: 0.505  # arcsec/pix. Used for initial solve, not in header
   n_binning: 
   gain: 
   unit: 
@@ -23,19 +23,18 @@ obs:
   ra:
   dec:
   exposure:
+  pixscale: 0.505
   
 path:
-  # mandatory paths 
   path_factory: /data/pipeline_reform/factory_test
   path_raw: 
   path_processed: 
   path_fdz:
-  # optional paths 
-  path_refcat:
-  path_calib_field:
+  path_calib_field: /lyman/data1/Calibration/7DT-Calibration/output/Calibration_Tile
+  path_refcat: /lyman/data1/factory/ref_cat
+  path_sex: /data/pipeline_reform/gppy-gpu/gppy/ref
   # path_ref_scamp:
   # path_log:
-  # tile:
   # path_astrefcat:
   # path_scampconfig:
 
@@ -57,24 +56,28 @@ preprocess:
   mdark_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/dark_20250102_100s_C3.fits
   mflat_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/flat_20250102_m625_C3.fits
 
+astrometry:
+  # To be modified by config
+  ahead_file: "/data/pipeline_reform/dhhyun_lab/scamptest/ahead/calib_7DT11_T07304_20250115_050155_g_60.ahead"
+
 photometry:
-  match_radius: 1.
-  photfraction:
-  refcatname:
-  refqueryradius:
-  refmaglower:
-  refmagupper:
-  refmagerupper:
-  inmagerupper:
-  flagcut:
-  DETECT_MINAREA:
-  DETECT_THRESH:
-  DEBLEND_NTHRESH:
-  DEBLEND_MINCONT:
-  BACK_SIZE:
-  BACK_FILTERSIZE:
-  BACKPHOTO_TYPE:
-  check:
+  match_radius: 1.0
+  photfraction: 0.75
+  refcatname: GaiaXP
+  refqueryradius: 0.9
+  refmaglower: 12
+  refmagupper: 17.5
+  refmagerupper: 0.05
+  inmagerupper: 0.05
+  flagcut: 0
+  DETECT_MINAREA: 5
+  DETECT_THRESH: 3.0
+  DEBLEND_NTHRESH: 64
+  DEBLEND_MINCONT: 0.0001
+  BACK_SIZE: 64
+  BACK_FILTERSIZE: 3
+  BACKPHOTO_TYPE: LOCAL
+  check: False
 
 logging:
   level: INFO
@@ -85,10 +88,11 @@ logging:
     - file
 
 flag:
-  preprocessing_done: false
-  astrometry_single_done: false
-  photometry_single_done: false
-  imcombine_done: false
-  astrometry_combined_done: false
-  photometry_combined_done: false
-  subtraction_done: false
+  configuration: false
+  calibration: false
+  astrometry: false
+  single_photometry: false
+  combine_image: false
+  # combined_astrometry: false
+  combined_photometry: false
+  subtraction: false

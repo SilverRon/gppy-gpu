@@ -1,6 +1,9 @@
 import yaml
 import os
+import re
 import glob
+import json
+from datetime import datetime
 from .utils import (
     header_to_dict,
     to_datetime_string,
@@ -8,8 +11,7 @@ from .utils import (
     define_output_dir,
     get_camera,
 )
-from .const import SCRIPT_DIR, FACTORY_DIR, PROCESSED_DIR, MASTER_FRAME_DIR
-from .logging import logger
+from .const import SCRIPT_DIR, FACTORY_DIR, PROCESSED_DIR, MASTER_FRAME_DIR, REF_DIR
 
 
 class Configuration:
@@ -28,23 +30,20 @@ class Configuration:
     - Configuration file versioning
     """
 
-    def __init__(
-        self, date, obj, unit, filte, n_binning, gain, config_source=None, **kwargs
-    ):
+    def __init__(self, obs_params=None, config_source=None, logger=None, **kwargs):
         """
         Initialize configuration with comprehensive observation metadata.
 
         Args:
-            unit (str): Telescope/instrument identifier
-            date (str): Observation date
-            obj (str): Target object name
+            obs_params (dict, optional): Dictionary of observation parameters
             config_source (str|dict, optional): Custom configuration source
             **kwargs: Additional configuration parameter overrides
         """
         # Default config source if not provided
-        config_source = config_source or os.path.join(
-            SCRIPT_DIR, "gppy/reference/base.yml"
-        )
+        if config_source is None:
+            config_source = os.path.join(REF_DIR, "base.yml")
+
+        self._initialized = False
 
         # Load configuration from file or dict
         input_dict = (
@@ -53,41 +52,85 @@ class Configuration:
             else config_source
         )
 
-        self._initialized = False
-
         self._config_in_dict = input_dict
+
         self.config = ConfigurationInstance(self)
 
         self._output_prefix = kwargs.pop("path_processed", PROCESSED_DIR)
         self._update_with_kwargs(kwargs)
-        self._make_instance(input_dict)
+        self._make_instance(self._config_in_dict)
 
+        if obs_params is None:
+            self._initialized = True
+        else:
+            self.initialize(obs_params)
+
+        if logger is None:
+            from .logger import Logger
+
+            self.logger = Logger(
+                name="7DT pipeline logger", slack_channel="pipeline_report"
+            )
+        else:
+            self.logger = logger
+        self._update_logger()
+        self.write_config()
+
+        self.config.flag.configuration = True
+        self.logger.info(
+            f"Pipeline started for {self.config.name}"
+        )  # first slack message
+        self.logger.info(f"Configuration initialized")
+        self.logger.debug(f"Configuration file: {self.config_file}")
+
+    def initialize(self, obs_params):
         # Set core observation details
-        self.config.obs.unit = unit
-        self.config.obs.date = date
-        self.config.obs.object = obj
-        self.config.obs.filter = filte
-        self.config.obs.n_binning = n_binning
-        self.config.obs.gain = gain
+        self.config.obs.unit = obs_params["unit"]
+        self.config.obs.date = obs_params["date"]
+        self.config.obs.object = obs_params["obj"]
+        self.config.obs.filter = obs_params["filter"]
+        self.config.obs.n_binning = obs_params["n_binning"]
+        self.config.obs.gain = obs_params["gain"]
+        self.config.name = f"{obs_params['date']}_{obs_params['n_binning']}x{obs_params['n_binning']}_gain{obs_params['gain']}_{obs_params['obj']}_{obs_params['unit']}_{obs_params['filter']}"
 
         self._define_paths()
         self._define_files()
-
-        self._update_logger()
+        self._define_settings()
         self._initialized = True
-        self.write_config()
-        logger.info("Configuration initialized.")
 
     @property
-    def initialized(self):
-        """Check if configuration has been initialized."""
+    def is_initialized(self):
+        """
+        Check if the configuration has been fully initialized.
+
+        A configuration is considered initialized when all required
+        observation parameters have been set and processed. This method
+        provides a quick way to verify the configuration's readiness
+        for further data processing.
+
+        Returns:
+            bool: True if configuration is initialized, False otherwise
+        """
         return self._initialized
 
     @property
     def output_name(self):
         """
-        Return a filename.
-        e.g., calib_7DT11_T00139_20250102_014643_m425_100.0.fits
+        Generate a standardized output filename for calibrated data.
+
+        The filename follows a specific naming convention that includes:
+        - Prefix 'calib_'
+        - Observation unit identifier
+        - Object name
+        - Observation datetime (formatted as YYYYMMDD_HHMMSS)
+        - Optional additional parameters (if applicable)
+
+        Returns:
+            str: Formatted filename for the calibrated data product
+                 Example: calib_7DT11_T00139_20250102_014643_m425_100.0.fits
+
+        Raises:
+            AttributeError: If the configuration is not fully initialized
         """
         return (
             f"calib_{self.config.obs.unit}_{self.config.obs.object}_"
@@ -142,10 +185,9 @@ class Configuration:
         filename = f"{self.output_name}.log"
         log_file = os.path.join(self.config.path.path_processed, filename)
         self.config.logging.file = log_file
-        logger.set_output_file(log_file)
-        logger.set_format(self.config.logging.format)
-        logger.set_level(self.config.logging.level)
-        logger.set_pipeline_name(self.output_name)
+        self.logger.set_output_file(log_file)
+        self.logger.set_format(self.config.logging.format)
+        self.logger.set_pipeline_name(self.output_name)
 
     def _define_paths(self):
         """Create and set output directory paths for processed data."""
@@ -154,24 +196,32 @@ class Configuration:
         )
 
         rel_path = os.path.join(
-            PROCESSED_DIR,
             _tmp_name,
             self.config.obs.object,
             self.config.obs.unit,
             self.config.obs.filter,
         )
         fdz_rel_path = os.path.join(
-            MASTER_FRAME_DIR,
             _tmp_name,
             self.config.obs.unit,
         )
+
         path_processed = os.path.join(self._output_prefix, rel_path)
+
+        path_factory = os.path.join(FACTORY_DIR, rel_path)
         path_fdz = os.path.join(MASTER_FRAME_DIR, fdz_rel_path)
-        path_factory = os.path.join(FACTORY_DIR, fdz_rel_path)
+        metadata_path = os.path.join(self._output_prefix, _tmp_name, "metadata.json")
+        if not (os.path.exists(metadata_path)):
+            # os.makedirs(self._output_prefix, exist_ok=True)
+            os.makedirs(os.path.join(self._output_prefix, _tmp_name), exist_ok=True)
+            metadata = {"create_time": datetime.now().isoformat(), "observations": []}
+            with open(metadata_path, "w") as f:
+                json.dump(metadata, f)
         os.makedirs(path_processed, exist_ok=True)
         os.makedirs(path_fdz, exist_ok=True)
         os.makedirs(path_factory, exist_ok=True)
         self.config.path.path_processed = path_processed
+        self.config.path.path_factory = path_factory
         self.config.path.path_fdz = path_fdz
         self.config.path.path_raw = find_raw_path(
             self.config.obs.unit,
@@ -179,7 +229,23 @@ class Configuration:
             self.config.obs.n_binning,
             self.config.obs.gain,
         )
-        self.config.path.path_sex = os.path.join(SCRIPT_DIR, "gppy/reference/sex")
+        self.config.path.path_sex = os.path.join(SCRIPT_DIR, "gppy/refer/sex")
+        self._add_metadata(metadata_path)
+
+    def _add_metadata(self, metadata_path):
+        with open(metadata_path, "r") as f:
+            metadata = json.load(f)
+            metadata["observations"].append(
+                [
+                    self.config.obs.object,
+                    self.config.obs.unit,
+                    self.config.obs.filter,
+                    self.config.obs.n_binning,
+                    self.config.obs.gain,
+                ]
+            )
+        with open(metadata_path, "w") as f:
+            json.dump(metadata, f)
 
     def _define_files(self):
         s = f"{self.config.path.path_raw}/*{self.config.obs.object}_{self.config.obs.filter}_{self.config.obs.n_binning}*.head"  # obsdata/7DT11/*T00001*.fits
@@ -246,6 +312,18 @@ class Configuration:
             f"flat_{date_utc}_{self.config.obs.filter}_{self.config.obs.camera}.link",
         )  # 7DT01/flat_20250102_m625_C3.link
 
+    def _define_settings(self):
+        # use local astrometric reference catalog for tile observations
+        self.config.settings.local_astref = bool(
+            re.fullmatch(r"T\d{5}", self.config.obs.object)
+        )
+
+        # skip single frame combine for Deep mode
+        obsmode = self.raw_header_sample["OBSMODE"]
+        self.config.settings.obsmode = obsmode
+        if not self.config.settings.combine:
+            self.config.settings.combine = False if obsmode == "Deep" else True
+
     def read_config(self, config_file):
         """Read configuration from YAML file."""
         with open(config_file, "r") as f:
@@ -261,7 +339,7 @@ class Configuration:
         - Writes configuration dictionary to the output path
         """
 
-        if not self.initialized:
+        if not self.is_initialized:
             return
 
         filename = f"{self.output_name}.yml"
@@ -295,8 +373,8 @@ class ConfigurationInstance:
 
             # Always write config if initialized
             if (
-                hasattr(self._parent_config, "_initialized")
-                and self._parent_config._initialized
+                hasattr(self._parent_config, "is_initialized")
+                and self._parent_config.is_initialized
             ):
                 self._parent_config.write_config()
 

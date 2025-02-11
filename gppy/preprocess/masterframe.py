@@ -4,9 +4,7 @@ import numpy as np
 import eclaire as ec
 from astropy.io import fits
 
-from ..logging import Logger
-
-logger = Logger(name="7DT masterframe logger")
+from ..logger import Logger
 
 from ..utils import (
     find_raw_path,
@@ -20,8 +18,8 @@ from ..utils import (
 from ..const import MASTER_FRAME_DIR
 import cupy as cp
 from .utils import *
-from .utils import read_link, write_link, search_with_date_offsets
-from ..queue import QueueManager, MemoryPriority
+from ..services.queue import QueueManager, Priority
+from ..services.memory import MemoryMonitor
 
 
 class MasterFrameGenerator:
@@ -30,26 +28,25 @@ class MasterFrameGenerator:
     unit, n_binning and gain have all identical cameras.
     """
 
-    def __init__(self, date, unit, n_binning, gain, device=None, queue=False):
+    def __init__(self, obs_params, device=None, queue=False):
 
-        self.unit = unit
-        self.date = date
-        self.n_binning = n_binning
-        self.gain = gain
+        unit = obs_params["unit"]
+        date = obs_params["date"]
+        n_binning = obs_params["n_binning"]
+        gain = obs_params["gain"]
+
         self.device = device
-
         self.path_raw = find_raw_path(unit, date, n_binning, gain)
         self.path_fdz = os.path.join(
             MASTER_FRAME_DIR, define_output_dir(date, n_binning, gain), unit
         )
         os.makedirs(self.path_fdz, exist_ok=True)
 
-        self._update_logger()
+        self._define_logger(f"{date}_{n_binning}x{n_binning}_gain{gain}_{unit}.log")
 
-        logger.info(
-            f"Preprocessing for {define_output_dir(date, n_binning, gain)}/{unit} initialized."
-        )
-        logger.debug(f"Master frame output folder: {self.path_fdz}")
+        self.process_name = f"{obs_params['date']}_{obs_params['n_binning']}x{obs_params['n_binning']}_gain{obs_params['gain']}_{obs_params['unit']}_masterframe"
+
+        self.logger.debug(f"Masterframe output folder: {self.path_fdz}")
 
         header = self._get_sample_header()
         self.date_fdz = to_datetime_string(header["DATE-OBS"], date_only=True)  # UTC
@@ -57,33 +54,67 @@ class MasterFrameGenerator:
 
         self._inventory_manifest()
 
-        if queue:
+        if isinstance(queue, QueueManager):
+            self.queue = queue
+            self.queue.logger = self.logger
+        elif queue:
             self.queue = QueueManager(
-                logger=logger,
-                auto_cleanup=True,  # Enable automatic memory cleanup
+                logger=self.logger,
             )
-            self.queue.start_processing()
         else:
             self.queue = None
 
+        # First slack message
+        self.logger.info(f"MasterFrameGenerator initialized for {self.process_name}")
+
     def __enter__(self):
+        """Context manager entry"""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.queue:
-            self.queue.cleanup_memory(force=True)
-        else:
-            import cupy as cp
-            import gc
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Context manager exit with proper cleanup"""
+        MemoryMonitor.cleanup_memory()
+        return False
 
-            cp.get_default_memory_pool().free_all_blocks()
-            cp.get_default_pinned_memory_pool().free_all_blocks()
-            gc.collect()
-        pass
+    def run(self):
+
+        self.logger.debug(
+            f"Start generating master calibration frames: {MemoryMonitor.log_memory_usage}"
+        )
+
+        if self.queue:
+            task_id = self.queue.add_task(
+                self.generate_mbias,
+                priority=Priority.HIGH,
+                gpu=True,
+                task_name="generate_mbias",
+            )
+            self.queue.wait_until_task_complete(task_id)
+            task_id = self.queue.add_task(
+                self.generate_mdark,
+                priority=Priority.MEDIUM,
+                gpu=True,
+                task_name="generate_mdark",
+            )
+            self.queue.wait_until_task_complete(task_id)
+            task_id = self.queue.add_task(
+                self.generate_mflat,
+                priority=Priority.MEDIUM,
+                gpu=True,
+                task_name="generate_mflat",
+            )
+            self.queue.wait_until_task_complete(task_id)
+        else:
+            self.generate_mbias()
+            self.generate_mdark()
+            self.generate_mflat()
+
+        self.logger.info(f"MasterFrameGenerator {self.process_name} completed")
+        MemoryMonitor.cleanup_memory()
 
     def _inventory_manifest(self):
         """Parses file names in the raw directory"""
-        pattern = os.path.join(self.path_raw, f"{self.unit}_*.fits")
+        pattern = os.path.join(self.path_raw, f"*.fits")
         all_fits = sorted(glob.glob(pattern))
 
         self._bias_input = []
@@ -168,6 +199,13 @@ class MasterFrameGenerator:
         return os.path.join(self.path_fdz, f"bias_{self.date_fdz}_{self.camera}.fits")
 
     @property
+    def biassig_output(self):
+        # master_frame/2001-02-23_1x1_gain2750/7DT11/biassig_20250102_C3.fits
+        return os.path.join(
+            self.path_fdz, f"biassig_{self.date_fdz}_{self.camera}.fits"
+        )
+
+    @property
     def mdark_output(self):
         # master_frame/2001-02-23_1x1_gain2750/7DT11/dark_20250102_100s_C3.fits
         mdarks_out_dict = {}
@@ -236,61 +274,15 @@ class MasterFrameGenerator:
         """dict"""
         return self._mflat_link
 
-    def run(self):
-        logger.info("Start generating master calibration frames.")
-
-        if self.queue:
-            # Add tasks with appropriate memory priorities
-            task_id = self.queue.add_task(
-                self.generate_mbias,
-                priority=MemoryPriority.HIGH,
-                gpu=True,
-                task_name="generate_mbias",
-                device=self.device,
-            )
-            self.queue.wait_until_all_tasks_complete()
-            task_id = self.queue.add_task(
-                self.generate_mdark,
-                priority=MemoryPriority.MEDIUM,
-                gpu=True,
-                task_name="generate_mdark",
-                device=self.device,
-            )
-            self.queue.wait_until_all_tasks_complete()
-            task_id = self.queue.add_task(
-                self.generate_mflat,
-                priority=MemoryPriority.MEDIUM,
-                gpu=True,
-                task_name="generate_mflat",
-                device=self.device,
-            )
-            self.queue.wait_until_all_tasks_complete()
-
-            # Get final reports and cleanup
-            self.queue.stop_processing()
-            task_stats = self.queue.get_task_statistics()
-            logger.debug(f"Task statistics: {task_stats}")
-        else:
-            self.generate_mbias()
-            self.generate_mdark()
-            self.generate_mflat()
-
-        logger.info(
-            f"MasterFrameGenerator("
-            f"{self.date}, {self.unit}, {self.n_binning}, {self.gain}) ended"
-        )
-
-    def _update_logger(self):
-        filename = f"{self.date}_{self.n_binning}x{self.n_binning}_gain{self.gain}.log"
+    def _define_logger(self, filename):
+        self.logger = Logger(name="7DT masterframe logger")
         log_file = os.path.join(self.path_fdz, filename)
-        logger.set_output_file(log_file)
-        logger.set_pipeline_name(log_file)
+        self.logger.set_output_file(log_file)
+        self.logger.set_pipeline_name(log_file)
 
     def _get_sample_header(self):
         """get any .head file in self.path_raw"""
-        # """get first BIAS .head file"""
-        # s = os.path.join(self.path_raw, f"{self.unit}_*BIAS*0.head")
-        s = os.path.join(self.path_raw, f"{self.unit}_*.head")
+        s = os.path.join(self.path_raw, f"*.head")
         header_file = sorted(glob.glob(s))[0]
         return header_to_dict(header_file)
 
@@ -307,7 +299,7 @@ class MasterFrameGenerator:
             mdark_used = mdarks_used[closest_dark_exp]
             dark_scaler = flat_exp_repr / closest_dark_exp
         else:
-            logger.warn(
+            self.logger.warn(
                 f"No master dark frame for the date. "
                 f"Searching previous dates for 100s mdark."
             )
@@ -318,27 +310,6 @@ class MasterFrameGenerator:
             mdark_used = search_with_date_offsets(search_template, future=False)
             dark_scaler = flat_exp_repr / 100
         return mdark_used, dark_scaler
-
-    # def _borrow_file(self, dtype="bias", **kwargs):
-    #     """returns path to master dtype"""
-    #     logger.warning(
-    #         f"No raw {dtype.upper()} files found for the date. "
-    #         f"Fetching the closest past master {dtype}."
-    #     )
-
-    #     if dtype == "bias":
-    #         output = getattr(self, f"m{dtype}_output")
-    #     elif dtype == "dark":
-    #         exptime = kwargs.pop("exptime")
-    #         output = getattr(self, f"m{dtype}_output")[exptime]
-    #     elif dtype == "flat":
-    #         filt = kwargs.pop("filt")
-    #         output = getattr(self, f"m{dtype}_output")[filt]
-    #     else:
-    #         raise ValueError(f"Invalid dtype: {dtype}")
-
-    #     # Search past date with the output path as template
-    #     return search_with_date_offsets(output)
 
     def _combine_and_save_eclaire(self, dtype, combine="median", **kwargs):
 
@@ -356,31 +327,57 @@ class MasterFrameGenerator:
         else:
             raise ValueError(f"Invalid dtype: {dtype}")
 
-        logger.info(
-            f"{len(data_list)} {dtype.upper()} files found. "
-            f"Initiate the generation of master frame {dtype.upper()}."
-        )
+        # Mind that there are bias, dark, flat sigma maps
+        if os.path.exists(output):
+            self.logger.debug(f"Master {dtype} already exists: {output}")
+            return output
 
+        self.logger.info(f"Start to generate masterframe {dtype.upper()}")
+        self.logger.debug(f"{len(data_list)} {dtype.upper()} files found.")
+
+        self.logger.debug(f"Before combining {dtype}: {MemoryMonitor.log_memory_usage}")
         if self.queue:
-            self.queue._update_memory_stats(f"Before combining {dtype}")
+            self.queue.log_memory_stats(f"Before combining {dtype}")
 
         bfc = ec.FitsContainer(data_list)
 
+        self.logger.debug(f"After loading {dtype}: {MemoryMonitor.log_memory_usage}")
         if self.queue:
-            self.queue._update_memory_stats(f"After loading {dtype} data")
+            self.queue.log_memory_stats(f"After loading {dtype} data")
 
         header = fits.getheader(data_list[0])
+        n = len(data_list)
 
         if dtype == "bias":
             header = write_IMCMB_to_header(header, data_list)
             # rdnoise = self.calculate_rdnoise()
             # header['RDNOISE'] = rdnoise
+
+            # save bias sigma map (~read noise)
+            fits.writeto(
+                self.biassig_output,
+                data=cp.asnumpy(cp.std(bfc.data, axis=0)) * n / (n - 1),
+                header=header,
+                overwrite=True,
+            )
+            self.logger.info(f"Generation of dark sigma map completed")
+
         elif dtype == "dark":
             mbias_used = read_link(self.mbias_link)
             header = write_IMCMB_to_header(header, [mbias_used] + data_list)
             with load_data_gpu(mbias_used) as mbias:
                 bfc.data -= mbias
+
+            # save dark sigma map
+            fits.writeto(
+                self.darksig_output[exptime],
+                data=cp.asnumpy(cp.std(bfc.data, axis=0)) * n / (n - 1),
+                header=header,
+                overwrite=True,
+            )
+            self.logger.info(f"Generation of dark sigma map completed")
             # self.generate_bpmask(bfc.data)
+
         elif dtype == "flat":
             mbias_used = read_link(self.mbias_link)
             # dark_scaler, closest_dark_exp = self._get_dark_scalar(filt)
@@ -392,12 +389,20 @@ class MasterFrameGenerator:
             )
             with load_data_gpu(mbias_used) as mbias:
                 bfc.data -= mbias
-
             with load_data_gpu(mdark_used) as mdark:
                 bfc.data -= mdark * dark_scaler
 
             # Normalize Flats
             bfc.data /= cp.median(bfc.data, axis=(1, 2), keepdims=True)
+
+            # save flat sigma map
+            fits.writeto(
+                self.flatsig_output[filt],
+                data=cp.asnumpy(cp.std(bfc.data, axis=0)) * n / (n - 1),
+                header=header,
+                overwrite=True,
+            )
+            self.logger.info(f"Generation of dark sigma map completed")
 
         combined_data = ec.imcombine(
             bfc.data,
@@ -405,8 +410,14 @@ class MasterFrameGenerator:
             **kwargs,
         )
 
+        self.logger.debug(f"After combining {dtype}: {MemoryMonitor.log_memory_usage}")
         if self.queue:
-            self.queue._update_memory_stats(f"After combining {dtype} data")
+            self.queue.log_memory_stats(f"After combining {dtype} data")
+
+        if dtype == "dark":
+            self.generate_bpmask(
+                combined_data, self.bpmask_output[exptime], header=header
+            )
 
         fits.writeto(
             output,
@@ -415,68 +426,53 @@ class MasterFrameGenerator:
             overwrite=True,
         )
 
+        self.logger.debug(f"After writing {dtype}: {MemoryMonitor.log_memory_usage}")
         if self.queue:
-            self.queue._update_memory_stats(f"After saving {dtype}")
+            self.queue.log_memory_stats(f"After writing {dtype}")
 
-        logger.info(f"Master {dtype.upper()} has been created: {output}")
+        self.logger.info(f"Generation of masterframe {dtype.upper()} completed")
+        MemoryMonitor.cleanup_memory()
+        self.logger.debug(f"Masterframe {dtype.upper()} has been created: {output}")
+        return output
 
-    # fmt: off
-    def generate_bpmask(self, mask, bias_sub_dark_names, 
-                            n_sigma = 3, save_hot_pixel_mask = True, hot_pixel_mask_name = 'Stable_hot_pixel_mask2.fits'):
-        """Func to generate hot pixel mask by J.H. Bae"""
-
+    def generate_bpmask(self, data, output, n_sigma=5, header=None):
+        """
+        Expects 2D cupy array as data (master dark)
+        Func to generate hot pixel mask.
+        Bad pixel criterion set by J.H. Bae
+        """
         # from astropy.stats import sigma_clipped_stats
-        from eclaire.stats import sigma_clipped_stats
+        # from eclaire.stats import sigma_clipped_stats
 
-        if self.queue:
-            self.queue._update_memory_stats(f"After loading {dtype} data")
+        # if self.queue:
+        #     self.queue.log_memory_stats(f"After loading {dtype} data")
 
-        # Open the bias subtracted dark images.
-        bias_sub_darks = []
-        for ii in range(len(bias_sub_dark_names)):
-            bias_sub_darks.append(fits.getdata(bias_sub_dark_names[ii]))
+        # mean, median, std = sigma_clipped_stats(data, sigma=3, maxiters=5) # astropy
+        # median, std = sigma_clipped_stats(data, reduce="median", width=3, iters=5) # eclaire
+        mean, median, std = sigma_clipped_stats_cupy(data, sigma=3, maxiters=5)
 
-        bias_sub_darks = np.array(bias_sub_darks)
-        bias_sub_mean, _, _ = sigma_clipped_stats(bias_sub_darks, sigma = 3, maxiters = 5, axis = 0)
-        
-        dark_hdr = fits.open(bias_sub_dark_names[0])[0].header
-
-        # Count hot pixels in the individual image. Used sigma clipping for calculating threshold.
-        # hot_count = np.zeros(np.shape(mask))
-        data = bias_sub_mean
-
-        _, median, std = sigma_clipped_stats(data, sigma = 3, maxiters = 5)
-        
-        hot_mask0 = np.abs(data - median) > n_sigma * std
-        hot_mask0 = hot_mask0.astype(int)
-
-            # hot_count = hot_count + hot_mask0
-
-        # Find the stable hot pixel.
-        mask_stable = hot_mask0 # == len(bias_sub_darks)
-        mask_stable = mask_stable.astype(int)
+        hot_mask = cp.abs(data - median) > n_sigma * std  # 1 for bad, 0 for okay
+        hot_mask = cp.asnumpy(hot_mask).astype(int)  # gpu to cpu
 
         # Save the file
-        if save_hot_pixel_mask:
-            newhdu = fits.PrimaryHDU(mask_stable)
-            newhdu.header['NHOTPIX'] = (np.sum(mask_stable), 'Number of hot pixels.')
-            newhdu.header['NDARKIMG'] = (len(bias_sub_dark_names), 'Number of bias subtracted dark images used in sigma-clipped mean combine.')
-            newhdu.header['EXPTIME'] = dark_hdr['EXPTIME']
-            newhdu.header['COMMENT'] = 'Stable hot pixel mask image. Algorithm produced by J.H.Bae on 20250117.'
-            newhdu.header['SIGMAC'] = (n_sigma, 'The clipped sigma used for hot pixel extraction.')
-        
-            newhdul = fits.HDUList([newhdu])
-            newhdul.writeto(hot_pixel_mask_name, overwrite = True)
-            
-        if self.queue:
-            self.queue._update_memory_stats(f"After saving {dtype}")
+        newhdu = fits.PrimaryHDU(hot_mask)
+        if header:
+            newhdu.header = header
+            # newhdu.header.add_comment("Above header is from the first dark frame")
+            newhdu.header["COMMENT"] = "Header inherited first dark frame"
+        newhdu.header["NHOTPIX"] = (np.sum(hot_mask), "Number of hot pixels.")
+        # newhdu.header['NDARKIMG'] = (len(bias_sub_dark_names), 'Number of bias subtracted dark images used in sigma-clipped mean combine.')
+        # newhdu.header['EXPTIME'] = dark_hdr['EXPTIME']
+        # newhdu.header['COMMENT'] = 'Stable hot pixel mask image. Algorithm produced by J.H.Bae on 20250117.'
+        newhdu.header["SIGMAC"] = (n_sigma, "HP threshold in clipped sigma")
 
-        logger.info(f"Bad Pixel Mask has been created: {hot_pixel_mask_name}")
+        newhdul = fits.HDUList([newhdu])
+        newhdul.writeto(output, overwrite=True)
 
-        # Update the input mask
-        mask = mask + mask_stable
-        return mask#, bias_sub_med
-    # fmt: on
+        # if self.queue:
+        #     self.queue.log_memory_stats(f"After saving {dtype}")
+
+        self.logger.info(f"Generation of bad pixel mask completed")
 
     # --------------- BIAS ---------------
     def generate_mbias(self, **kwargs):
@@ -486,12 +482,15 @@ class MasterFrameGenerator:
         """
 
         if len(self.bias_input) > 0:  # if raw biases exist
-            self._combine_and_save_eclaire(dtype="bias", **kwargs)
-
-        # 2001-02-23_1x1_gain2750/7DT11/bias_20250102_C3.fits
-        # 2001-02-23_1x1_gain2750/7DT11/bias_20250102_C3.link
-        search_template = os.path.splitext(self.mbias_link)[0] + ".fits"
-        mbias_file = search_with_date_offsets(search_template, future=False)
+            mbias_file = self._combine_and_save_eclaire(dtype="bias", **kwargs)
+        else:
+            # 2001-02-23_1x1_gain2750/7DT11/bias_20250102_C3.fits
+            # 2001-02-23_1x1_gain2750/7DT11/bias_20250102_C3.link
+            self.logger.info(
+                "No raw BIAS files found for the date. Searching for the closest past master BIAS."
+            )
+            search_template = os.path.splitext(self.mbias_link)[0] + ".fits"
+            mbias_file = search_with_date_offsets(search_template, future=False)
         write_link(self.mbias_link, mbias_file)
 
     # --------------- DARK ---------------
@@ -503,14 +502,20 @@ class MasterFrameGenerator:
 
         if len(self.dark_input) > 0:  # if raw darks exist
             # for multiple exptimes
-            for exptime, mdark_file in self.mdark_output.items():  # exp is int
-                self._combine_and_save_eclaire(dtype="dark", exptime=exptime, **kwargs)
-
-        # links to what they're used for, not what exists
-        for exptime, mdark_link in self.mdark_link.items():
-            search_template = os.path.splitext(mdark_link)[0] + ".fits"
-            mdark_file = search_with_date_offsets(search_template, future=False)
-            write_link(mdark_link, mdark_file)
+            for exptime, mdark_link in self.mdark_link.items():  # exp is int
+                mdark_file = self._combine_and_save_eclaire(
+                    dtype="dark", exptime=exptime, **kwargs
+                )
+                write_link(mdark_link, mdark_file)
+        else:
+            # links to what they're used for, not what exists
+            self.logger.info(
+                "No raw DARK files found for the date. Searching for the closest past master DARK."
+            )
+            for exptime, mdark_link in self.mdark_link.items():
+                search_template = os.path.splitext(mdark_link)[0] + ".fits"
+                mdark_file = search_with_date_offsets(search_template, future=False)
+                write_link(mdark_link, mdark_file)
 
     # --------------- FLAT ---------------
     def generate_mflat(self, **kwargs):
@@ -521,148 +526,61 @@ class MasterFrameGenerator:
 
         if len(self.flat_input) > 0:  # if raw flats exist
             # for multiple filters
-            for filt, mflat_file in self.mflat_output.items():
-                self._combine_and_save_eclaire(dtype="flat", filt=filt, **kwargs)
+            for filt, mflat_link in self.mflat_link.items():
+                mflat_file = self._combine_and_save_eclaire(
+                    dtype="flat", filt=filt, **kwargs
+                )
+                write_link(mflat_link, mflat_file)
+        else:
+            self.logger.info(
+                "No raw FLAT files found for the date. Searching for the closest past master FLAT."
+            )
+            for filt, mflat_link in self.mflat_link.items():
+                search_template = os.path.splitext(mflat_link)[0] + ".fits"
+                # master_frame/2001-02-23_1x1_gain2750/7DT11/flat_20250102_m625_C3.fits
+                mflat_file = search_with_date_offsets(search_template, future=False)
+                write_link(mflat_link, mflat_file)
 
-        for filt, mflat_link in self.mflat_link.items():
-            search_template = os.path.splitext(mflat_link)[0] + ".fits"
-            # master_frame/2001-02-23_1x1_gain2750/7DT11/flat_20250102_m625_C3.fits
-            mflat_file = search_with_date_offsets(search_template, future=False)
-            write_link(mflat_link, mflat_file)
 
-    # def _generate_mbias_eclaire(self, combine="median", **kwargs):
-    #     """returns path to mbias"""
-    #     logger.info(
-    #         f"{len(self.bias_input)} BIAS files found."
-    #         f"Initiate the generation of master frame BIAS."
-    #     )
+def sigma_clipped_stats_cupy(cp_data, sigma=3, maxiters=5):
+    """
+    Approximate sigma-clipping using CuPy.
+    Computes mean, median, and std after iteratively removing outliers
+    beyond 'sigma' standard deviations from the median.
 
-    #     bfc = ec.FitsContainer(self.bias_input)
+    Parameters
+    ----------
+    cp_data : cupy.ndarray
+        Flattened CuPy array of image pixel values.
+    sigma : float
+        Clipping threshold in terms of standard deviations.
+    maxiters : int
+        Maximum number of clipping iterations.
 
-    #     # imcombine eclaire
-    #     mbias = ec.imcombine(
-    #         bfc.data,
-    #         combine=combine,
-    #         **kwargs,
-    #     )
+    Returns
+    -------
+    mean_val : float
+        Mean of the clipped data (as a GPU float).
+    median_val : float
+        Median of the clipped data (as a GPU float).
+    std_val : float
+        Standard deviation of the clipped data (as a GPU float).
+    """
+    # Flatten to 1D for global clipping
+    cp_data = cp_data.ravel()
 
-    #     # later revise to use the combined header
-    #     header = fits.getheader(self.bias_input[0])
-    #     # rdnoise = self.calulate_rdnoise()
-    #     # header['RDNOISE'] = rdnoise
-    #     header = write_IMCMB_to_header(header, self.bias_input)
+    for _ in range(maxiters):
+        median_val = cp.median(cp_data)
+        std_val = cp.std(cp_data)
+        # Keep only pixels within +/- sigma * std of the median
+        mask = cp.abs(cp_data - median_val) < (sigma * std_val)
+        cp_data = cp_data[mask]
 
-    #     fits.writeto(
-    #         self.mbias_output,
-    #         data=cp.asnumpy(mbias),
-    #         header=header,
-    #         overwrite=True,
-    #     )
+    # Final statistics on the clipped data
+    mean_val = cp.mean(cp_data)
+    median_val = cp.median(cp_data)
+    std_val = cp.std(cp_data)
 
-    #     logger.info(f"Master BIAS has been created: {self.mbias_output}")
-    #     return self.mbias_output
-
-    # def _generate_mdark_eclaire(self, exptime, combine="median", **kwargs):
-    #     """
-    #     eclaire imcombine does not return sigma map.
-    #     to be modified for error map & hpmask
-    #     """
-
-    #     dimlist = self.dark_input[exptime]
-    #     logger.info(f"{len(dimlist)} DARK files found for exposure {exptime}s. Initiate the generation of master frame DARK.")  # fmt:skip
-
-    #     dfc = ec.FitsContainer(dimlist)
-
-    #     mdark = ec.imcombine(
-    #         dfc.data,
-    #         combine=combine,
-    #         **kwargs,
-    #         # width=3.0 # specify the clipping width
-    #         # iters=5 # specify the number of iterations
-    #     )
-
-    #     header = fits.getheader(self.dark_input[exptime][0])
-    #     header = write_IMCMB_to_header(header, [self.mbias] + self.dark_input[exptime])
-
-    #     mdark = mdark - load_data_gpu(self.mbias)
-
-    #     # generate error map & hot pixel mask here
-    #     # self._generate_hpmask()
-
-    #     # later revise to use the combined header
-
-    #     fits.writeto(
-    #         self.mdark_output[exptime],
-    #         data=cp.asnumpy(mdark),
-    #         header=header,
-    #         overwrite=True,
-    #     )
-
-    #     logger.info(f"Master DARK has been created: {self.mdark_output[exptime]}")
-
-    #     return self.mdark_output[exptime]
-
-    # def _generate_mflat_eclaire(self, filt, combine="median", **kwargs):
-
-    #     flat_raw_imlist = self.flat_input[filt]
-    #     ffc = ec.FitsContainer(flat_raw_imlist)
-    #     logger.info(f"{len(flat_raw_imlist)} FLAT files found for {filt}. Initiate the generation of master frame FLAT.")  # fmt:skip
-    #     dark_scaler, closest_dark_exp = self._get_correction_pars(filt)
-
-    #     # 	Bias Correction
-    #     ffc.data -= load_data_gpu(self.mbias_output)
-
-    #     # 	Dark Correction
-    #     ffc.data -= load_data_gpu(self.mdark_output[closest_dark_exp]) * dark_scaler
-
-    #     # 	Flat Normalization
-    #     ffc.data /= cp.median(ffc.data, axis=(1, 2), keepdims=True)
-
-    #     # 	Combine All and Generate Master Flat
-    #     mflat = ec.imcombine(ffc.data, combine=combine, **kwargs)
-
-    #     # generate flatsig here
-
-    #     # later revise to use the combined header
-    #     header = fits.getheader(self.flat_input[filt][0])
-    #     header = write_IMCMB_to_header(
-    #         header,
-    #         [self.mbias_output, self.mdark_output[closest_dark_exp]]
-    #         + self.flat_input[filt],
-    #     )
-
-    #     fits.writeto(
-    #         self.mflat_output[filt],
-    #         data=cp.asnumpy(mflat),
-    #         header=header,
-    #         overwrite=True,
-    #     )
-
-    #     logger.info(f"Master FLAT has been created: {self.mflat_output[filt]}")
-
-    #     return self.mflat_output[filt]
-
-    # def _optimized_preproc(self):
-    #     sci = (sci - mdark) / (mflat - mbias)
-    #     reduction_kernel = cp.ElementwiseKernel(
-    #         in_params='T x, T b, T d, T f',
-    #         out_params='F z',
-    #         operation='z = (x - b - d) / f',
-    #         name='reduction'
-    #     )
-    #     # eclaire function
-    #     def reduction(image,bias,dark,flat,out=None,dtype=None):
-    #         dtype = judge_dtype(dtype)
-    #         asarray = lambda x : cp.asarray(x,dtype=dtype)
-    #         image = asarray(image)
-    #         bias  = asarray(bias)
-    #         dark  = asarray(dark)
-    #         flat  = asarray(flat)
-    #         if out is None:
-    #             out = cp.empty(
-    #                 cp.broadcast(image,bias,dark,flat).shape,
-    #                 dtype=dtype
-    #             )
-    #         reduction_kernel(image,bias,dark,flat,out)
-    #         return out
-    #     pass
+    # Convert results back to Python floats on the CPU
+    # return float(mean_val), float(median_val), float(std_val)
+    return mean_val, median_val, std_val

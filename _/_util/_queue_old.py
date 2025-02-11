@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from enum import Enum
 from contextlib import contextmanager
 import gc
+from concurrent.futures import ProcessPoolExecutor
 
 class classmethodproperty:
     def __init__(self, func):
@@ -21,7 +22,7 @@ class classmethodproperty:
     def __get__(self, instance, owner):
         return self.func.__get__(instance, owner)()
 
-class MemoryPriority(Enum):
+class Priority(Enum):
     LOW = 0
     MEDIUM = 1
     HIGH = 2
@@ -43,7 +44,6 @@ class MemoryAction(Enum):
     CLEANUP = "cleanup"
     EMERGENCY = "emergency"
 
-
 @dataclass
 class MemoryThresholds:
     warning: float
@@ -57,7 +57,7 @@ class Task:
     func: Callable
     args: tuple
     kwargs: dict
-    priority: MemoryPriority
+    priority: Priority
     gpu: bool
     timeout: float
     timestamp: datetime
@@ -89,6 +89,9 @@ class QueueManager:
         # Initialize logging
         if logger:
             self.logger = logger
+        else:
+            from .logging import Logger
+            self.logger = Logger()
         
         # Basic initialization
         self.max_workers = max_workers or multiprocessing.cpu_count()
@@ -97,8 +100,8 @@ class QueueManager:
         self.peak_memory_percent = peak_memory_percent
         
         # Task queues with priorities
-        self.task_queues: Dict[MemoryPriority, Queue] = {
-            priority: Queue() for priority in MemoryPriority
+        self.task_queues: Dict[Priority, Queue] = {
+            priority: Queue() for priority in Priority
         }
         
         # Results and error handling
@@ -151,6 +154,10 @@ class QueueManager:
         # Register signal handlers
         signal.signal(signal.SIGTERM, self._handle_shutdown)
         signal.signal(signal.SIGINT, self._handle_shutdown)
+        
+        # Process pool for memory operations
+        self._process_pool = ProcessPoolExecutor(max_workers=multiprocessing.cpu_count())
+        self._memory_queue = multiprocessing.Queue()
 
     def _handle_shutdown(self):
         """Handle graceful shutdown."""
@@ -201,6 +208,15 @@ class QueueManager:
                     }
         return gpu_stats
 
+    @classmethodproperty
+    def log_memory_usage(cls):
+        gpu_summary = []
+        for device, stats in cls.current_gpu_memory.items():
+            percent = stats['percent']
+            gpu_summary.append(f"{device}: {percent:.2f}%")
+        gpu_info = f", GPU [{', '.join(gpu_summary)}]"
+        return f"System [{cls.current_memory['percent']:.2f}%] {gpu_info}"
+
     ######### Initialize #########
 
     def _initialize_gpu_devices(self) -> List[int]:
@@ -231,7 +247,7 @@ class QueueManager:
                  func: Callable, 
                  args: tuple = (), 
                  kwargs: dict = None, 
-                 priority: MemoryPriority = MemoryPriority.MEDIUM, 
+                 priority: Priority = Priority.MEDIUM, 
                  gpu: bool = False,
                  timeout: Optional[float] = None,
                  device: int = None,
@@ -274,7 +290,7 @@ class QueueManager:
     def add_cpu_task(self, 
                      func: Callable, 
                      *args, 
-                     priority: MemoryPriority = MemoryPriority.MEDIUM, 
+                     priority: Priority = Priority.MEDIUM, 
                      task_name: str = None,
                      **kwargs) -> str:
         """Convenience method to add a CPU task."""
@@ -283,7 +299,7 @@ class QueueManager:
     def add_gpu_task(self, 
                      func: Callable, 
                      *args, 
-                     priority: MemoryPriority = MemoryPriority.MEDIUM, 
+                     priority: Priority = Priority.MEDIUM, 
                      task_name: str = None,
                      device: int = None,
                      **kwargs) -> str:
@@ -298,7 +314,7 @@ class QueueManager:
                          device: int = None,
                          **kwargs) -> str:
         """Add a critical priority task."""
-        return self.add_task(func, args, kwargs, MemoryPriority.CRITICAL, gpu, device=device, task_name=task_name)
+        return self.add_task(func, args, kwargs, Priority.CRITICAL, gpu, device=device, task_name=task_name)
 
     def _choose_gpu_device(self):
         """Choose a GPU device randomly weighted by available memory."""
@@ -346,19 +362,6 @@ class QueueManager:
             self.performance_metrics['tasks_failed'] += 1
         self.logger.error(f"Task error: {error_info['error']}")
 
-    # async def _execute_task_with_timeout(self, executor, func, *args, **kwargs):
-    #     """Execute task with timeout."""
-    #     future = executor.submit(func, *args, **kwargs)
-    #     try:
-    #         result = future.result(timeout=self.task_timeout)
-    #         return TaskResult(success=True, result=result)
-    #     except concurrent.futures.TimeoutError:
-    #         future.cancel()
-    #         return TaskResult(success=False, error=TimeoutError("Task exceeded timeout"))
-    #     except Exception as e:
-    #         return TaskResult(success=False, error=e)
-
-
     def _age_task_priorities(self):
         """
         Age tasks in queues to prevent starvation of lower priority tasks.
@@ -366,13 +369,13 @@ class QueueManager:
         """
         current_time = datetime.now()
         priority_aging_thresholds = {
-            MemoryPriority.LOW: 300,     # 5 minutes
-            MemoryPriority.MEDIUM: 600,  # 10 minutes
-            MemoryPriority.HIGH: 1200    # 20 minutes
+            Priority.LOW: 300,     # 5 minutes
+            Priority.MEDIUM: 600,  # 10 minutes
+            Priority.HIGH: 1200    # 20 minutes
         }
         
         with self.lock:
-            for priority in list(MemoryPriority)[:-1]:  # Exclude CRITICAL
+            for priority in list(Priority)[:-1]:  # Exclude CRITICAL
                 queue = self.task_queues[priority]
                 if queue.empty():
                     continue
@@ -385,7 +388,7 @@ class QueueManager:
                     
                     # Promote task if it has waited too long
                     if wait_time > priority_aging_thresholds[priority]:
-                        new_priority = MemoryPriority(priority.value + 1)
+                        new_priority = Priority(priority.value + 1)
                         self.logger.info(
                             f"Promoting task {task.id} from {priority.name} to {new_priority.name} "
                             f"after waiting {wait_time:.1f} seconds"
@@ -429,7 +432,7 @@ class QueueManager:
                     continue
                 
                 # Process tasks by priority
-                for priority in reversed(list(MemoryPriority)):
+                for priority in reversed(list(Priority)):
                     while not self.task_queues[priority].empty():
                         try:
                             task = self.task_queues[priority].get_nowait()
@@ -529,7 +532,7 @@ class QueueManager:
                 }
             
         # Check if task is still in queues
-        for priority in MemoryPriority:
+        for priority in Priority:
             try:
                 queue_items = self.task_queues[priority].queue
                 for task in queue_items:
@@ -669,20 +672,35 @@ class QueueManager:
             # Small sleep to prevent CPU spinning
             time.sleep(0.1)
 
-
+    def wait_until_task_complete(self, task_id: str, timeout: float = None):
+        """Wait until the specified task completes or until timeout."""
+        
+        start_time = time.time()
+        while True:
+            with self.lock:
+                if any(r.task_id == task_id for r in self.results):
+                    return  # Task completed
+            if timeout is not None and (time.time() - start_time) > timeout:
+                raise TimeoutError(f"Task {task_id} did not complete within timeout.")
+            
+            time.sleep(0.1)
+            
     ######### Cleanup memory #########
+    @classmethod
     def cleanup_memory(self, force: bool = False):
         """Enhanced memory cleanup."""
-        self.performance_metrics['cleanup_actions'] += 1
-        
         cleanup_steps = [
             (self._cleanup_gpu_memory, "GPU"),
             (self._cleanup_python_memory, "Python"),
             (self._cleanup_system_memory, "System")
         ]
-        
-        for cleanup_func, cleanup_type in cleanup_steps:
-            with self._cleanup_handler(cleanup_type):
+        if hasattr(self, "performance_metrics"):
+            self.performance_metrics['cleanup_actions'] += 1
+            for cleanup_func, cleanup_type in cleanup_steps:
+                with self._cleanup_handler(cleanup_type):
+                    cleanup_func(force)
+        else:
+            for cleanup_func, cleanup_type in cleanup_steps:
                 cleanup_func(force)
 
     @contextmanager
@@ -699,6 +717,7 @@ class QueueManager:
             cleanup_time = time.time() - start_time
             self.performance_metrics['memory_cleanup_time'] += cleanup_time
 
+    @classmethod
     def _cleanup_gpu_memory(self, force: bool = False):
         """Clean up GPU memory by clearing cache and garbage collecting unused tensors."""
         if cp.cuda.runtime.getDeviceCount() > 0:
@@ -711,8 +730,7 @@ class QueueManager:
                         cp.get_default_memory_pool().free_all_blocks()
                         cp.get_default_pinned_memory_pool().free_all_blocks()
             
-
-
+    @classmethod
     def _cleanup_python_memory(self, force: bool = False):
         """Clean up Python memory through garbage collection."""
         gc.collect()
@@ -723,32 +741,50 @@ class QueueManager:
             gc.collect()
             gc.enable() 
 
-    def _cleanup_system_memory(self, force: bool = False):
-        """Clean up system memory using OS-specific methods."""
+    @staticmethod
+    def _process_memory_info() -> Tuple[float, Dict]:
+        """Process memory info in separate process."""
         process = psutil.Process()
-        mem_before = process.memory_info()
-        
-        if force and hasattr(process, "memory_full_info"):
-            process.memory_full_info()
-        
-        if hasattr(psutil, "Process"):
-            process.memory_info()
-        
-        mem_after = process.memory_info()
-        memory_freed = mem_before.rss - mem_after.rss
+        mem_info = process.memory_info()
+        mem_percent = process.memory_percent()
+        return mem_percent, mem_info._asdict()
+
+    @classmethod
+    def _cleanup_system_memory(cls, force: bool = False) -> int:
+        """Clean up system memory using OS-specific methods."""
+        def cleanup_worker():
+            process = psutil.Process()
+            mem_before = process.memory_info()
+            
+            if force and hasattr(process, "memory_full_info"):
+                process.memory_full_info()
+            
+            if hasattr(psutil, "Process"):
+                process.memory_info()
+            
+            mem_after = process.memory_info()
+            return mem_before.rss - mem_after.rss
+
+        with ProcessPoolExecutor() as executor:
+            memory_freed = executor.submit(cleanup_worker).result()
+        return memory_freed
 
     ######### Memory related #########
     def log_memory_report(self):
-        """Log memory usage report."""
+        """Log memory usage report with multiprocessing."""
         if not self.logger:
             return
-            
-        memory_percent = self.current_memory["percent"]
+
+        # Run memory info collection in separate process
+        future = self._process_pool.submit(self._process_memory_info)
+        memory_percent, memory_info = future.result()
+        
         memory_state = self._get_memory_state(memory_percent)
         
         # Brief summary for info level
         gpu_summary = []
-        gpu_stats = self.current_gpu_memory
+        gpu_stats = self.current_gpu_memory  # GPU stats still in main process
+        
         if gpu_stats:
             for device, stats in gpu_stats.items():
                 used_mb = stats['used']
@@ -1075,5 +1111,10 @@ class QueueManager:
                                    if self.performance_metrics['cleanup_actions'] > 0 else 0)
             }
         }
+
+    def __del__(self):
+        """Cleanup process pool on deletion."""
+        if hasattr(self, '_process_pool'):
+            self._process_pool.shutdown()
 
 

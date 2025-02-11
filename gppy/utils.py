@@ -1,12 +1,32 @@
-import re
-from datetime import datetime
 import os
-from .logging import logger
+import re
 import glob
+from datetime import datetime
+from astropy.io import fits
 
 
 def to_datetime_string(datetime_str, date_only=False):
-    """Parse the input datetime string"""
+    """
+    Convert an ISO-formatted datetime string to a specific string representation.
+
+    This function handles datetime strings with timezone information, converting
+    them to a standardized format for astronomical data processing.
+
+    Args:
+        datetime_str (str): ISO-formatted datetime string (e.g., '2025-02-07T16:44:41+09:00')
+        date_only (bool, optional): If True, returns only the date. Defaults to False.
+
+    Returns:
+        str: Formatted datetime string
+            - With date_only=False: 'YYYYMMDD_HHMMSS' (e.g., '20250207_164441')
+            - With date_only=True: 'YYYYMMDD' (e.g., '20250207')
+
+    Example:
+        >>> to_datetime_string('2025-02-07T16:44:41Z')
+        '20250207_164441'
+        >>> to_datetime_string('2025-02-07T16:44:41Z', date_only=True)
+        '20250207'
+    """
     dt = datetime.fromisoformat(datetime_str.replace("Z", "+00:00"))
 
     # Format to desired output
@@ -92,8 +112,25 @@ def header_to_dict(file_path):
 
 
 def get_camera(header):
-    """Get camera type from image size.
-    input is either path to .head file or header dict"""
+    """
+    Determine the camera type based on image dimensions.
+
+    Identifies the camera model by examining the number of pixels in the first axis.
+    Supports two camera types: C3 and C5.
+    Support for the overscan area of C5 is to be added.
+
+    Args:
+        header (dict or str): Either a header dictionary or a path to a .head file
+
+    Returns:
+        str: Camera type ('C3', 'C5', or 'Unidentified')
+
+    Example:
+        >>> get_camera({'NAXIS1': 9576, 'NAXIS2': 6388})
+        'C3'
+        >>> get_camera('/path/to/header.head')
+        'C5'
+    """
     if type(header) == dict:
         pass
     else:
@@ -107,12 +144,51 @@ def get_camera(header):
         return "Unidentified"
 
 
-def query_sex_config(folder_path, process):
-    postpix = ["sex", "params", "conv", "nnw"]
-    return [os.path.join(folder_path, f"{process}.{pp}") for pp in postpix]
+def get_sex_config(prefix, ref_path=None):
+    """
+    Generate Source Extractor configuration file paths.
+
+    Args:
+        process (str): Process identifier for configuration files
+        ref_path (str, optional): Reference directory path. Defaults to REF_DIR/srcExt.
+
+    Returns:
+        list: Paths to Source Extractor configuration files
+            [.sex, .param, .conv, .nnw]
+
+    Example:
+        >>> get_sex_config('simple')
+        ['/path/to/simple.sex', '/path/to/simple.param', ...]
+    """
+    from .const import REF_DIR
+
+    # "/data/pipeline_reform/gppy-gpu/gppy/ref/srcExt"
+    ref_path = ref_path or os.path.join(REF_DIR, "srcExt")
+    postfix = ["sex", "param", "conv", "nnw"]
+    return [os.path.join(ref_path, f"{prefix}.{pf}") for pf in postfix]
 
 
 def find_raw_path(unit, date, n_binning, gain):
+    """
+    Locate the raw data directory for a specific observation.
+
+    Searches for raw data directories with increasing specificity:
+    1. By unit and date
+    2. By unit, date, and gain
+    3. By unit, date, binning, and gain
+
+    Args:
+        unit (str): Observation unit identifier
+        date (str): Observation date
+        n_binning (int): Pixel binning factor
+        gain (float): Detector gain setting
+
+    Returns:
+        str: Path to the raw data directory
+
+    Raises:
+        ValueError: If no matching data directory is found
+    """
     from .const import RAWDATA_DIR
 
     raw_data_folder = glob.glob(f"{RAWDATA_DIR}/{unit}/{date}*")
@@ -125,32 +201,72 @@ def find_raw_path(unit, date, n_binning, gain):
             )
 
     elif len(raw_data_folder) == 0:
-        logger.error("No data folder found")
+        raise ValueError("No data folder found")
 
     return raw_data_folder[0]
 
+
 def parse_exptime(filename, return_type="float"):
+    """
+    Extract exposure time from a filename.
+
+    Args:
+        filename (str): Filename containing exposure time
+        return_type (type, optional): Return type for exposure time. Defaults to float.
+
+    Returns:
+        float or int: Exposure time extracted from the filename
+
+    Example:
+        >>> parse_exptime('image_100.0s_data.fits')
+        100.0
+        >>> parse_exptime('image_100.0s_data.fits', return_type=int)
+        100
+    """
     exptime = float(re.search(r"_(\d+\.\d+)s_", filename).group(1))
-    if return_type == int:
-        return int(exptime)
-    else:
-        return exptime
+    return int(exptime) if return_type == int else exptime
+
 
 def define_output_dir(date, n_binning, gain):
+    """
+    Generate a standardized output directory name.
+
+    Args:
+        date (str): Observation date
+        n_binning (int): Pixel binning factor
+        gain (float): Detector gain setting
+
+    Returns:
+        str: Formatted output directory name
+
+    Example:
+        >>> define_output_dir('20250207', 2, 1.0)
+        '20250207_2x2_gain1.0'
+    """
     return f"{date}_{n_binning}x{n_binning}_gain{gain}"
 
 
 def lapse(explanation="elapsed", print_output=True):
     """
-    A utility function to measure and report elapsed time using a global checkpoint.
+    Measure and report elapsed time using a global checkpoint.
 
-    Parameters:
-    explanation (str): Description for the elapsed time report. The form is "1 seconds {explanation}".
+    A utility function for performance tracking and logging elapsed time
+    between function calls. It supports various time unit representations
+    and optional console output.
+
+    Args:
+        explanation (str, optional): Description for the elapsed time report.
+            Defaults to "elapsed".
+        print_output (bool, optional): Whether to print the time report.
+            Defaults to True.
+
+    Returns:
+        float: Elapsed time in seconds
 
     Usage:
-    lapse("Start")  # Initializes the timer and prints "Timer started"
-    # Do something
-    lapse("Task completed")  # Prints the time elapsed since the last call
+        >>> lapse("Start")  # Initializes the timer
+        >>> # Do some work
+        >>> lapse("Task completed")  # Prints elapsed time
     """
     from timeit import default_timer as timer
 
@@ -173,10 +289,151 @@ def lapse(explanation="elapsed", print_output=True):
         _dhutil_lapse_checkpoint = current_time  # Update the checkpoint
 
         print_str = f"{dt:.3f} {unit} {explanation}"
-        logger.info(print_str)  # log the elapsed time at INFO level
+        print(print_str)  # log the elapsed time at INFO level
 
-        ####### This is for testing. Remove this line for production  #####
         if print_output:
             print(print_str, end="\n")  # log the elapsed time
-        ###################################################################
         return elapsed_time  # in seconds
+
+
+def add_padding(header, n, copy_header=False):
+    """
+    Add empty COMMENT entries to a FITS header to ensure specific block sizes.
+
+    This function helps manage FITS header sizes by adding padding comments.
+    Useful for maintaining specific header block structures required by
+    astronomical data processing tools.
+
+    Args:
+        header (fits.Header): Input FITS header
+        n (int): Target number of 2880-byte blocks
+        copy_header (bool, optional): If True, operates on a copy of the header.
+            Defaults to False. Note: Using True is slower.
+
+    Returns:
+        fits.Header: Header with added padding comments
+
+    Note:
+        - Each COMMENT is 80 bytes long
+        - The total header size must be a multiple of 2880 bytes
+    """
+    if copy_header:
+        import copy
+
+        header = copy.deepcopy(header)
+
+    info_size = len(header.cards) * 80
+
+    target_size = (n - 1) * 2880  # fits header size is a multiple of 2880 bytes
+    padding_needed = target_size - info_size
+    num_comments = padding_needed // 80  # (each COMMENT is 80 bytes)
+
+    # CAVEAT: END also uses one line.
+    # for _ in range(num_comments - 1):  # <<< full n-1 2880-byte blocks
+    for _ in range(num_comments):  # <<< marginal n blocks
+        header.add_comment(" ")
+
+    return header
+
+
+def remove_padding(header):
+    """
+    Remove COMMENT padding from a FITS header.
+
+    Strips all trailing COMMENT entries, returning a header with only
+    significant entries.
+
+    Args:
+        header (fits.Header): Input FITS header with potential padding
+
+    Returns:
+        fits.Header: Header with padding comments removed
+
+    Note:
+        This method is primarily useful for header inspection and may not
+        be directly applicable for header updates.
+    """
+    # Extract all header cards
+    cards = list(header.cards)
+
+    # Find the last non-COMMENT entry
+    for i in range(len(cards) - 1, -1, -1):
+        if cards[i][0] != "COMMENT":  # i is the last non-comment idx
+            break
+
+    return header[: i + 1]
+
+
+def read_head(file):
+    """
+    Read and clean a FITS header file, normalizing unicode and correcting WCS types.
+
+    Args:
+        file (str): Path to the header file
+
+    Returns:
+        fits.Header: Processed and cleaned FITS header with corrected WCS types
+
+    Note:
+        - Removes non-ASCII characters
+        - Converts WCS projection type from TAN to TPV
+    """
+    import unicodedata
+
+    with open(file, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Clean non-ASCII characters
+    cleaned_string = (
+        unicodedata.normalize("NFKD", content).encode("ascii", "ignore").decode("ascii")
+    )
+
+    # Correct CTYPE (TAN --> TPV)
+    hdr = fits.Header.fromstring(cleaned_string, sep="\n")
+    hdr["CTYPE1"] = ("RA---TPV", "WCS projection type for this axis")
+    hdr["CTYPE2"] = ("DEC--TPV", "WCS projection type for this axis")
+    return hdr
+
+
+def update_padded_header(target_fits, header_new):
+    """
+    Update a FITS file's header with header_new (scamp or photometry output).
+    header_new can be either astropy.io.fits.Header or dict.
+
+    CAVEAT: This overwrites COMMENTs adjacent to the padding
+
+    Args:
+        target_fits (str): Path to the target FITS file to be updated
+        header_new (dict or Header): Header object with info to be added
+
+    Note:
+        - Modifies the target FITS file in-place
+        - Preserves existing non-COMMENT header entries
+        - Appends or replaces header cards from the input header
+    """
+
+    with fits.open(target_fits, mode="update") as hdul:
+        header = hdul[0].header
+        cards = header.cards
+        for i in range(len(cards) - 1, -1, -1):
+            if cards[i][0] != "COMMENT":  # i is the last non-comment idx
+                break
+
+        # format new header for iteration
+        if isinstance(header_new, fits.Header):
+            cardpack = header_new.cards
+        elif isinstance(header_new, dict):  # (key, value) or (key, (value, comment))
+            cardpack = [
+                (key, *value) if isinstance(value, tuple) else (key, value)
+                for key, value in header_new.items()
+            ]
+        else:
+            raise ValueError("Unsupported Header format for updating padded Header")
+
+        # Expects (key, value, comment)
+        for j, card in enumerate(cardpack):
+            if i + j <= len(cards) - 1:
+                del header[i + j]
+                header.insert(i + j, card)
+            else:
+                header.append(card, end=True)
