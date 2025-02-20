@@ -5,7 +5,80 @@ import gc
 import cupy as cp
 import psutil  
 from . import utils
+import threading
+from contextlib import contextmanager
+from datetime import datetime
+import numpy as np
+from astropy.table import Table
 
+@contextmanager
+def monitor_memory_usage(interval: float = 1.0, logger: Optional = None, verbose: bool = False) -> Table:
+    """
+    Context manager that monitors and logs memory usage every X seconds
+    while running code inside the `with` block.
+    Returns an astropy Table containing the usage history after the context ends.
+
+    Parameters
+    ----------
+    interval : float, optional
+        Time interval between measurements in seconds (default: 1.0)
+    logger : logging.Logger, optional
+        Logger instance to use for logging (default: None)
+    verbose : bool, optional
+        Whether to print/log usage in real-time (default: False)
+
+    Returns
+    -------
+    astropy.table.Table
+        Table containing timestamps and memory usage data
+
+    Example
+    -------
+    with monitor_memory_usage(interval=2.0) as history:
+        run_preprocess()
+    history.write('memory_usage.csv', format='csv', overwrite=True)  # Save to file if needed
+    """
+    
+    # Create column names based on number of GPUs detected
+    n_gpus = len(MemoryMonitor.current_gpu_memory_percent)
+    column_names = ['time', 'cpu_memory'] + [f'gpu{i}_memory' for i in range(n_gpus)]
+    
+    usage_data = Table(names=column_names, dtype=[object, float] + [float]*n_gpus)
+    
+    # Set column descriptions
+    usage_data['time'].description = 'Measurement timestamp'
+    usage_data['cpu_memory'].description = 'CPU memory usage (%)'
+    for i in range(n_gpus):
+        usage_data[f'gpu{i}_memory'].description = f'GPU {i} memory usage (%)'
+    
+    stop_thread = False
+
+    def logging_thread() -> None:
+        while not stop_thread:
+            current_time = str(datetime.now())
+            cpu_memory = MemoryMonitor.current_memory_percent
+            gpu_memories = MemoryMonitor.current_gpu_memory_percent
+            
+            # Create row with timestamp, CPU memory, and all GPU memories
+            row = [current_time, cpu_memory] + gpu_memories
+            usage_data.add_row(row)
+            if verbose:
+                usage_str = MemoryMonitor.log_memory_usage
+                if logger:
+                    logger.info(usage_str)
+                else:
+                    print(usage_str)
+                    
+            time.sleep(interval)
+
+    t = threading.Thread(target=logging_thread, daemon=True)
+    t.start()
+ 
+    try:
+        yield usage_data
+    finally:
+        stop_thread = True
+        t.join()
 
 class MemoryState(Enum):
     """

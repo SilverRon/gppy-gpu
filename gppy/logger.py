@@ -1,8 +1,10 @@
 import logging
 import requests
 import sys
-from typing import Optional, Union
+import time
+from typing import Optional, Union, Dict, Any
 from . import const
+
 
 class Logger:
     """
@@ -97,7 +99,7 @@ class Logger:
         handler.setFormatter(logging.Formatter(self._log_format))
         return handler
 
-    def _setup_logger(self) -> logging.Logger:
+    def _setup_logger(self, overwrite:bool=True) -> logging.Logger:
         """
         Configure and set up the logger with multiple handlers.
 
@@ -135,7 +137,7 @@ class Logger:
         if self._log_file:
             # Main log file with specified level
             file_handler = self._create_handler(
-                "file", log_file=self._log_file, level=log_level, mode="w"
+                "file", log_file=self._log_file, level=log_level, mode="w" if overwrite else "a"
             )
             logger.addHandler(file_handler)
 
@@ -241,29 +243,77 @@ class Logger:
             if self._thread_ts:
                 payload["thread_ts"] = self._thread_ts
 
-            response = requests.post(
-                "https://slack.com/api/chat.postMessage",
-                headers={
-                    "Authorization": f"Bearer {const.SLACK_TOKEN}",
-                    "Content-Type": "application/json",
-                },
-                json=payload,
-            )
+            response_data = self._send_slack_with_retry(payload)
 
-            response_data = response.json()
+            if response_data is None:
+                return
 
             # If this is the first message, store the thread_ts for replies
             if not self._thread_ts and response_data.get("ok"):
                 self._thread_ts = response_data["ts"]
 
             if not response_data.get("ok"):
-                print(
+                self.logger.error(
                     f"Slack API Error: {response_data.get('error')}",
                     file=sys.__stderr__,
                 )
 
         except Exception as e:
-            print(f"Slack notification failed: {e}", file=sys.__stderr__)
+            self.logger.error(f"Slack notification failed: {e}", file=sys.__stderr__)
+
+    def _send_slack_with_retry(self, payload: Dict[str, Any], max_retries: int = 3, initial_delay: float = 1.0) -> Optional[Dict]:
+        """
+        Send a Slack message with retry logic for rate limiting.
+
+        Args:
+            payload (Dict[str, Any]): The message payload to send
+            max_retries (int): Maximum number of retry attempts
+            initial_delay (float): Initial delay in seconds between retries
+
+        Returns:
+            Optional[Dict]: Response data from Slack API if successful, None if all retries fail
+        """
+        delay = initial_delay
+        attempt = 0
+
+        while attempt < max_retries:
+            try:
+                response = requests.post(
+                    "https://slack.com/api/chat.postMessage",
+                    headers={
+                        "Authorization": f"Bearer {const.SLACK_TOKEN}",
+                        "Content-Type": "application/json",
+                    },
+                    json=payload,
+                )
+                
+                response_data = response.json()
+                
+                if response_data.get("ok"):
+                    return response_data
+                
+                if response_data.get("error") == "ratelimited":
+                    # Get retry_after from headers or use exponential backoff
+                    retry_after = float(response.headers.get("Retry-After", delay))
+                    time.sleep(retry_after)
+                    delay *= 2  # Exponential backoff
+                    attempt += 1
+                    continue
+                
+                # Other errors
+                self.logger.error(
+                    f"Slack API Error: {response_data.get('error')}",
+                    file=sys.__stderr__,
+                )
+                return None
+
+            except Exception as e:
+                self.logger.error(f"Slack request failed: {e}", file=sys.__stderr__)
+                attempt += 1
+                time.sleep(delay)
+                delay *= 2
+
+        return None
 
     def set_level(self, level: str) -> None:
         """
@@ -293,7 +343,7 @@ class Logger:
         """
         self._pipeline_name = name
 
-    def set_output_file(self, log_file: str) -> None:
+    def set_output_file(self, log_file: str, overwrite: bool=True) -> None:
         """
         Change the log output file and reinitialize logger.
 
@@ -301,7 +351,7 @@ class Logger:
             log_file (str): New log file path
         """
         self._log_file = log_file
-        self.logger = self._setup_logger()
+        self.logger = self._setup_logger(overwrite=overwrite)
 
     def set_format(self, fmt: str) -> None:
         """

@@ -6,20 +6,78 @@ from .utils import load_data_gpu
 from ..utils import add_padding
 
 from ..services.memory import MemoryMonitor
+from typing import Union, Any
 
+from ..services.queue import QueueManager, Priority 
+from ..config import Configuration  
 
 class Calibration:
-    def __init__(self, config, logger=None):
-        self.config = config.config
+    def __init__(
+        self,
+        config: Union[str, Any] = None,
+        logger: Any = None,
+        queue: Union[bool, QueueManager] = False,
+        ) -> None:
+        """Initialize the astrometry module.
 
-        if logger is None:
-            from .logger import Logger
-            self.logger = Logger(name="7DT pipeline logger", slack_channel="pipeline_report")
+        Args:
+            config: Configuration object or path to config file
+            logger: Custom logger instance (optional)
+            queue: QueueManager instance or boolean to enable parallel processing
+        """
+        # Load Configuration
+        if isinstance(config, str):  # In case of File Path
+            self.config = Configuration(config_source=config).config
         else:
-            self.logger = logger
+            # for easy access to config
+            self.config = config.config
 
-        self.logger.info(f"Initialize calibration for {self.config.name}")
+        # Setup log
+        self.logger = logger or self._setup_logger(config)
+        
+        # Setup queue
+        self.queue = self._setup_queue(queue)
+
+    def _setup_logger(self, config):
+        if hasattr(config, "logger") and config.logger is not None:
+            return config.logger
+        
+        from ..logger import Logger
+        return Logger(name="7DT pipeline logger", slack_channel="pipeline_report")
+
+    def _setup_queue(self, queue):
+        if isinstance(queue, QueueManager):
+            queue.logger = self.logger
+            return queue
+        elif queue:
+            return QueueManager(logger=self.logger)
+        return None
+
+    def run(self, use_eclaire=True):
+
+        self.logger.info("-"*80)
+        self.logger.info(f"Start calibration for {self.config.name}")
+
         self._load_mbdf()
+
+        mbias_file = self.config.preprocess.mbias_file
+        mdark_file = self.config.preprocess.mdark_file
+        mflat_file = self.config.preprocess.mflat_file
+
+        try:
+            if use_eclaire:
+                self._calibrate_image_eclaire(mbias_file, mdark_file, mflat_file)
+            else:
+                self._calibrate_image_cupy(mbias_file, mdark_file, mflat_file)
+            
+            self.config.flag.calibration = True
+            self.logger.info(f"Calibration Done for {self.config.name}")
+            MemoryMonitor.cleanup_memory()
+            self.logger.debug(MemoryMonitor.log_memory_usage)
+            
+        except Exception as e:
+            self.logger.error(f"Error during calibration: {str(e)}")
+            raise
 
     def _load_mbdf(self):
         selection = self.config.preprocess.selection
@@ -79,29 +137,7 @@ class Calibration:
 
         # return mbias_file, mdark_file, mflat_file
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Context manager exit with proper cleanup"""
-        MemoryMonitor.cleanup_memory()
-        return False 
 
-    def run(self, use_eclaire=True):
-        mbias_file = self.config.preprocess.mbias_file
-        mdark_file = self.config.preprocess.mdark_file
-        mflat_file = self.config.preprocess.mflat_file
-
-        try:
-            if use_eclaire:
-                self._calibrate_image_eclaire(mbias_file, mdark_file, mflat_file)
-            else:
-                self._calibrate_image_cupy(mbias_file, mdark_file, mflat_file)
-            
-            self.config.flag.calibration = True
-            self.logger.info(f"Calibration Done for {self.config.name}")
-            MemoryMonitor.cleanup_memory()
-
-        except Exception as e:
-            self.logger.error(f"Error during calibration: {str(e)}")
-            raise
 
     def _calibrate_image_eclaire(self, mbias_file, mdark_file, mflat_file):
         raw_files = self.config.file.raw_files

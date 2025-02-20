@@ -1,8 +1,6 @@
 import os
 import subprocess
 from astropy.io import fits
-
-from .utils import read_head
 from .const import FACTORY_DIR, REF_DIR
 
 
@@ -19,7 +17,7 @@ def solve_field(
     Args:
         inim (str):
             Path to the input FITS image.
-        outim (str, optional):
+        outim (str):
             Path to the output FITS image.
         dump_dir (str, optional):
             Directory where intermediate results will be stored. If None, a temporary directory is created
@@ -53,8 +51,11 @@ def solve_field(
         print(f"Command: {command}")
         ```
     """
+
+    inim = os.path.abspath(inim)
     img_dir = os.path.dirname(inim)
     working_dir = dump_dir or os.path.join(img_dir, "tmp_solvefield")
+    working_dir = os.path.abspath(working_dir)
     os.makedirs(working_dir, exist_ok=True)
 
     # soft link inside working_dir
@@ -96,8 +97,7 @@ def solve_field(
             "--radius", f"{radius:.1f}",
         ]  # fmt: skip
     except:
-        print("couldn't get ra dec from header")
-        pass
+        print("Couldn't get RA Dec from header. Solving blindly")
 
     if get_command:
         return " ".join(solvecom)
@@ -124,7 +124,7 @@ def solve_field(
     return outname
 
 
-def run_scamp(cat, joint=False):
+def scamp(cat, ahead=None, joint=False):
     scampconfig = os.path.join(REF_DIR, "7dt.scamp")
     # "/data/pipeline_reform/dhhyun_lab/scamptest/7dt.scamp"
 
@@ -135,9 +135,14 @@ def run_scamp(cat, joint=False):
     if joint:
         cat = f"@{cat}"
 
+    # scampcom = f’scamp {catname} -c {os.path.join(path_cfg, “kmtnet.scamp”)} -ASTREF_CATALOG FILE -ASTREFCAT_NAME {gaialdac} -POSITION_MAXERR 20.0 -CROSSID_RADIUS 5.0 -DISTORT_DEGREES 3 -PROJECTION_TYPE TPV -AHEADER_GLOBAL {ahead} -STABILITY_TYPE INSTRUMENT’
     scampcom = f"scamp -c {scampconfig} {cat} -REFOUT_CATPATH {path_ref_scamp}"
+    if ahead:
+        # scampcom = f"{scampcom} -AHEADER_NAME {ahead}"
+        scampcom = f"{scampcom} -AHEADER_GLOBAL {ahead}"
     scampcom = f"{scampcom} > {log_file} 2>&1"
     # print(scampcom)
+
     os.system(scampcom)
     # scampcom = f"scamp -c {scampconfig} {outcat} -REFOUT_CATPATH {path_ref_scamp} -AHEADER_NAME {ahead_file}"
     # subprocess.run(f"{scampcom} > {log_file} 2>&1", shell=True, text=True)
@@ -151,9 +156,10 @@ def run_scamp(cat, joint=False):
     # except subprocess.CalledProcessError as e:
     #     print(f"Command failed with error code {e.returncode}")
     #     print(f"stderr output: {e.stderr.decode()}")
+    return os.path.splitext(cat)[0] + ".head"
 
 
-def run_missfits(inim):
+def missfits(inim):
     """
     Input images gets wcs updated, .back is made as a copy or the original
     Searches .head file in the same directory and with the same stem as inim and applies it to inim
@@ -168,20 +174,29 @@ def run_missfits(inim):
     # subprocess.run(missfitscom, shell=True, cwd=working_dir)
 
 
-def run_sextractor(
-    inim,
-    prefix="simple",
-    outcat=None,
-    log_file=None,
-    config=None,
+def sextractor(
+    inim: str,
+    outcat: str = None,
+    prefix="prep",
+    log_file: str = None,
+    sex_args: list = None,
+    config=None,  # supply config.config
     logger=None,
-    sex_args=None,
+    get_output=False,
 ):
     """
     e.g., override default by supplying sex_args like ["-PIXEL_SCALE", f"{pixscale}"]
+    Sextractor log file is created in the same directory as outcat.
+    No support for dual mode yet.
     """
-    import subprocess
-    from .utils import get_sex_config
+
+    def get_sex_config(prefix, ref_path=None):
+        from .const import REF_DIR
+
+        # "/data/pipeline_reform/gppy-gpu/gppy/ref/srcExt"
+        ref_path = ref_path or os.path.join(REF_DIR, "srcExt")
+        postfix = ["sex", "param", "conv", "nnw"]
+        return [os.path.join(ref_path, f"{prefix}.{pf}") for pf in postfix]
 
     def log(message):
         if logger:
@@ -191,15 +206,15 @@ def run_sextractor(
 
     if config:
         log("Using Configuration Class")
-        sex = config.config.sex.sex
-        param = config.config.sex.param
-        nnw = config.config.sex.nnw
-        conv = config.config.sex.conv
+        sex = config.sex.sex
+        param = config.sex.param
+        nnw = config.sex.nnw
+        conv = config.sex.conv
     else:
         sex, param, conv, nnw = get_sex_config(prefix)
 
-    outcat = outcat or os.path.splitext(inim)[0] + ".cat"
-    log_file = log_file or os.path.splitext(inim)[0] + "_sextractor.log"
+    outcat = outcat or os.path.splitext(inim)[0] + f".{prefix}.cat"
+    log_file = log_file or os.path.splitext(outcat)[0] + f"_sextractor.log"
 
     sexcom = [
         "source-extractor", f"{inim}",
@@ -215,11 +230,37 @@ def run_sextractor(
     if sex_args:
         sexcom = sexcom + sex_args
 
-    log(f"Sextractor Command: {sexcom}")
+    log(f"Sextractor output catalog: {outcat}")
     log(f"Sextractor Log: {log_file}")
+    sexcom = " ".join(sexcom)
+    log(f"Sextractor Command: {sexcom}")
 
-    sexcom = f"{' '.join(sexcom)} > {log_file} 2>&1"
-    subprocess.run(sexcom, shell=True, text=True)
+    sexout = subprocess.getoutput(sexcom)
+    # result = subprocess.run(sexcom, shell=True, capture_output=True, text=True, stderr=subprocess.STDOUT)
+    # sexout = result.stdout + result.stderr
+    with open(log_file, "w") as f:
+        f.write(sexcom)
+        f.write(sexout)
+        # f.write(sexerr)
+
+    # Run the command and capture output
+    # with open(log_file, "w") as f:
+    #     process = subprocess.Popen(
+    #         sexcom, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+    #     )
+    #     f.write(f"{sexcom}")
+
+    #     output_lines = []
+    #     for line in process.stdout:
+    #         # print(line, end="")  # Print to console (optional)
+    #         output_lines.append(line)
+    #     process.wait()  # Ensure process completes
+    #     sexout = "".join(output_lines)
+    #     f.write(sexout)
+
+    # This redirects all output to log_file
+    # sexcom = f"{' '.join(sexcom)} > {log_file} 2>&1"
+    # subprocess.run(sexcom, shell=True, text=True)
 
     # alternative; not working
     # with open(log_file, "w") as f:
@@ -228,4 +269,6 @@ def run_sextractor(
 
     log(f"Sextractor completed")
 
+    if get_output:
+        return outcat, sexout
     return outcat

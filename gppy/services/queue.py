@@ -86,7 +86,7 @@ class Task:
     status: str = field(default="pending", compare=False)
     result: Any = field(default=None, compare=False)
     error: Optional[Exception] = field(default=None, compare=False)
-
+    
     def __post_init__(self):
         """
         Generate a sorting index for priority-based task ordering.
@@ -163,9 +163,6 @@ class QueueManager:
 
         self.logger.debug(f"Initialize QueueManager.")
 
-        # Abrupt stop flag
-        self._abrupt_stop_requested = threading.Event()
-
         self.memory_monitor = MemoryMonitor(logger=self.logger)
 
         # Default CPU allocation
@@ -176,17 +173,11 @@ class QueueManager:
         self.cpu_task = PriorityQueue()
         # Create CPU worker thread
         self.cpu_thread = threading.Thread(target=self._cpu_worker, daemon=True)
-        self.cpu_thread.start()
         
         # Create GPU process queue
         self.gpu_task = Queue()
         self.gpu_thread = threading.Thread(target=self._gpu_worker, daemon=True)
-        self.gpu_thread.start()
         
-        # Track running tasks
-        self.running_tasks = {priority: [] for priority in Priority}
-        self.task_lock = threading.Lock()
-
         # Results and error handling
         self.tasks: List[Task] = []
         self.results: List[Any] = []
@@ -212,8 +203,6 @@ class QueueManager:
         signal.signal(signal.SIGTERM, self._handle_keyboard_interrupt)
         signal.signal(signal.SIGINT, self._handle_keyboard_interrupt)
 
-
-
         # Optional: Jupyter notebook interrupt handling
         try:
             get_ipython  # Check if running in Jupyter
@@ -221,6 +210,9 @@ class QueueManager:
             Kernel.raw_interrupt_handler = self._jupyter_interrupt_handler
         except (NameError, ImportError):
             pass
+
+        # Abrupt stop flag
+        self._abrupt_stop_requested = threading.Event()
 
         self.logger.debug(f"{self.memory_monitor.log_memory_usage}")
         self.memory_history.append(
@@ -235,6 +227,9 @@ class QueueManager:
             }
         )
 
+        self.cpu_thread.start()
+        self.gpu_thread.start()
+        
         self.logger.debug("QueueManager Initialization complete")
 
     def __exit__(self, exc_type, exc_val, _):
@@ -291,8 +286,7 @@ class QueueManager:
             return None
 
         # Generate a unique task ID
-        with self.lock:
-            task_id = f"t{next(self._id_counter)}"
+        task_id = f"t{next(self._id_counter)}"
 
         # Ensure kwargs is a dictionary
         kwargs = kwargs or {}
@@ -319,14 +313,14 @@ class QueueManager:
         # Put the task in the appropriate queue
         if gpu:
             self.gpu_task.put(task)
-            
         else:
-            # Only put the task object, its internal sort_index will handle priority
             self.cpu_task.put(task)
+
         self.logger.info(
             f"Added {'GPU' if gpu else 'CPU'} task {task.task_name} (id: {task_id}) with priority {priority}"
         )
         time.sleep(0.1)
+
         self.log_memory_stats(f"Task {task.task_name}(id: {task.id}) submitted")
         return task_id
 
@@ -338,52 +332,51 @@ class QueueManager:
             try:
                 self._check_abrupt_stop()
                 self.manage_memory_state()
+                
                 # Get the highest priority task from the queue
-
                 active_tasks = [t for t in active_tasks if not t[0].ready()]
 
                 while (self.current_memory_state != MemoryState.EMERGENCY) and (not self.cpu_task.empty()):
-                    task = self.cpu_task.get_nowait()
+
+                    task = self.cpu_task.get()
 
                     try:
+
+                        def make_callback(task_id):
+                            return lambda result: self._task_callback(task_id, result)
+
                         # Submit task to appropriate pool
-                        print(task.id)
+                        
+                        # if type(task.args) != tuple:
+                        #     task.args = (task.args,)
+
                         async_result = self.cpu_pool.apply_async(
                             task.func,
-                            args=tuple(task.args),
+                            args=task.args,
                             kwds=task.kwargs,
-                            callback=lambda result: self._task_callback(task.id, result)
+                            callback=make_callback(task.id)
                         )
 
-                        # Store task and its async result
-                        active_tasks.append((async_result, task))
                         task.status = "processing"
+                        active_tasks.append((async_result, task))
+                        
                     except Exception as e:
-                        # Handle timeout or other retrieval errors
+                        self.logger.error(f"Error processing task {task.id}: {e}")
                         task.status = "failed"
                         task.error = e
-                        self.logger.error(
-                            f"Task {task.task_name} (id: {task.id}) failed: {e}",
-                            exc_info=True,
-                        )
                         self.errors.append(e)
-                        self.log_memory_stats(
-                            f"Task {task.task_name}(id: {task.id}) failed"
-                        )
-                    # Clean up completed tasks
-                    
+
                     finally:
-                        self._cleanup_completed_tasks()
                         self.cpu_task.task_done()
                         self.logger.debug(self.log_detailed_memory_report())
-                    
-                    time.sleep(0.1)
-            
+                
             except AbruptStopException:
                 self.logger.info("CPU worker stopped by abrupt stop.")
                 break
             except Exception as e:
                 self.logger.error(f"Error in CPU worker: {e}")
+
+            time.sleep(0.1)
 
     @contextmanager
     def gpu_context(self, device: int = None):
@@ -440,9 +433,7 @@ class QueueManager:
     def _task_callback(self, task_id: str, result: Any):
         """Callback function for task completion."""
         try:
-            print(task_id)
             with self.lock:
-                # Find the corresponding task and update it
                 for task in self.tasks:
                     if task.id == task_id:
                         # Update task status and result atomically
@@ -451,11 +442,6 @@ class QueueManager:
                         task.endtime = datetime.now()
                         task.error = None
                         
-                        # Log task completion
-                        self.logger.info(
-                            f"Task {task.task_name} (id: {task_id}) completed."
-                        )
-
                         break
                 else:
                     # If no matching task is found, log a warning
@@ -472,41 +458,6 @@ class QueueManager:
             self.logger.error(f"Error in task callback for task {task_id}: {e}")
             self.errors.append(error_info)
 
-    def _cleanup_completed_tasks(self):
-        """Remove completed tasks from tracking."""
-        with self.task_lock:
-            for priority in Priority:
-                self.running_tasks[priority] = [
-                    task for task in self.running_tasks[priority] if not task.ready()
-                ]
-        self.memory_monitor.cleanup_memory()
-
-    def wait_all_task_completion(self):
-        """Wait for all CPU and GPU tasks to complete."""
-        try:
-            # Wait for CPU tasks
-            with self.task_lock:
-                for priority in Priority:
-                    # Get all running tasks for this priority
-                    for task in self.running_tasks[priority]:
-                        try:
-                            task.get()  # Wait for task to complete
-                        except Exception as e:
-                            self.logger.error(f"Error in task execution: {e}")
-
-                    # Clear the completed tasks
-                    self.running_tasks[priority].clear()
-
-            # Wait for GPU tasks
-            if not self.gpu_task.empty():
-                self.gpu_task.join()  # Wait for all tasks to be marked as done
-
-            self.log_memory_stats("All tasks completed")
-
-        except Exception as e:
-            self.logger.error(f"Error waiting for task completion: {e}")
-            raise
-
     def wait_until_task_complete(
         self, task_id: Union[str, List[str]], timeout: Optional[float] = None
     ):
@@ -514,7 +465,7 @@ class QueueManager:
         Wait until the specified task(s) complete or until timeout.
 
         Args:
-            task_id: A single task ID or a list of task IDs to wait for
+            task_id: A single task ID, list of task IDs, or "all" to wait for all tasks
             timeout: Optional timeout in seconds
 
         Returns:
@@ -522,28 +473,40 @@ class QueueManager:
         """
         start_time = time.time()
 
+        # Special case for "all" keyword
+        if task_id == "all":
+            task_id = [task.id for task in self.tasks]
+
         # Convert single task_id to a list for consistent handling
         if isinstance(task_id, str):
             task_id = [task_id]
 
-        while True:
-            with self.task_lock:
-                # Check if all tasks are completed
-                all_completed = all(
-                    any(
-                        task.id == tid and task.status == "completed"
-                        for task in self.tasks
-                    )
-                    for tid in task_id
-                )
+        # If no tasks to wait for, return immediately
+        if not task_id:
+            return True
 
-                if all_completed:
-                    return True
+        while task_id:
+            # Check if timeout has occurred
+            if timeout is not None and time.time() - start_time > timeout:
+                return False
 
-            if timeout is not None and (time.time() - start_time) > timeout:
-                raise TimeoutError(f"Task {task_id} did not complete within timeout.")
+            # Find tasks that are not yet completed
+            remaining_tasks = [
+                tid for tid in task_id 
+                if next((task for task in self.tasks if task.id == tid and task.status != "completed"), None) is not None
+            ]
 
-            time.sleep(1)
+            # If all tasks are completed, exit
+            if not remaining_tasks:
+                return True
+
+            # Small sleep to prevent tight loop
+            if task_id == "all":
+                time.sleep(10)
+            else:
+                time.sleep(1)
+
+        return True
 
     def stop_processing(self, *args):
         """
@@ -603,7 +566,7 @@ class QueueManager:
         self.logger.warning("Abrupt stop initiated. Clearing task queues and stopping tasks...")
 
         try:
-            # Clear CPU task queue with timeout
+            # Clear CPU task queue
             while not self.cpu_task.empty():
                 try:
                     task = self.cpu_task.get_nowait()
@@ -613,7 +576,7 @@ class QueueManager:
                 except Exception:
                     break
 
-            # Clear GPU task queue with timeout
+            # Clear GPU task queue
             while not self.gpu_task.empty():
                 try:
                     task = self.gpu_task.get_nowait()
@@ -625,14 +588,9 @@ class QueueManager:
             # Terminate all running task pool
             try:
                 self.cpu_pool.terminate()
-                self.cpu_pool.join(timeout=1)  # Short timeout for joining
+                self.cpu_pool.join() 
             except Exception as e:
                 self.logger.debug(f"Error during pool termination: {e}")
-
-            # Clear running tasks tracking
-            with self.task_lock:
-                for priority in self.running_tasks:
-                    self.running_tasks[priority].clear()
 
         except Exception as e:
             self.logger.error(f"Error during abrupt stop: {e}")

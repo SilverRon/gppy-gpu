@@ -37,7 +37,7 @@ def run_masterframe_generator(obs_params, queue=False):
     del master
 
 
-def run_scidata_reduction(obs_params, queue=False, **kwargs):
+def run_scidata_reduction(obs_params, queue=False, processes = ["calibration", "astrometry", "photometry"], **kwargs):
     """
     Perform comprehensive scientific data reduction pipeline.
 
@@ -60,14 +60,22 @@ def run_scidata_reduction(obs_params, queue=False, **kwargs):
         **kwargs: Additional configuration parameters
     """
     logger = Logger(name="7DT pipeline logger", slack_channel="pipeline_report")
-    config = Configuration(obs_params, logger=logger, **kwargs)
-    calib = Calibration(config, logger=config.logger)
-    calib.run()
-    astrm = Astrometry(config, logger=config.logger)
-    astrm.run()
-    phot = Photometry(config, logger=config.logger)
-    phot.run()
-    del config, calib, astrm, phot
+    try:
+        config = Configuration(obs_params, logger=logger, overwrite=False, **kwargs)
+        if not (config.config.flag.calibration) and "calibration" in processes:
+            calib = Calibration(config, logger=config.logger, queue=queue)
+            calib.run()
+            del calib
+        if not (config.config.flag.astrometry) and "astrometry" in processes:
+            astrm = Astrometry(config, logger=config.logger, queue=queue)
+            astrm.run()
+            del astrm
+        if not (config.config.flag.single_photometry) and "photometry" in processes:
+            phot = Photometry(config, logger=config.logger, queue=queue)
+            phot.run()
+            del phot
+    except Exception as e:
+        logger.error(f"Error during abrupt stop: {e}")
 
 
 # def run_combined_reduction(obs_params, queue=False, **kwargs):

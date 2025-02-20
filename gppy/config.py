@@ -30,7 +30,7 @@ class Configuration:
     - Configuration file versioning
     """
 
-    def __init__(self, obs_params=None, config_source=None, logger=None, **kwargs):
+    def __init__(self, obs_params=None, config_source=None, logger=None, overwrite=True, **kwargs):
         """
         Initialize configuration with comprehensive observation metadata.
 
@@ -39,12 +39,46 @@ class Configuration:
             config_source (str|dict, optional): Custom configuration source
             **kwargs: Additional configuration parameter overrides
         """
-        # Default config source if not provided
-        if config_source is None:
-            config_source = os.path.join(REF_DIR, "base.yml")
+        if overwrite:
+            # Default config source if not provided
+            if config_source is None:
+                config_source = os.path.join(REF_DIR, "base.yml")
+        else:
+            config_source = self._find_config_file(obs_params, **kwargs)
+            self.config_file = config_source
 
+        self._load_config(config_source, **kwargs)
         self._initialized = False
+        
+        if obs_params is None:
+            self._initialized = True
+        else:
+            self.initialize(obs_params)
 
+        self.logger = logger or self._setup_logger()
+        
+        self.write_config()
+
+        self.config.flag.configuration = True
+        self.logger.info(f"Configuration initialized")
+        self.logger.debug(f"Configuration file: {self.config_file}")
+
+    def _setup_logger(self, overwrite=True):
+        from .logger import Logger
+        logger = Logger(
+            name="7DT pipeline logger", slack_channel="pipeline_report"
+        )
+        filename = f"{self.output_name}.log"
+        log_file = os.path.join(self.config.path.path_processed, filename)
+        self.config.logging.file = log_file
+        self.logger.set_output_file(log_file, overwrite=overwrite)
+        self.logger.set_format(self.config.logging.format)
+        self.logger.set_pipeline_name(self.output_name)
+
+        return logger
+
+
+    def _load_config(self, config_source, **kwargs):
         # Load configuration from file or dict
         input_dict = (
             self.read_config(config_source)
@@ -60,28 +94,22 @@ class Configuration:
         self._update_with_kwargs(kwargs)
         self._make_instance(self._config_in_dict)
 
-        if obs_params is None:
-            self._initialized = True
-        else:
-            self.initialize(obs_params)
-
-        if logger is None:
-            from .logger import Logger
-
-            self.logger = Logger(
-                name="7DT pipeline logger", slack_channel="pipeline_report"
+    def _find_config_file(self, obs_params, **kwargs):
+        """Find the configuration file in the processed directory."""
+        base_dir = kwargs.get("path_processed", PROCESSED_DIR)
+        tmp_path = define_output_dir(
+            obs_params["date"], 
+            obs_params["n_binning"], 
+            obs_params["gain"], 
+            obj=obs_params["obj"], 
+            unit=obs_params["unit"], 
+            filt=obs_params["filter"]
             )
-        else:
-            self.logger = logger
-        self._update_logger()
-        self.write_config()
-
-        self.config.flag.configuration = True
-        self.logger.info(
-            f"Pipeline started for {self.config.name}"
-        )  # first slack message
-        self.logger.info(f"Configuration initialized")
-        self.logger.debug(f"Configuration file: {self.config_file}")
+        base_dir = os.path.join(base_dir, tmp_path)
+        config_files = glob.glob(f"{base_dir}/*.yml")
+        if len(config_files) == 0:
+            return os.path.join(REF_DIR, "base.yml")
+        return config_files[0]
 
     def initialize(self, obs_params):
         # Set core observation details
@@ -92,6 +120,7 @@ class Configuration:
         self.config.obs.n_binning = obs_params["n_binning"]
         self.config.obs.gain = obs_params["gain"]
         self.config.name = f"{obs_params['date']}_{obs_params['n_binning']}x{obs_params['n_binning']}_gain{obs_params['gain']}_{obs_params['obj']}_{obs_params['unit']}_{obs_params['filter']}"
+        self.config.info.creation_datetime = datetime.now().isoformat()
 
         self._define_paths()
         self._define_files()
@@ -181,14 +210,6 @@ class Configuration:
                         section_dict[key] = value
                         break
 
-    def _update_logger(self):
-        filename = f"{self.output_name}.log"
-        log_file = os.path.join(self.config.path.path_processed, filename)
-        self.config.logging.file = log_file
-        self.logger.set_output_file(log_file)
-        self.logger.set_format(self.config.logging.format)
-        self.logger.set_pipeline_name(self.output_name)
-
     def _define_paths(self):
         """Create and set output directory paths for processed data."""
         _tmp_name = define_output_dir(
@@ -212,11 +233,10 @@ class Configuration:
         path_fdz = os.path.join(MASTER_FRAME_DIR, fdz_rel_path)
         metadata_path = os.path.join(self._output_prefix, _tmp_name, "metadata.json")
         if not (os.path.exists(metadata_path)):
-            # os.makedirs(self._output_prefix, exist_ok=True)
             os.makedirs(os.path.join(self._output_prefix, _tmp_name), exist_ok=True)
             metadata = {"create_time": datetime.now().isoformat(), "observations": []}
             with open(metadata_path, "w") as f:
-                json.dump(metadata, f)
+                json.dump(metadata, f, indent=4)
         os.makedirs(path_processed, exist_ok=True)
         os.makedirs(path_fdz, exist_ok=True)
         os.makedirs(path_factory, exist_ok=True)
@@ -245,7 +265,7 @@ class Configuration:
                 ]
             )
         with open(metadata_path, "w") as f:
-            json.dump(metadata, f)
+            json.dump(metadata, f, indent=4)
 
     def _define_files(self):
         s = f"{self.config.path.path_raw}/*{self.config.obs.object}_{self.config.obs.filter}_{self.config.obs.n_binning}*.head"  # obsdata/7DT11/*T00001*.fits
@@ -342,11 +362,13 @@ class Configuration:
         if not self.is_initialized:
             return
 
+        self._config_in_dict["info"]["last_update_datetime"] = datetime.now().isoformat()
+
         filename = f"{self.output_name}.yml"
 
         config_file = os.path.join(self.config.path.path_processed, filename)
         self.config_file = config_file
-
+        
         with open(config_file, "w") as f:
             yaml.dump(self.config_in_dict, f)
 

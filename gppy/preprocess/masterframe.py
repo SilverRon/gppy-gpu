@@ -28,25 +28,32 @@ class MasterFrameGenerator:
     unit, n_binning and gain have all identical cameras.
     """
 
-    def __init__(self, obs_params, device=None, queue=False):
+    def __init__(self, obs_params, queue=False, logger=None):
 
+        # Initialize variables
+        self.initialize(obs_params)
+
+        # Setup log
+        self.logger = logger or self._setup_logger()
+
+        # Setup queue
+        self.queue = self._setup_queue(queue)
+        
+        self.logger.debug(f"Masterframe output folder: {self.path_fdz}")
+
+    def initialize(self, obs_params):
         unit = obs_params["unit"]
         date = obs_params["date"]
         n_binning = obs_params["n_binning"]
         gain = obs_params["gain"]
 
-        self.device = device
+        self.process_name = f"{date}_{n_binning}x{n_binning}_gain{gain}_{unit}_masterframe"
+        
         self.path_raw = find_raw_path(unit, date, n_binning, gain)
         self.path_fdz = os.path.join(
             MASTER_FRAME_DIR, define_output_dir(date, n_binning, gain), unit
         )
         os.makedirs(self.path_fdz, exist_ok=True)
-
-        self._define_logger(f"{date}_{n_binning}x{n_binning}_gain{gain}_{unit}.log")
-
-        self.process_name = f"{obs_params['date']}_{obs_params['n_binning']}x{obs_params['n_binning']}_gain{obs_params['gain']}_{obs_params['unit']}_masterframe"
-
-        self.logger.debug(f"Masterframe output folder: {self.path_fdz}")
 
         header = self._get_sample_header()
         self.date_fdz = to_datetime_string(header["DATE-OBS"], date_only=True)  # UTC
@@ -54,27 +61,21 @@ class MasterFrameGenerator:
 
         self._inventory_manifest()
 
+    def _setup_logger(self):
+        from ..logger import Logger
+        logger = Logger(name="7DT masterframe logger")
+        log_file = os.path.join(self.path_fdz, self.process_name + ".log")
+        logger.set_output_file(log_file)
+        logger.set_pipeline_name(log_file)
+        return logger
+
+    def _setup_queue(self, queue):
         if isinstance(queue, QueueManager):
-            self.queue = queue
-            self.queue.logger = self.logger
+            queue.logger = self.logger
+            return queue
         elif queue:
-            self.queue = QueueManager(
-                logger=self.logger,
-            )
-        else:
-            self.queue = None
-
-        # First slack message
-        self.logger.info(f"MasterFrameGenerator initialized for {self.process_name}")
-
-    def __enter__(self):
-        """Context manager entry"""
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Context manager exit with proper cleanup"""
-        MemoryMonitor.cleanup_memory()
-        return False
+            return QueueManager(logger=self.logger)
+        return None
 
     def run(self):
 
@@ -273,12 +274,6 @@ class MasterFrameGenerator:
     def mflat_link(self):
         """dict"""
         return self._mflat_link
-
-    def _define_logger(self, filename):
-        self.logger = Logger(name="7DT masterframe logger")
-        log_file = os.path.join(self.path_fdz, filename)
-        self.logger.set_output_file(log_file)
-        self.logger.set_pipeline_name(log_file)
 
     def _get_sample_header(self):
         """get any .head file in self.path_raw"""

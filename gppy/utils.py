@@ -136,36 +136,16 @@ def get_camera(header):
     else:
         header = header_to_dict(header)
 
-    if header["NAXIS1"] == 9576:  # NAXIS2 6388
+    # if header["NAXIS1"] == 9576:  # NAXIS2 6388
+    #     return "C3"
+    # elif header["NAXIS1"] == 14208:  # NAXIS2 10656
+    #     return "C5"
+    if 9576 % header["NAXIS1"] == 0:  # NAXIS2 6388
         return "C3"
-    elif header["NAXIS1"] == 14208:  # NAXIS2 10656
+    elif 14208 % header["NAXIS1"] == 0:  # NAXIS2 10656
         return "C5"
     else:
         return "Unidentified"
-
-
-def get_sex_config(prefix, ref_path=None):
-    """
-    Generate Source Extractor configuration file paths.
-
-    Args:
-        process (str): Process identifier for configuration files
-        ref_path (str, optional): Reference directory path. Defaults to REF_DIR/srcExt.
-
-    Returns:
-        list: Paths to Source Extractor configuration files
-            [.sex, .param, .conv, .nnw]
-
-    Example:
-        >>> get_sex_config('simple')
-        ['/path/to/simple.sex', '/path/to/simple.param', ...]
-    """
-    from .const import REF_DIR
-
-    # "/data/pipeline_reform/gppy-gpu/gppy/ref/srcExt"
-    ref_path = ref_path or os.path.join(REF_DIR, "srcExt")
-    postfix = ["sex", "param", "conv", "nnw"]
-    return [os.path.join(ref_path, f"{prefix}.{pf}") for pf in postfix]
 
 
 def find_raw_path(unit, date, n_binning, gain):
@@ -227,7 +207,7 @@ def parse_exptime(filename, return_type="float"):
     return int(exptime) if return_type == int else exptime
 
 
-def define_output_dir(date, n_binning, gain):
+def define_output_dir(date, n_binning, gain, obj=None, unit=None, filt=None):
     """
     Generate a standardized output directory name.
 
@@ -243,7 +223,16 @@ def define_output_dir(date, n_binning, gain):
         >>> define_output_dir('20250207', 2, 1.0)
         '20250207_2x2_gain1.0'
     """
-    return f"{date}_{n_binning}x{n_binning}_gain{gain}"
+    if obj:
+        if unit:
+            if filt:
+                return f"{date}_{n_binning}x{n_binning}_gain{gain}/{obj}/{unit}/{filt}"
+            else:
+                return f"{date}_{n_binning}x{n_binning}_gain{gain}/{obj}/{unit}"
+        else:
+            return f"{date}_{n_binning}x{n_binning}_gain{gain}/{obj}"
+    else:
+        return f"{date}_{n_binning}x{n_binning}_gain{gain}"
 
 
 def lapse(explanation="elapsed", print_output=True):

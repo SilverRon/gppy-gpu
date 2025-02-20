@@ -1,12 +1,7 @@
+version: '2.0'  # legacy gppy is 1.0, gppy-gpu before refactoring is 1.1?
 name: 
-
-info:
-  version: '2.0'  # legacy gppy is 1.0, gppy-gpu before refactoring is 1.1?
-  project: 7DT/7DS
-  creation_datetime:
-  last_update_datetime:
-
 settings:
+  project: 7DT/7DS
   obsmode:  # Deep Spec Color Search Single
   header_pad: 5  # assuming final header is 5 * 2880 bytes long. 6 to include polygon info
   local_astref: 
@@ -17,7 +12,7 @@ settings:
 obs:
   # OBS Info should be updated from header
   pixscale: 0.505  # arcsec/pix. Used for initial solve, not in header
-  n_binning: 
+  n_binning: 1  # careful: the code will believe this value
   gain: 
   unit: 
   camera: 
@@ -31,36 +26,15 @@ obs:
   
 path:
   path_factory: #/data/pipeline_reform/factory_test
-  path_raw: 
   path_processed: 
-  path_fdz:
   path_calib_field: /lyman/data1/Calibration/7DT-Calibration/output/Calibration_Tile
   path_refcat: /lyman/data1/factory/ref_cat
   path_sex: /data/pipeline_reform/gppy-gpu/gppy/ref
-  # path_ref_scamp:
-  # path_log:
-  # path_astrefcat:
-  # path_scampconfig:
 
 file: 
-  raw_files: 
   processed_files: 
   combined_file:
-
-preprocess:
-  selection: default # closest, custom
-  mbias_link: # master_frame/2001-02-23_1x1_gain2750/7DT11/link_20250102_C3.bias
-  mdark_link: # master_frame/2001-02-23_1x1_gain2750/7DT11/link_20250102_100_C3.dark
-  mflat_link: # master_frame/2001-02-23_1x1_gain2750/7DT11/link_20250102_m625_C3.flat
-
-  mbias_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/bias_20250102_C3.fits
-  mdark_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/dark_20250102_100s_C3.fits
-  mflat_file: # master_frame/2001-02-23_1x1_gain2750/7DT11/flat_20250102_m625_C3.fits
-
-astrometry:
-  # To be modified by config
-  ahead_file: "/data/pipeline_reform/dhhyun_lab/scamptest/ahead/calib_7DT11_T07304_20250115_050155_g_60.ahead"
-
+  
 photometry:
   match_radius: 1.0
   photfraction: 0.75
@@ -71,8 +45,6 @@ photometry:
   refmagerupper: 0.05
   inmagerupper: 0.05
   flagcut: 0
-  check: False
-  
   DETECT_MINAREA: 5
   DETECT_THRESH: 3.0
   DEBLEND_NTHRESH: 64
@@ -80,7 +52,7 @@ photometry:
   BACK_SIZE: 64
   BACK_FILTERSIZE: 3
   BACKPHOTO_TYPE: LOCAL
-  
+  check: False
 
 logging:
   level: INFO
@@ -91,11 +63,5 @@ logging:
     - file
 
 flag:
-  configuration: false
-  calibration: false
-  astrometry: false
   single_photometry: false
-  combine_image: false
-  # combined_astrometry: false
-  combined_photometry: false
-  subtraction: false
+  # combined_photometry: false

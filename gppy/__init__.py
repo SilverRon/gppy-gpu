@@ -20,6 +20,9 @@ from .version import __version__
 
 import warnings
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 # Ignore common warnings that are not harmful
 warnings.filterwarnings('ignore', message='.*datfix.*')
 warnings.filterwarnings('ignore', message='.*pmsafe.*')

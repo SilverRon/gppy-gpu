@@ -1,7 +1,6 @@
 import os, subprocess
 from typing import Any, Union
 from pathlib import Path
-from glob import glob
 import datetime
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,76 +16,133 @@ from astropy.wcs import WCS
 from astropy.coordinates import SkyCoord
 from astropy.stats import sigma_clip
 
-# gppy moduels
+# gppy modules
 from . import utils as phot_util
-from ..utils import get_sex_config, update_padded_header
+from ..utils import update_padded_header
 from ..config import Configuration
 from ..services.memory import MemoryMonitor
-from ..external import run_sextractor
+from ..services.queue import QueueManager, Priority
+from .. import external
 
 
 class Photometry:
-    def __init__(self, config: Any = None, logger=None):
+    def __init__(
+        self,
+        config: Any = None,
+        logger=None,
+        queue=False,
+        images=None,
+        gaia_correction=False,
+    ):
         """
         Initialize the Photometry class.
         config: Configuration object or string path to config yaml.
         """
         # Load Configuration
         if isinstance(config, str):  # In case of File Path
-            self.config = Configuration(config_source=config)
-
-            # Change working directory to the directory of the first image
-            self.working_dir = Path(config).parent
-            self.logger.info(self.working_dir)
-            os.chdir(self.working_dir)
-            # Set Logger
-            self.logger.set_output_file(f"{self.working_dir}/phot.log")
+            self.config = Configuration(config_source=config).config
         else:
+            # for easy access to config
             self.config = config.config
 
-        if logger is None:
+        # Use logger from config if available, otherwise create a new one
+        if hasattr(config, "logger") and config.logger is not None:
+            self.logger = config.logger
+        else:
             from ..logger import Logger
 
             self.logger = Logger(name="7DT pipeline logger", slack_channel="pipeline_report")  # fmt:skip
+
+        # queue
+        if isinstance(queue, QueueManager):
+            self.queue = queue
+            self.queue.logger = self.logger
+        elif queue:
+            self.queue = QueueManager(logger=self.logger)
         else:
-            self.logger = logger
+            self.queue = None
 
-        # Get image list from config
-        self.image = self.config.file.processed_files
+        self._correction = gaia_correction
 
-        self.name = self.config.name
+        self._images = images or self.config.file.processed_files
 
-        self.logger.info("-" * 80)
-        self.logger.info(f"Initialize photometry for {self.name}")
+    @property
+    def images(self):
+        return self._images
+
+    @property
+    def gaia_correction(self):
+        return self._correction
 
     def run(self):
+        self.logger.info("-" * 80)
+        self.logger.info(f"Start photometry for {self.config.name}")
+
+        phot_single = PhotometrySingle(
+            self.config, self.logger, gaia_correction=self.gaia_correction
+        )
+
+        # parallelize given queue
+        if self.queue:
+            task_ids = []
+            for i, im in enumerate(self.images):
+                process_name = f"{self.config.name} [{i+1}/{len(self.images)}]"
+                task_id = self.queue.add_task(
+                    phot_single,
+                    args=(im,),
+                    kwargs={"name": process_name},
+                    priority=Priority.MEDIUM,
+                    gpu=False,
+                    task_name=process_name,
+                )
+                task_ids.append(task_id)
+            self.queue.wait_until_task_complete(task_ids)
         # Iterate over images
-        for i, im in enumerate(self.image):
-            im = os.path.join(self.config.path.path_processed, im)
-            self.current_frame = i + 1  # f"{i:04}"
-            self.logger.info(f"Photometry initiated for {self.name} [{self.current_frame}/{len(self.image)}]")  # fmt:skip
-
-            self.define_info(im)
-            reftbl = self.match_refcat(im)
-            zptbl, setbl, indx_match, sep = self.do_photometry(im, reftbl)
-            self.calculate_zp(zptbl, setbl)
-            self.update_header(im, zptbl, reftbl, setbl, indx_match, sep)
-            self.write_photcat(reftbl, setbl, indx_match, sep)
-
-            self.logger.info(f"Photometry completed for {self.name} [{self.current_frame}/{len(self.image)}]")  # fmt:skip
-            self.logger.debug(MemoryMonitor.log_memory_usage)
-            MemoryMonitor.cleanup_memory()
+        else:
+            for i, im in enumerate(self.images):
+                process_name = f"{self.config.name} [{i+1}/{len(self.images)}]"
+                phot_single(im, name=process_name)
 
         self.config.flag.single_photometry = True
         MemoryMonitor.cleanup_memory()
 
-        self.logger.info(f"Photometry Done for {self.name}")
+        self.logger.info(f"Photometry Done for {self.config.name}")
         self.logger.debug(MemoryMonitor.log_memory_usage)
 
+
+class PhotometrySingle:
+    def __init__(self, config, logger, gaia_correction=False):
+        self.config = config
+        self.logger = logger
+        self._correction = gaia_correction
+
+    @property
+    def gaia_correction(self):
+        return self._correction
+
+    def __call__(self, im, name=None):
+        """im is basename, not full path"""
+        self.config.name = name or os.path.basename(im)
+
+        im = os.path.join(self.config.path.path_processed, im)
+        self.im = im
+
+        self.logger.info(f"Photometry initiated for {self.config.name}")  # fmt:skip
+
+        self.define_info(im)
+        seeing, reftbl = self.get_seeing(im)
+        self.main_sex(im, seeing)
+        zptbl, setbl, indx_match, sep = self.match_refcat(reftbl)
+        self.calculate_zp(zptbl, setbl)
+        self.update_header(im, zptbl)
+        self.write_photcat(reftbl, setbl, indx_match, sep)
+
+        self.logger.debug(MemoryMonitor.log_memory_usage)
+        MemoryMonitor.cleanup_memory()
+
+        self.logger.info(f"Photometry completed for {self.config.name}")  # fmt:skip
+
     def define_info(self, inim):
-        self.logger.debug(
-            f"Define information for {self.name} [{self.current_frame}/{len(self.image)}]"
-        )
         try:
             # ------------------------------------------------------------
             # 	Information from Configuration
@@ -113,38 +169,54 @@ class Photometry:
             w = WCS(inim)
             self.racent, self.decent = w.all_pix2world(self.xcent, self.ycent, 1)
             self.racent, self.decent = self.racent.item(), self.decent.item()
-            # ------------------------------------------------------------
-            # 	SExtractor Configuration
-            # ------------------------------------------------------------
-            self.head = inim.replace(".fits", "")
-            self.cat = f"{self.head}.cat"
 
-            # SExtractor Configuration for photometry
-            self.conf, self.param, self.conv, self.nnw = get_sex_config("gregoryphot")
+            # paths
+            self.head = os.path.splitext(inim)[0]
+            self.cat = os.path.join(
+                self.config.path.path_factory, os.path.basename(self.head) + ".cat"
+            )
+            self.precat = os.path.join(
+                self.config.path.path_factory, os.path.basename(self.head) + ".pre.cat"
+            )  # dump presex output to factory
+            self.presex_log = os.path.join(
+                self.config.path.path_factory,
+                os.path.splitext(os.path.basename(inim))[0] + "_sextractor.log",
+            )
 
             self.phot_conf = self.config.photometry
 
-            self.logger.info(
-                f"Information of {self.name} [{self.current_frame}/{len(self.image)}] defined."
-            )
+            self.logger.info(f"Information of {self.config.name} defined.")
         except Exception as e:
-            self.logger.error(f"Error in Defining Information: {e}")
+            self.logger.error(
+                f"Error in Defining Information for {self.config.name}: {e}"
+            )
 
-    def match_refcat(self, inim):
-        self.logger.info(f"Run Pre-SExtractor for {self.name} [{self.current_frame}/{len(self.image)}]")  # fmt:skip
+    def get_seeing(self, inim):  #   Return Reference Catalogue
         try:
             # ------------------------------------------------------------
             # 	Run Pre-SExtractor
             # ------------------------------------------------------------
-            precat = f"{self.head}.pre.cat"
-            run_sextractor(inim, "simple", outcat=precat, logger=self.logger)
+            self.logger.info(f"Run Pre-SExtractor for {self.config.name}")  # fmt:skip
+
+            precat = self.precat
+
+            external.sextractor(
+                inim,
+                outcat=precat,
+                prefix="prep",
+                log_file=self.presex_log,
+                logger=self.logger,
+            )
 
             # ------------------------------------------------------------
             # 	Get Reference Catalogue
             # ------------------------------------------------------------
-            ref_gaiaxp_synphot_cat = (
-                f"{self.config.path.path_refcat}/gaiaxp_dr3_synphot_{self.obj}.csv"
-            )
+            if self.gaia_correction:
+                ref_gaiaxp_synphot_cat = f"{self.config.path.path_refcat}/cor_gaiaxp_dr3_synphot_{self.obj}.csv"
+            else:
+                ref_gaiaxp_synphot_cat = (
+                    f"{self.config.path.path_refcat}/gaiaxp_dr3_synphot_{self.obj}.csv"
+                )
             if not os.path.exists(ref_gaiaxp_synphot_cat):
                 reftbl = phot_util.merge_catalogs(
                     target_coord=SkyCoord(self.racent, self.decent, unit="deg"),
@@ -197,153 +269,181 @@ class Photometry:
             )
             self.ellipticity = np.median(premtbl["ELLIPTICITY"][indx_star4seeing])
             self.elongation = np.median(premtbl["ELONGATION"][indx_star4seeing])
-            self.seeing = np.median(premtbl["FWHM_WORLD"][indx_star4seeing] * 3600)
+            seeing = np.median(premtbl["FWHM_WORLD"][indx_star4seeing] * 3600)
 
+            frame = self.config.name.split(" ")[
+                -1
+            ]  # works even though self.config.name is inim
             self.logger.debug(f"-" * 60)
-            self.logger.debug(
-                f"{len(premtbl[indx_star4seeing])} Star-like Sources Found"
-            )
-            self.logger.debug(f"SEEING     : {self.seeing:.3f} arcsec")
-            self.logger.debug(f"ELONGATION : {self.elongation:.3f}")
-            self.logger.debug(f"ELLIPTICITY: {self.ellipticity:.3f}")
+            self.logger.debug(f"{frame} {len(premtbl[indx_star4seeing])} Star-like Sources Found")  # fmt:skip
+            self.logger.debug(f"{frame} SEEING     : {seeing:.3f} arcsec")
+            self.logger.debug(f"{frame} ELONGATION : {self.elongation:.3f}")
+            self.logger.debug(f"{frame} ELLIPTICITY: {self.ellipticity:.3f}")
             self.logger.debug(f"-" * 60)
 
-            #   Return Reference Catalogue
-            return reftbl
+            return seeing, reftbl
+
         except Exception as e:
             self.logger.error(f"Error in Pre-SExtractor: {e}")
             return
 
-    def do_photometry(self, inim, reftbl):
-        self.logger.info(
-            f"Start Photometry for {self.name} [{self.current_frame}/{len(self.image)}]"
-        )
+    def main_sex(self, inim, seeing):
+        try:
+            self.logger.info(f"Start Photometry for {self.config.name}")
 
-        # ------------------------------------------------------------
-        # 	APERTURE SETTING
-        # ------------------------------------------------------------
-        self.logger.debug("Setting Aperture for Photometry.")
+            # ------------------------------------------------------------
+            # 	APERTURE SETTING
+            # ------------------------------------------------------------
+            self.logger.debug("Setting Aperture for Photometry.")
 
-        self.peeing = self.seeing / self.pixscale
-        # 	Aperture Dictionary
-        self.aperture_dict = {
-            "MAG_AUTO": (0.0, "MAG_AUTO DIAMETER [pix]"),
-            "MAG_APER": (
-                2 * 0.6731 * self.peeing,
-                "BEST GAUSSIAN APERTURE DIAMETER [pix]",
-            ),
-            "MAG_APER_1": (2 * self.peeing, "2*SEEING APERTURE DIAMETER [pix]"),
-            "MAG_APER_2": (3 * self.peeing, "3*SEEING APERTURE DIAMETER [pix]"),
-            "MAG_APER_3": (3 / self.pixscale, """FIXED 3" APERTURE DIAMETER [pix]"""),
-            "MAG_APER_4": (5 / self.pixscale, """FIXED 5" APERTURE DIAMETER [pix]"""),
-            "MAG_APER_5": (10 / self.pixscale, """FIXED 10" APERTURE DIAMETER [pix]"""),
-        }
+            self.seeing = seeing
+            self.peeing = seeing / self.pixscale
+            # 	Aperture Dictionary
+            self.aperture_dict = {
+                "MAG_AUTO": (0.0, "MAG_AUTO DIAMETER [pix]"),
+                "MAG_APER": (
+                    2 * 0.6731 * self.peeing,
+                    "BEST GAUSSIAN APERTURE DIAMETER [pix]",
+                ),
+                "MAG_APER_1": (2 * self.peeing, "2*SEEING APERTURE DIAMETER [pix]"),
+                "MAG_APER_2": (3 * self.peeing, "3*SEEING APERTURE DIAMETER [pix]"),
+                "MAG_APER_3": (
+                    3 / self.pixscale,
+                    """FIXED 3" APERTURE DIAMETER [pix]""",
+                ),
+                "MAG_APER_4": (
+                    5 / self.pixscale,
+                    """FIXED 5" APERTURE DIAMETER [pix]""",
+                ),
+                "MAG_APER_5": (
+                    10 / self.pixscale,
+                    """FIXED 10" APERTURE DIAMETER [pix]""",
+                ),
+            }
 
-        self.add_aperture_dict = {}
-        for key in list(self.aperture_dict.keys()):
-            self.add_aperture_dict[key.replace("MAG_", "")] = (
-                round(self.aperture_dict[key][0], 3),
-                self.aperture_dict[key][1],
+            self.add_aperture_dict = {}
+            for key in list(self.aperture_dict.keys()):
+                self.add_aperture_dict[key.replace("MAG_", "")] = (
+                    round(self.aperture_dict[key][0], 3),
+                    self.aperture_dict[key][1],
+                )
+            # 	MAG KEY
+            self.magkeys = list(self.aperture_dict.keys())
+            # 	MAG ERROR KEY
+            # magerrkeys = [key.replace("MAG_", "MAGERR_") for key in self.magkeys]
+            # 	Aperture Sizes
+            aperlist = [self.aperture_dict[key][0] for key in self.magkeys[1:]]
+
+            PHOT_APERTURES = ",".join(map(str, aperlist))
+            # ------------------------------------------------------------
+            # 	SOURCE EXTRACTOR CONFIGURATION FOR PHOTOMETRY
+            # ------------------------------------------------------------
+
+            self.logger.debug("Run Source Extractor for Photometry.")
+
+            sex_config = dict(
+                # ------------------------------
+                # 	CATALOG
+                # ------------------------------
+                # CATALOG_NAME=self.cat,
+                # ------------------------------
+                # 	CONFIG FILES
+                # ------------------------------
+                # CONF_NAME=self.conf,
+                # PARAMETERS_NAME=self.param,
+                # FILTER_NAME=self.conv,
+                # STARNNW_NAME=self.nnw,
+                # ------------------------------
+                # 	EXTRACTION
+                # ------------------------------
+                # PSF_NAME = psf,
+                DETECT_MINAREA=self.phot_conf.DETECT_MINAREA,
+                DETECT_THRESH=self.phot_conf.DETECT_THRESH,
+                DEBLEND_NTHRESH=self.phot_conf.DEBLEND_NTHRESH,
+                DEBLEND_MINCONT=self.phot_conf.DEBLEND_MINCONT,
+                # ------------------------------
+                # 	PHOTOMETRY
+                # ------------------------------
+                # 	DIAMETER
+                # 	OPT.APER, (SEEING x2), x3, x4, x5
+                # 	MAG_APER	OPT.APER
+                # 	MAG_APER_1	OPT.GAUSSIAN.APER
+                # 	MAG_APER_2	SEEINGx2
+                # 	...
+                PHOT_APERTURES=PHOT_APERTURES,
+                SATUR_LEVEL="65000.0",
+                # GAIN = str(gain.value),
+                GAIN=str(self.gain),
+                PIXEL_SCALE=str(self.pixscale),
+                # ------------------------------
+                # 	STAR/GALAXY SEPARATION
+                # ------------------------------
+                SEEING_FWHM="2.0",
+                # ------------------------------
+                # 	BACKGROUND
+                # ------------------------------
+                BACK_SIZE=self.phot_conf.BACK_SIZE,
+                BACK_FILTERSIZE=self.phot_conf.BACK_FILTERSIZE,
+                BACKPHOTO_TYPE=self.phot_conf.BACKPHOTO_TYPE,
+                # ------------------------------
+                # 	CHECK IMAGE
+                # ------------------------------
+                # CHECKIMAGE_TYPE = 'SEGMENTATION,APERTURES,BACKGROUND,-BACKGROUND',
+                # CHECKIMAGE_NAME = '{},{},{},{}'.format(seg, aper, bkg, sub),
             )
-        # 	MAG KEY
-        self.magkeys = list(self.aperture_dict.keys())
-        # 	MAG ERROR KEY
-        # magerrkeys = [key.replace("MAG_", "MAGERR_") for key in self.magkeys]
-        # 	Aperture Sizes
-        aperlist = [self.aperture_dict[key][0] for key in self.magkeys[1:]]
 
-        PHOT_APERTURES = ",".join(map(str, aperlist))
-        # ------------------------------------------------------------
-        # 	SOURCE EXTRACTOR CONFIGURATION FOR PHOTOMETRY
-        # ------------------------------------------------------------
+            # 	Add Weight Map from SWarp
+            weightim = inim.replace("com", "weight")
+            if "com" in inim:
+                if os.path.exists(weightim):
+                    sex_config["WEIGHT_TYPE"] = "MAP_WEIGHT"
+                    sex_config["WEIGHT_IMAGE"] = weightim
+            # 	Check Image
+            if self.phot_conf.check == True:
+                sex_config["CHECKIMAGE_TYPE"] = (
+                    "SEGMENTATION,APERTURES,BACKGROUND,-BACKGROUND"
+                )
+                sex_config["CHECKIMAGE_NAME"] = (
+                    f"{self.head}.seg.fits,{self.head}.aper.fits,{self.head}.bkg.fits,{self.head}.sub.fits"
+                )
+            else:
+                pass
 
-        self.logger.debug("Run Source Extractor for Photometry.")
+            # ------------------------------------------------------------
+            # 	Main Source-extractor Run
+            # ------------------------------------------------------------
 
-        param_insex = dict(
-            # ------------------------------
-            # 	CATALOG
-            # ------------------------------
-            CATALOG_NAME=self.cat,
-            # ------------------------------
-            # 	CONFIG FILES
-            # ------------------------------
-            CONF_NAME=self.conf,
-            PARAMETERS_NAME=self.param,
-            FILTER_NAME=self.conv,
-            STARNNW_NAME=self.nnw,
-            # ------------------------------
-            # 	EXTRACTION
-            # ------------------------------
-            # PSF_NAME = psf,
-            DETECT_MINAREA=self.phot_conf.DETECT_MINAREA,
-            DETECT_THRESH=self.phot_conf.DETECT_THRESH,
-            DEBLEND_NTHRESH=self.phot_conf.DEBLEND_NTHRESH,
-            DEBLEND_MINCONT=self.phot_conf.DEBLEND_MINCONT,
-            # ------------------------------
-            # 	PHOTOMETRY
-            # ------------------------------
-            # 	DIAMETER
-            # 	OPT.APER, (SEEING x2), x3, x4, x5
-            # 	MAG_APER	OPT.APER
-            # 	MAG_APER_1	OPT.GAUSSIAN.APER
-            # 	MAG_APER_2	SEEINGx2
-            # 	...
-            PHOT_APERTURES=PHOT_APERTURES,
-            SATUR_LEVEL="65000.0",
-            # GAIN = str(gain.value),
-            GAIN=str(self.gain),
-            PIXEL_SCALE=str(self.pixscale),
-            # ------------------------------
-            # 	STAR/GALAXY SEPARATION
-            # ------------------------------
-            SEEING_FWHM=str(2.0),
-            # ------------------------------
-            # 	BACKGROUND
-            # ------------------------------
-            BACK_SIZE=self.phot_conf.BACK_SIZE,
-            BACK_FILTERSIZE=self.phot_conf.BACK_FILTERSIZE,
-            BACKPHOTO_TYPE=self.phot_conf.BACKPHOTO_TYPE,
-            # ------------------------------
-            # 	CHECK IMAGE
-            # ------------------------------
-            # CHECKIMAGE_TYPE = 'SEGMENTATION,APERTURES,BACKGROUND,-BACKGROUND',
-            # CHECKIMAGE_NAME = '{},{},{},{}'.format(seg, aper, bkg, sub),
-        )
-        # 	Add Weight Map from SWarp
-        weightim = inim.replace("com", "weight")
-        if "com" in inim:
-            if os.path.exists(weightim):
-                param_insex["WEIGHT_TYPE"] = "MAP_WEIGHT"
-                param_insex["WEIGHT_IMAGE"] = weightim
-        # 	Check Image
-        if self.phot_conf.check == True:
-            param_insex["CHECKIMAGE_TYPE"] = (
-                "SEGMENTATION,APERTURES,BACKGROUND,-BACKGROUND"
+            t0_sex = time.time()
+            # com = phot_util.sexcom(inim, sex_config)
+            # self.logger.debug(com)
+            # sexout = subprocess.getoutput(com)
+
+            # e.g., ["-key1", "val1", "-key2", "val2"]
+            sex_args = [
+                s for key, val in sex_config.items() for s in (f"-{key}", f"{val}")
+            ]
+            _, sexout = external.sextractor(
+                inim,
+                outcat=self.cat,
+                prefix="main",
+                sex_args=sex_args,
+                logger=self.logger,
+                get_output=True,
             )
-            param_insex["CHECKIMAGE_NAME"] = (
-                f"{self.head}.seg.fits,{self.head}.aper.fits,{self.head}.bkg.fits,{self.head}.sub.fits"
-            )
-        else:
-            pass
 
-        # ------------------------------------------------------------
-        # 	PHOTOMETRY
-        # ------------------------------------------------------------
+            delt_sex = time.time() - t0_sex
+            self.logger.debug(f"SourceExtractor: {delt_sex:.3f} sec")
 
-        com = phot_util.sexcom(inim, param_insex)
-        t0_sex = time.time()
-        self.logger.debug(com)
-        sexout = subprocess.getoutput(com)
+            line = [s for s in sexout.split("\n") if "RMS" in s]
+            self.skymed = float(line[0].split("Background:")[1].split("RMS:")[0])
+            self.skysig = float(line[0].split("RMS:")[1].split("/")[0])
+            # os.system(f'rm {seg} {aper} {bkg} {sub}'.format(seg, aper, bkg, sub))
 
-        delt_sex = time.time() - t0_sex
-        self.logger.debug(f"SourceEXtractor: {delt_sex:.3f} sec")
+        except Exception as e:
+            self.logger.error(f"Error in Main SExtractor: {e}")
+            return
 
-        line = [s for s in sexout.split("\n") if "RMS" in s]
-        self.skymed, self.skysig = float(
-            line[0].split("Background:")[1].split("RMS:")[0]
-        ), float(line[0].split("RMS:")[1].split("/")[0])
-        # os.system(f'rm {seg} {aper} {bkg} {sub}'.format(seg, aper, bkg, sub))
-
+    def match_refcat(self, reftbl):
         setbl = Table.read(self.cat, format="ascii.sextractor")
 
         # ------------------------------------------------------------
@@ -404,15 +504,13 @@ class Photometry:
             self.phot_conf.photfraction * self.hdr["NAXIS2"] / 2,
         )
 
-        self.logger.info(
-            f"""Matched Sources: {len(mtbl):_} (r={self.phot_conf.match_radius:.3f}")"""
-        )
+        self.logger.info(f"""Matched Sources: {len(mtbl):_} (r={self.phot_conf.match_radius:.3f}")""")  # fmt:skip
 
         for _, magkey in enumerate(self.magkeys):
             suffix = magkey.replace("MAG_", "")
             mtbl[f"SNR_{suffix}"] = mtbl[f"FLUX_{suffix}"] / mtbl[f"FLUXERR_{suffix}"]
 
-        indx_star4zp = np.where(
+        zp_star_idx = np.where(
             # 	Star-like Source
             # (mtbl['CLASS_STAR']>0.9) &
             (mtbl["FLAGS"] == 0)
@@ -433,10 +531,10 @@ class Photometry:
             # (mtbl[refmagkey]<18.0)
         )
 
-        zptbl = mtbl[indx_star4zp]
+        zptbl = mtbl[zp_star_idx]
 
         self.logger.info(
-            f"{len(zptbl)} sources to calibration ZP in {self.name} [{self.current_frame}/{len(self.image)}]"
+            f"{len(zptbl)} sources to calibration ZP in {self.config.name}"
         )
 
         # Return ZP Table, Source Extractor Table, Matched Index, Separation
@@ -454,7 +552,7 @@ class Photometry:
             sigma = 2.0
 
             zparr = zptbl[self.refmagkey] - zptbl[magkey]
-            # zperrarr = tool.sqsum(zptbl[inmagerrkey], zptbl[refmagerkey])
+            # zperrarr = tool.sqsum(zptbl[magerrkey], zptbl[refmagerrkey])
             # 	Temperary zeropoint error!!!!!!
             zperrarr = phot_util.sqsum(zptbl[magerrkey], np.zeros_like(len(zptbl)))
 
@@ -537,11 +635,13 @@ class Photometry:
         plt.ylabel(f"ZP_{magkey}")
         plt.legend(loc="upper center", ncol=3)
         plt.tight_layout()
-        im_path = Path(f"{self.head}.fits").parent
-        if not os.path.exists(os.path.join(im_path, "phot_image")):
-            os.makedirs(os.path.join(im_path, "phot_image"))
-        im_mag_name = self.head.replace(str(im_path), "")
-        plt.savefig(f"{im_path}/phot_image/{im_mag_name}.{magkey}.png", dpi=100)
+        # im_path = Path(f"{self.head}.fits").parent
+        im_path = os.path.join(self.config.path.path_processed, "phot_image")
+        if not os.path.exists(im_path):
+            os.makedirs(im_path)
+        # im_mag_name = self.head.replace(str(im_path), "")
+        img_stem = os.path.splitext(os.path.basename(self.im))[0]
+        plt.savefig(f"{im_path}/{img_stem}.{magkey}.png", dpi=100)
         plt.close()
 
     def apply_zp(self, magkey, magerrkey, zp, zperr, setbl):
@@ -615,10 +715,8 @@ class Photometry:
         # Return Source Extractor Table
         return setbl
 
-    def update_header(self, inim, zptbl, reftbl, setbl, indx_match, sep):
-        self.logger.debug(
-            f"Updating Header for {self.name} [{self.current_frame}/{len(self.image)}]"
-        )
+    def update_header(self, inim, zptbl):
+        self.logger.debug(f"Updating Header for {self.config.name}")
 
         # ------------------------------------------------------------
         # 	Header
@@ -684,9 +782,7 @@ class Photometry:
         }
         setbl.meta = meta_dict
         setbl.write(f"{self.head}.phot.cat", format="ascii.tab", overwrite=True)
-        self.logger.info(
-            f"Header updated for {self.name} [{self.current_frame}/{len(self.image)}]"
-        )
+        self.logger.info(f"Header updated for {self.config.name}")
 
 
 # if __name__ == "__main__":

@@ -1,8 +1,11 @@
-from .services.queue import QueueManager
-from pathlib import Path
+#!/usr/bin/env /usr/local/anaconda3/bin/python
 import re
-from .services.monitor import CalibrationData, ObservationData
-from .run import run_pipeline
+import time
+from pathlib import Path
+
+from gppy.services.queue import QueueManager, Priority
+from gppy.services.monitor import CalibrationData, ObservationData
+from gppy.run import run_scidata_reduction, run_masterframe_generator
 
 
 def reprocess_folder(folder, overwrite=False):
@@ -92,19 +95,53 @@ def reprocess_folder(folder, overwrite=False):
             
             # Process calibration data if exists
             if calib_data.has_calib_files() and not calib_data.processed:
-                run_pipeline(calib_data, queue)
+
+                obs_params = {
+                    "date": calib_data.date,
+                    "unit": calib_data.unit,
+                    "n_binning": calib_data.n_binning,
+                    "gain": calib_data.gain,
+                }
+
+                queue.add_task(
+                    run_masterframe_generator,
+                    args=(obs_params,),
+                    kwargs={"queue": False},
+                    priority=Priority.LOW,
+                    gpu=True,
+                    task_name=f"{obs_params['date']}_{obs_params['n_binning']}x{obs_params['n_binning']}_gain{obs_params['gain']}_{obs_params['unit']}_masterframe",
+                )
             
             # Process observation data
-            if obs_data.get_unprocessed():
-                run_pipeline(obs_data, queue)
-        
+            for obs in obs_data.get_unprocessed():
+                obs_data.mark_as_processed(obs)
+                obj, filte = obs
+
+                obs_params = {
+                    "date": obs_data.date,
+                    "unit": obs_data.unit,
+                    "gain": obs_data.gain,
+                    "obj": obj,
+                    "filter": filte,
+                    "n_binning": obs_data.n_binning,
+                }
+
+                queue.add_task(
+                    run_scidata_reduction,
+                    args=(obs_params,),
+                    kwargs={"queue": False},
+                    priority=Priority.LOW,
+                    task_name=f"{obs_params['date']}_{obs_params['n_binning']}x{obs_params['n_binning']}_gain{obs_params['gain']}_{obs_params['obj']}_{obs_params['unit']}_{obs_params['filter']}",
+                )
+
+                time.sleep(0.1)
         except Exception as e:
             error_msg = f"Error processing folder {data_folder}: {str(e)}"
             processing_errors.append(error_msg)
             print(error_msg)
     
     # Wait for queue to complete processing
-    queue.wait_all_task_completion()
+    queue.wait_until_task_complete("all")
 
     # Raise an exception if any errors occurred during processing
     if processing_errors:

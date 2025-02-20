@@ -6,12 +6,10 @@ from astropy.table import Table, hstack, vstack, unique
 from astropy.coordinates import SkyCoord
 from ..const import REF_DIR, FACTORY_DIR
 
+from dataclasses import dataclass
+
 
 def log2tmp(command, label):
-    # path_thisfile = Path(__file__).resolve()
-    # path_root = (
-    #     path_thisfile.parent.parent.parent
-    # )  # Careful! not a str / PATH HAS TO BE REVISED
     path_root = Path(FACTORY_DIR).resolve()
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     path_tmp = path_root / "_tmp"  # MODIFICATION REQUIRED
@@ -118,7 +116,7 @@ def correct_flux_excess_factor(bp_rp, phot_bp_rp_excess_factor):
 def sqsum(a, b):
     """
     SQUARE SUM
-    USEFUL TO CALC. ERROR
+    USEFUL FOR CALC. ERROR
     """
     return np.sqrt(a**2.0 + b**2.0)
 
@@ -200,7 +198,7 @@ def merge_catalogs(
 
 
 def sexcom(inim, param_insex, dualmode=False):
-    """ """
+    """Deprecated"""
 
     with open(f"{REF_DIR}/srcExt/default_sex.yml", "r") as f:
         param_sex = yaml.safe_load(f)
@@ -225,3 +223,99 @@ def limitmag(N, zp, aper, skysigma):  # 3? 5?, zp, diameter [pixel], skysigma
     braket = N * skysigma * np.sqrt(np.pi * (R**2))
     upperlimit = float(zp) - 2.5 * np.log10(braket)
     return round(upperlimit, 3)
+
+
+@dataclass
+class ImageConfig:
+    """Image information extracted from FITS header"""
+
+    obj: str  # Object name
+    filte: str  # Filter used
+    dateobs: str  # Observation date/time
+    gain: float  # Gain value
+    naxis1: int  # Image width
+    naxis2: int  # Image height
+    jd: float  # Julian Date
+    mjd: float  # Modified Julian Date
+    racent: float  # RA of image center
+    decent: float  # DEC of image center
+    xcent: float  # X coordinate of image center
+    ycent: float  # Y coordinate of image center
+    n_binning: int  # Binning factor
+    pixscale: float  # Pixel scale [arcsec/pix]
+
+
+def parse_image_config(image_path, pixscale=0.505):
+    """
+    Extract and return image information from FITS header.
+
+    Args:
+        image_path: Path to the FITS image file
+
+    Returns:
+        ImageInfo object containing extracted header information
+
+    Raises:
+        FITSError: If there's an error reading the FITS file
+        WCSError: If there's an error with WCS information
+        HeaderError: If required header keywords are missing
+    """
+    try:
+        hdr = fits.getheader(image_path)
+
+        # Initialize WCS
+        try:
+            w = WCS(image_path)
+        except Exception as e:
+            raise WCSError(f"Error initializing WCS: {str(e)}")
+
+        # Extract required header values with validation
+        required_keys = ["OBJECT", "FILTER", "DATE-OBS", "EGAIN", "NAXIS1", "NAXIS2"]
+        missing_keys = [key for key in required_keys if key not in hdr]
+
+        if missing_keys:
+            raise HeaderError(
+                f"Missing required header keywords: {', '.join(missing_keys)}"
+            )
+
+        # Calculate center coordinates
+        xcent, ycent = hdr["NAXIS1"] / 2.0, hdr["NAXIS2"] / 2.0
+        try:
+            racent, decent = w.all_pix2world(xcent, ycent, 1)
+            racent = float(racent)  # Convert from numpy type
+            decent = float(decent)  # Convert from numpy type
+        except Exception as e:
+            raise WCSError(f"Error calculating center coordinates: {str(e)}")
+
+        # Calculate dates
+        try:
+            time_obj = Time(hdr["DATE-OBS"], format="isot")
+            jd = float(time_obj.jd)  # Convert from numpy type
+            mjd = float(time_obj.mjd)  # Convert from numpy type
+        except Exception as e:
+            raise HeaderError(f"Error processing observation date: {str(e)}")
+
+        # Create and return ImageInfo object
+        return ImageConfig(
+            obj=hdr["OBJECT"],
+            filte=hdr["FILTER"],
+            dateobs=hdr["DATE-OBS"],
+            gain=float(hdr["EGAIN"]),
+            naxis1=int(hdr["NAXIS1"]),
+            naxis2=int(hdr["NAXIS2"]),
+            jd=jd,
+            mjd=mjd,
+            racent=racent,
+            decent=decent,
+            xcent=xcent,
+            ycent=ycent,
+            n_binning=hdr["XBINNING"],
+            pixscale=hdr["XBINNING"] * pixscale,
+        )
+
+    except (FITSError, WCSError, HeaderError):
+        # Re-raise these custom exceptions
+        raise
+    except Exception as e:
+        # Catch any other unexpected errors
+        raise FITSError(f"Unexpected error reading FITS file: {str(e)}")
