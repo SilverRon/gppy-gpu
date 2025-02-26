@@ -1,7 +1,7 @@
-# gpPy: Automated Pipeline for Astronomical Image Processing
+# gppy: Automated Pipeline for Astronomical Image Processing
 
 ## Overview
-gpPy is a comprehensive pipeline designed for processing optical and near-infrared (NIR) astronomical images from IMSNG/GECKO and 7DT facilities. The package implements a multi-threaded approach utilizing GPU and CPU multiprocessing to efficiently handle various stages of astronomical data processing, including:
+gppy is a comprehensive pipeline designed for processing optical and near-infrared (NIR) astronomical images from IMSNG/GECKO and 7DT facilities. The package implements a multi-threaded approach utilizing GPU and CPU multiprocessing to efficiently handle various stages of astronomical data processing, including:
 
 - Data reduction
 - Astrometric calibration
@@ -11,16 +11,16 @@ gpPy is a comprehensive pipeline designed for processing optical and near-infrar
 - Automated transient detection
 
 ## History and Development
-Development of gpPy began in 2018 by Dr. Gregory Peak. The first stable release was published on September 1, 2023. The package underwent significant renovation in February 2025 to integrate with the 7DT pipeline system.
+Development of gpPy began in 2018 by Gregory Peak. The first stable release was published on September 1, 2023. The package underwent significant renovation in February 2025 to integrate with the 7DT pipeline system.
 
 ## Development Team
-- **Original Developer**: Dr. Gregory Peak
+- **Original Developer**: Gregory Peak
 - **Current Maintainers**: 
   - Donghwan Hyun
   - WonHyeong Lee
-- **Contributors**:
-  - Dr. Gregory Peak
-  - Dr. Donggeun Tak
+- **Core Contributors**:
+  - Gregory Peak
+  - Donggeun Tak
   
 ## Version History
 - 2018: Initial development
@@ -28,4 +28,4 @@ Development of gpPy began in 2018 by Dr. Gregory Peak. The first stable release 
 - 2025.02: Major renovation for 7DT pipeline integration
 
 ## Contact
-For any inquiries or feedback, please contact Dr. Gregory Peak at gregorypaek94_at_g_mail.
+For any inquiries or feedback, please contact the 7DT pipeline team.

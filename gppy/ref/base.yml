@@ -37,10 +37,8 @@ path:
   path_calib_field: /lyman/data1/Calibration/7DT-Calibration/output/Calibration_Tile
   path_refcat: /lyman/data1/factory/ref_cat
   path_sex: /data/pipeline_reform/gppy-gpu/gppy/ref
-  # path_ref_scamp:
-  # path_log:
-  # path_astrefcat:
-  # path_scampconfig:
+  path_astrefcat: "/lyman/data1/factory/catalog/gaia_dr3_7DT"
+  # path_log:  # same as path_processed
 
 file: 
   raw_files: 
@@ -48,7 +46,7 @@ file:
   combined_file:
 
 preprocess:
-  selection: default # closest, custom
+  masterframe: default # closest, custom
   mbias_link: # master_frame/2001-02-23_1x1_gain2750/7DT11/link_20250102_C3.bias
   mdark_link: # master_frame/2001-02-23_1x1_gain2750/7DT11/link_20250102_100_C3.dark
   mflat_link: # master_frame/2001-02-23_1x1_gain2750/7DT11/link_20250102_m625_C3.flat
@@ -66,20 +64,22 @@ photometry:
   photfraction: 0.75
   refcatname: GaiaXP
   refqueryradius: 0.9
-  refmaglower: 12
-  refmagupper: 17.5
-  refmagerupper: 0.05
-  inmagerupper: 0.05
+  ref_mag_lower: 12
+  ref_mag_upper: 17.5
+  ref_mag_err_upper: 0.05
   flagcut: 0
   check: False
-  
-  DETECT_MINAREA: 5
-  DETECT_THRESH: 3.0
-  DEBLEND_NTHRESH: 64
-  DEBLEND_MINCONT: 0.0001
-  BACK_SIZE: 64
-  BACK_FILTERSIZE: 3
-  BACKPHOTO_TYPE: LOCAL
+  sex_vars:
+    DETECT_MINAREA: 5
+    DETECT_THRESH: 3.0
+    DEBLEND_NTHRESH: 64
+    DEBLEND_MINCONT: 0.0001
+    BACK_SIZE: 64
+    BACK_FILTERSIZE: 3
+    BACKPHOTO_TYPE: LOCAL
+
+  combine:
+    zp_key: 'ZP_AUTO'
   
 
 logging:

@@ -1,107 +1,147 @@
-import os, subprocess
-from typing import Any, Union
-from pathlib import Path
+import os
+from typing import Any, List, Dict, Tuple, Optional, Union
 import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+import itertools
 import time
+from pathlib import Path
+import glob
 
 # astropy
-from astropy.table import Table, hstack
-from astropy.table import MaskedColumn
 from astropy.io import fits
 from astropy.time import Time
-from astropy import units as u
 from astropy.wcs import WCS
+from astropy.table import Table, hstack, MaskedColumn
+from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.stats import sigma_clip
 
 # gppy modules
-from . import utils as phot_util
+from . import utils as phot_utils
 from ..utils import update_padded_header
 from ..config import Configuration
 from ..services.memory import MemoryMonitor
 from ..services.queue import QueueManager, Priority
 from .. import external
 
+from dataclasses import dataclass
+
 
 class Photometry:
+    """
+    A class to perform photometric analysis on astronomical images.
+
+    This class handles both single-image and batch photometry processing,
+    with support for parallel processing through a queue system.
+
+    Attributes:
+        config (Configuration): Configuration settings for photometry
+        logger: Logger instance for output messaging
+        queue (Optional[QueueManager]): Queue manager for parallel processing
+        ref_catalog (str): Name of reference catalog to use
+        images (List[str]): List of image files to process
+    """
+
     def __init__(
         self,
         config: Any = None,
-        logger=None,
-        queue=False,
-        images=None,
-        gaia_correction=False,
-    ):
+        logger: Any = None,
+        queue: Union[bool, QueueManager] = False,
+        images: Optional[List[str]] = None,
+        ref_catalog: Optional[str] = None,
+    ) -> None:
         """
         Initialize the Photometry class.
-        config: Configuration object or string path to config yaml.
+
+        Args:
+            config: Configuration object or path to config yaml
+            logger: Logger instance for output messaging
+            queue: Queue manager for parallel processing or boolean to create one
+            images: List of image files to process
+            ref_catalog: Name of reference catalog to use
         """
         # Load Configuration
-        if isinstance(config, str):  # In case of File Path
+        if isinstance(config, str):
             self.config = Configuration(config_source=config).config
-        else:
-            # for easy access to config
+        elif hasattr(config, "config"):
             self.config = config.config
+        else:
+            self.config = config
 
-        # Use logger from config if available, otherwise create a new one
+        self.logger = logger or self._setup_logger(config)
+        self.queue = self._setup_queue(queue)
+        self.ref_catalog = ref_catalog or self.config.photometry.refcatname
+        self.images = images or self.config.file.processed_files
+
+        os.makedirs(self.config.path.path_factory, exist_ok=True)
+
+    @classmethod
+    def from_list(cls, images: List[str]) -> Optional["Photometry"]:
+        """
+        Create Photometry instance from a list of image paths.
+
+        Args:
+            images: List of paths to image files
+
+        Returns:
+            Photometry instance or None if files don't exist
+        """
+        image_list = []
+        for image in images:
+            path = Path(image)
+            if not path.is_file():
+                print("The file does not exist.")
+                return None
+            image_list.append(path.parts[-1])
+        working_dir = str(path.parent.absolute())
+        config = Configuration.base_config(working_dir)
+        config.file.processed_files = image_list
+        return cls(config=config)
+
+    @classmethod
+    def from_file(cls, image: str) -> Optional["Photometry"]:
+        """Create Photometry instance from single image file."""
+        return cls.from_list([image])
+
+    @classmethod
+    def from_dir(cls, dir_path: str) -> "Photometry":
+        """Create Photometry instance from directory of FITS files."""
+        image_list = glob.glob(f"{dir_path}/*.fits")
+        return cls.from_list(image_list)
+
+    def _setup_logger(self, config: Any) -> Any:
+        """Initialize logger instance."""
         if hasattr(config, "logger") and config.logger is not None:
-            self.logger = config.logger
-        else:
-            from ..logger import Logger
+            return config.logger
 
-            self.logger = Logger(name="7DT pipeline logger", slack_channel="pipeline_report")  # fmt:skip
+        from ..logger import Logger
 
-        # queue
+        return Logger(name="7DT pipeline logger", slack_channel="pipeline_report")
+
+    def _setup_queue(self, queue: Union[bool, QueueManager]) -> Optional[QueueManager]:
+        """Initialize queue manager for parallel processing."""
         if isinstance(queue, QueueManager):
-            self.queue = queue
-            self.queue.logger = self.logger
+            queue.logger = self.logger
+            return queue
         elif queue:
-            self.queue = QueueManager(logger=self.logger)
-        else:
-            self.queue = None
+            return QueueManager(logger=self.logger)
+        return None
 
-        self._correction = gaia_correction
+    def run(self) -> None:
+        """
+        Run photometry on all configured images.
 
-        self._images = images or self.config.file.processed_files
-
-    @property
-    def images(self):
-        return self._images
-
-    @property
-    def gaia_correction(self):
-        return self._correction
-
-    def run(self):
+        Processes images either sequentially or in parallel depending on queue configuration.
+        Updates configuration flags and performs memory cleanup after completion.
+        """
         self.logger.info("-" * 80)
         self.logger.info(f"Start photometry for {self.config.name}")
 
-        phot_single = PhotometrySingle(
-            self.config, self.logger, gaia_correction=self.gaia_correction
-        )
-
-        # parallelize given queue
         if self.queue:
-            task_ids = []
-            for i, im in enumerate(self.images):
-                process_name = f"{self.config.name} [{i+1}/{len(self.images)}]"
-                task_id = self.queue.add_task(
-                    phot_single,
-                    args=(im,),
-                    kwargs={"name": process_name},
-                    priority=Priority.MEDIUM,
-                    gpu=False,
-                    task_name=process_name,
-                )
-                task_ids.append(task_id)
-            self.queue.wait_until_task_complete(task_ids)
-        # Iterate over images
+            self._run_parallel()
         else:
-            for i, im in enumerate(self.images):
-                process_name = f"{self.config.name} [{i+1}/{len(self.images)}]"
-                phot_single(im, name=process_name)
+            self._run_sequential()
 
         self.config.flag.single_photometry = True
         MemoryMonitor.cleanup_memory()
@@ -109,689 +149,745 @@ class Photometry:
         self.logger.info(f"Photometry Done for {self.config.name}")
         self.logger.debug(MemoryMonitor.log_memory_usage)
 
+    def _run_parallel(self) -> None:
+        """Process images in parallel using queue system."""
+        task_ids = []
+        for i, image in enumerate(self.images):
+            process_name = f"{self.config.name}"
+            phot_single = PhotometrySingle(
+                image,
+                self.config,
+                self.logger,
+                ref_catalog=self.ref_catalog,
+            )
+            task_id = self.queue.add_task(
+                phot_single.run,
+                kwargs={"name": process_name},
+                priority=Priority.MEDIUM,
+                gpu=False,
+                task_name=process_name,
+            )
+            task_ids.append(task_id)
+        self.queue.wait_until_task_complete(task_ids)
+
+    def _run_sequential(self) -> None:
+        """Process images sequentially."""
+        for image in self.images:
+            PhotometrySingle(
+                image,
+                self.config,
+                self.logger,
+                ref_catalog=self.ref_catalog,
+                total_image=len(self.images),
+            ).run()
+
 
 class PhotometrySingle:
-    def __init__(self, config, logger, gaia_correction=False):
+    """
+    Class for performing photometry on a single astronomical image.
+
+    Handles the complete photometry pipeline for one image, including:
+    - Source extraction
+    - Reference catalog matching
+    - Zero point calculation
+    - Header updates
+    - Results output
+
+    Attributes:
+        config: Configuration settings
+        logger: Logger instance
+        ref_catalog (str): Reference catalog name
+        image (str): Path to image file
+        image_info (ImageInfo): Parsed image metadata
+        phot_conf: Photometry configuration settings
+        name (str): Process name for logging
+        header (ImageHeader): Header information container
+        _id (int): Unique identifier for this instance
+    """
+
+    _id_counter = itertools.count(1)
+
+    def __init__(
+        self,
+        image: str,
+        config: Any,
+        logger: Any = None,
+        name: Optional[str] = None,
+        ref_catalog: str = "GaiaXP",
+        total_image: int = 1,
+    ) -> None:
+        """Initialize PhotometrySingle instance."""
         self.config = config
-        self.logger = logger
-        self._correction = gaia_correction
+        self.logger = logger or self._setup_logger(config)
+        self.ref_catalog = ref_catalog
+        self.image = os.path.join(self.config.path.path_processed, image)
+        self.image_info = ImageInfo.parse_image_info(
+            self.image, pixscale=self.config.obs.pixscale
+        )
+        self.phot_conf = self.config.photometry
+        self.name = name or self.config.name
+        self.header = ImageHeader()
+        if total_image == 1:
+            self._id = next(self._id_counter)
+        else:
+            self._id = str(next(self._id_counter)) + "/" + str(total_image)
+
+    def _setup_logger(self, config: Any) -> Any:
+        """Initialize logger instance."""
+        if hasattr(config, "logger") and config.logger is not None:
+            return config.logger
+
+        from ..logger import Logger
+
+        return Logger(name="7DT pipeline logger", slack_channel="pipeline_report")
+
+    @classmethod
+    def from_file(cls, image: str) -> Optional["PhotometrySingle"]:
+        """Create instance from single image file."""
+        path = Path(image)
+        if not path.is_file():
+            print("The file does not exist.")
+            return None
+        working_dir = str(path.parent.absolute())
+        config = Configuration.base_config(working_dir)
+        image = path.parts[-1]
+        return cls(image, config, name="user-input")
 
     @property
-    def gaia_correction(self):
-        return self._correction
+    def file_prefix(self) -> str:
+        """Get file prefix for output files."""
+        _tmp = os.path.splitext(self.image)[0]
+        return os.path.join(self.config.path.path_factory, os.path.basename(_tmp))
 
-    def __call__(self, im, name=None):
-        """im is basename, not full path"""
-        self.config.name = name or os.path.basename(im)
+    def run(self) -> None:
+        """
+        Execute complete photometry pipeline for single image.
 
-        im = os.path.join(self.config.path.path_processed, im)
-        self.im = im
+        Performs the following steps:
+        1. Loads reference catalog
+        2. Calculates seeing conditions
+        3. Runs source extraction
+        4. Matches detected sources with reference catalog
+        5. Calculates zero point corrections
+        6. Updates image header
+        7. Writes photometry catalog
 
-        self.logger.info(f"Photometry initiated for {self.config.name}")  # fmt:skip
+        Times the complete process and performs memory cleanup after completion.
+        """
+        start_time = time.time()
+        self.logger.info(f"Start Single Photometry for {self.name} [{self._id}]")
 
-        self.define_info(im)
-        seeing, reftbl = self.get_seeing(im)
-        self.main_sex(im, seeing)
-        zptbl, setbl, indx_match, sep = self.match_refcat(reftbl)
-        self.calculate_zp(zptbl, setbl)
-        self.update_header(im, zptbl)
-        self.write_photcat(reftbl, setbl, indx_match, sep)
+        self.load_ref_catalog()
+        self.calculate_seeing()
+        self.run_sextractor()
+        self.zp_src_table = self.match_ref_catalog(
+            snr_cut=20,
+            low_mag_cut=self.phot_conf.ref_mag_lower,
+            high_mag_cut=self.phot_conf.ref_mag_upper,
+        )
+        dicts = self.calculate_zp()
+        self.update_header(*dicts)
+        self.write_photcat()
 
         self.logger.debug(MemoryMonitor.log_memory_usage)
         MemoryMonitor.cleanup_memory()
+        end_time = time.time()
+        self.logger.info(
+            f"Photometry Done for {self.name} [{self._id}] in {end_time - start_time:.2f} seconds"
+        )
 
-        self.logger.info(f"Photometry completed for {self.config.name}")  # fmt:skip
+    def load_ref_catalog(self) -> None:
+        """
+        Load reference catalog for photometric calibration.
 
-    def define_info(self, inim):
-        try:
-            # ------------------------------------------------------------
-            # 	Information from Configuration
-            # ------------------------------------------------------------
-            self.n_binning = self.config.obs.n_binning
-            self.pixscale = self.config.obs.pixscale * self.n_binning
-            # ------------------------------------------------------------
-            # 	Information from Header
-            # ------------------------------------------------------------
-            self.hdr = fits.getheader(inim)
+        Handles both standard and corrected GaiaXP catalogs.
+        Creates new catalog if it doesn't exist by parsing Gaia data.
+        Sets self.ref_src_table with loaded catalog data.
+        """
+        if self.ref_catalog == "GaiaXP_cor":
+            ref_cat = f"{self.config.path.path_refcat}/cor_gaiaxp_dr3_synphot_{self.image_info.obj}.csv"
+        elif self.ref_catalog == "GaiaXP":
+            ref_cat = f"{self.config.path.path_refcat}/gaiaxp_dr3_synphot_{self.image_info.obj}.csv"
 
-            self.obs = self.config.obs.unit
-            self.obj = self.hdr["OBJECT"]
-            self.filte = self.hdr["FILTER"]
-            self.dateobs = self.hdr["DATE-OBS"]
-            self.refmagkey = f"mag_{self.filte}"
-            self.refmagerkey = f"magerr_{self.filte}"
-            timeobj = Time(self.dateobs, format="isot")
-            self.jd = timeobj.jd
-            self.mjd = timeobj.mjd
-
-            self.gain = self.hdr["EGAIN"]
-            self.xcent, self.ycent = self.hdr["NAXIS1"] / 2.0, self.hdr["NAXIS2"] / 2.0
-            w = WCS(inim)
-            self.racent, self.decent = w.all_pix2world(self.xcent, self.ycent, 1)
-            self.racent, self.decent = self.racent.item(), self.decent.item()
-
-            # paths
-            self.head = os.path.splitext(inim)[0]
-            self.cat = os.path.join(
-                self.config.path.path_factory, os.path.basename(self.head) + ".cat"
-            )
-            self.precat = os.path.join(
-                self.config.path.path_factory, os.path.basename(self.head) + ".pre.cat"
-            )  # dump presex output to factory
-            self.presex_log = os.path.join(
-                self.config.path.path_factory,
-                os.path.splitext(os.path.basename(inim))[0] + "_sextractor.log",
-            )
-
-            self.phot_conf = self.config.photometry
-
-            self.logger.info(f"Information of {self.config.name} defined.")
-        except Exception as e:
-            self.logger.error(
-                f"Error in Defining Information for {self.config.name}: {e}"
-            )
-
-    def get_seeing(self, inim):  #   Return Reference Catalogue
-        try:
-            # ------------------------------------------------------------
-            # 	Run Pre-SExtractor
-            # ------------------------------------------------------------
-            self.logger.info(f"Run Pre-SExtractor for {self.config.name}")  # fmt:skip
-
-            precat = self.precat
-
-            external.sextractor(
-                inim,
-                outcat=precat,
-                prefix="prep",
-                log_file=self.presex_log,
-                logger=self.logger,
-            )
-
-            # ------------------------------------------------------------
-            # 	Get Reference Catalogue
-            # ------------------------------------------------------------
-            if self.gaia_correction:
-                ref_gaiaxp_synphot_cat = f"{self.config.path.path_refcat}/cor_gaiaxp_dr3_synphot_{self.obj}.csv"
-            else:
-                ref_gaiaxp_synphot_cat = (
-                    f"{self.config.path.path_refcat}/gaiaxp_dr3_synphot_{self.obj}.csv"
-                )
-            if not os.path.exists(ref_gaiaxp_synphot_cat):
-                reftbl = phot_util.merge_catalogs(
-                    target_coord=SkyCoord(self.racent, self.decent, unit="deg"),
-                    path_calibration_field=self.config.path.path_calib_field,
-                    matching_radius=self.phot_conf.match_radius * 1.5,
-                    path_save=ref_gaiaxp_synphot_cat,
-                )
-                reftbl.write(ref_gaiaxp_synphot_cat, overwrite=True)
-            else:
-                reftbl = Table.read(ref_gaiaxp_synphot_cat)
-
-            # ------------------------------------------------------------
-            #   Matching
-            # ------------------------------------------------------------
-            self.logger.debug("Matching sources with reference catalog.")
-
-            pretbl = Table.read(precat, format="ascii.sextractor")
-
-            # select sources within ellipse at the center of image
-            pretbl["within_ellipse"] = phot_util.is_within_ellipse(
-                pretbl["X_IMAGE"],
-                pretbl["Y_IMAGE"],
-                self.xcent,
-                self.ycent,
-                self.phot_conf.photfraction * self.hdr["NAXIS1"] / 2,
-                self.phot_conf.photfraction * self.hdr["NAXIS2"] / 2,
-            )
-
-            c_pre = SkyCoord(pretbl["ALPHA_J2000"], pretbl["DELTA_J2000"], unit="deg")
-            c_ref = SkyCoord(reftbl["ra"], reftbl["dec"], unit="deg")
-
-            indx_match, sep, _ = c_pre.match_to_catalog_sky(c_ref)
-            _premtbl = hstack([pretbl, reftbl[indx_match]])
-            _premtbl["sep"] = sep.arcsec
-            premtbl = _premtbl[_premtbl["sep"] < self.phot_conf.match_radius]
-            premtbl["within_ellipse"] = phot_util.is_within_ellipse(
-                premtbl["X_IMAGE"],
-                premtbl["Y_IMAGE"],
-                self.xcent,
-                self.ycent,
-                self.phot_conf.photfraction * self.hdr["NAXIS1"] / 2,
-                self.phot_conf.photfraction * self.hdr["NAXIS2"] / 2,
-            )
-
-            indx_star4seeing = np.where(
-                (premtbl["FLAGS"] == 0)
-                & (premtbl["within_ellipse"] == True)
-                & (premtbl[self.refmagkey] > 11.75)
-                & (premtbl[self.refmagkey] < 18.0)
-            )
-            self.ellipticity = np.median(premtbl["ELLIPTICITY"][indx_star4seeing])
-            self.elongation = np.median(premtbl["ELONGATION"][indx_star4seeing])
-            seeing = np.median(premtbl["FWHM_WORLD"][indx_star4seeing] * 3600)
-
-            frame = self.config.name.split(" ")[
-                -1
-            ]  # works even though self.config.name is inim
-            self.logger.debug(f"-" * 60)
-            self.logger.debug(f"{frame} {len(premtbl[indx_star4seeing])} Star-like Sources Found")  # fmt:skip
-            self.logger.debug(f"{frame} SEEING     : {seeing:.3f} arcsec")
-            self.logger.debug(f"{frame} ELONGATION : {self.elongation:.3f}")
-            self.logger.debug(f"{frame} ELLIPTICITY: {self.ellipticity:.3f}")
-            self.logger.debug(f"-" * 60)
-
-            return seeing, reftbl
-
-        except Exception as e:
-            self.logger.error(f"Error in Pre-SExtractor: {e}")
-            return
-
-    def main_sex(self, inim, seeing):
-        try:
-            self.logger.info(f"Start Photometry for {self.config.name}")
-
-            # ------------------------------------------------------------
-            # 	APERTURE SETTING
-            # ------------------------------------------------------------
-            self.logger.debug("Setting Aperture for Photometry.")
-
-            self.seeing = seeing
-            self.peeing = seeing / self.pixscale
-            # 	Aperture Dictionary
-            self.aperture_dict = {
-                "MAG_AUTO": (0.0, "MAG_AUTO DIAMETER [pix]"),
-                "MAG_APER": (
-                    2 * 0.6731 * self.peeing,
-                    "BEST GAUSSIAN APERTURE DIAMETER [pix]",
+        if not os.path.exists(ref_cat) and "gaia" in self.ref_catalog:
+            ref_src_table = phot_utils.parse_gaia_catalogs(
+                target_coord=SkyCoord(
+                    self.image_info.racent, self.image_info.decent, unit="deg"
                 ),
-                "MAG_APER_1": (2 * self.peeing, "2*SEEING APERTURE DIAMETER [pix]"),
-                "MAG_APER_2": (3 * self.peeing, "3*SEEING APERTURE DIAMETER [pix]"),
-                "MAG_APER_3": (
-                    3 / self.pixscale,
-                    """FIXED 3" APERTURE DIAMETER [pix]""",
-                ),
-                "MAG_APER_4": (
-                    5 / self.pixscale,
-                    """FIXED 5" APERTURE DIAMETER [pix]""",
-                ),
-                "MAG_APER_5": (
-                    10 / self.pixscale,
-                    """FIXED 10" APERTURE DIAMETER [pix]""",
-                ),
-            }
-
-            self.add_aperture_dict = {}
-            for key in list(self.aperture_dict.keys()):
-                self.add_aperture_dict[key.replace("MAG_", "")] = (
-                    round(self.aperture_dict[key][0], 3),
-                    self.aperture_dict[key][1],
-                )
-            # 	MAG KEY
-            self.magkeys = list(self.aperture_dict.keys())
-            # 	MAG ERROR KEY
-            # magerrkeys = [key.replace("MAG_", "MAGERR_") for key in self.magkeys]
-            # 	Aperture Sizes
-            aperlist = [self.aperture_dict[key][0] for key in self.magkeys[1:]]
-
-            PHOT_APERTURES = ",".join(map(str, aperlist))
-            # ------------------------------------------------------------
-            # 	SOURCE EXTRACTOR CONFIGURATION FOR PHOTOMETRY
-            # ------------------------------------------------------------
-
-            self.logger.debug("Run Source Extractor for Photometry.")
-
-            sex_config = dict(
-                # ------------------------------
-                # 	CATALOG
-                # ------------------------------
-                # CATALOG_NAME=self.cat,
-                # ------------------------------
-                # 	CONFIG FILES
-                # ------------------------------
-                # CONF_NAME=self.conf,
-                # PARAMETERS_NAME=self.param,
-                # FILTER_NAME=self.conv,
-                # STARNNW_NAME=self.nnw,
-                # ------------------------------
-                # 	EXTRACTION
-                # ------------------------------
-                # PSF_NAME = psf,
-                DETECT_MINAREA=self.phot_conf.DETECT_MINAREA,
-                DETECT_THRESH=self.phot_conf.DETECT_THRESH,
-                DEBLEND_NTHRESH=self.phot_conf.DEBLEND_NTHRESH,
-                DEBLEND_MINCONT=self.phot_conf.DEBLEND_MINCONT,
-                # ------------------------------
-                # 	PHOTOMETRY
-                # ------------------------------
-                # 	DIAMETER
-                # 	OPT.APER, (SEEING x2), x3, x4, x5
-                # 	MAG_APER	OPT.APER
-                # 	MAG_APER_1	OPT.GAUSSIAN.APER
-                # 	MAG_APER_2	SEEINGx2
-                # 	...
-                PHOT_APERTURES=PHOT_APERTURES,
-                SATUR_LEVEL="65000.0",
-                # GAIN = str(gain.value),
-                GAIN=str(self.gain),
-                PIXEL_SCALE=str(self.pixscale),
-                # ------------------------------
-                # 	STAR/GALAXY SEPARATION
-                # ------------------------------
-                SEEING_FWHM="2.0",
-                # ------------------------------
-                # 	BACKGROUND
-                # ------------------------------
-                BACK_SIZE=self.phot_conf.BACK_SIZE,
-                BACK_FILTERSIZE=self.phot_conf.BACK_FILTERSIZE,
-                BACKPHOTO_TYPE=self.phot_conf.BACKPHOTO_TYPE,
-                # ------------------------------
-                # 	CHECK IMAGE
-                # ------------------------------
-                # CHECKIMAGE_TYPE = 'SEGMENTATION,APERTURES,BACKGROUND,-BACKGROUND',
-                # CHECKIMAGE_NAME = '{},{},{},{}'.format(seg, aper, bkg, sub),
+                path_calibration_field=self.config.path.path_calib_field,
+                matching_radius=self.phot_conf.match_radius * 1.5,
+                path_save=ref_cat,
             )
+            ref_src_table.write(ref_cat, overwrite=True)
+        else:
+            ref_src_table = Table.read(ref_cat)
 
-            # 	Add Weight Map from SWarp
-            weightim = inim.replace("com", "weight")
-            if "com" in inim:
-                if os.path.exists(weightim):
-                    sex_config["WEIGHT_TYPE"] = "MAP_WEIGHT"
-                    sex_config["WEIGHT_IMAGE"] = weightim
-            # 	Check Image
-            if self.phot_conf.check == True:
-                sex_config["CHECKIMAGE_TYPE"] = (
-                    "SEGMENTATION,APERTURES,BACKGROUND,-BACKGROUND"
-                )
-                sex_config["CHECKIMAGE_NAME"] = (
-                    f"{self.head}.seg.fits,{self.head}.aper.fits,{self.head}.bkg.fits,{self.head}.sub.fits"
-                )
-            else:
-                pass
+        self.ref_src_table = ref_src_table
 
-            # ------------------------------------------------------------
-            # 	Main Source-extractor Run
-            # ------------------------------------------------------------
+    def calculate_seeing(
+        self, low_mag_cut: float = 11.75, high_mag_cut: float = 18.0
+    ) -> None:
+        """
+        Calculate seeing conditions from stellar sources.
 
-            t0_sex = time.time()
-            # com = phot_util.sexcom(inim, sex_config)
-            # self.logger.debug(com)
-            # sexout = subprocess.getoutput(com)
+        Uses source extraction to identify stars and calculate median FWHM,
+        ellipticity, and elongation values.
 
-            # e.g., ["-key1", "val1", "-key2", "val2"]
-            sex_args = [
-                s for key, val in sex_config.items() for s in (f"-{key}", f"{val}")
-            ]
-            _, sexout = external.sextractor(
-                inim,
-                outcat=self.cat,
-                prefix="main",
-                sex_args=sex_args,
-                logger=self.logger,
-                get_output=True,
-            )
+        Args:
+            low_mag_cut: Lower magnitude limit for star selection
+            high_mag_cut: Upper magnitude limit for star selection
+        """
+        precat = self.file_prefix + ".prep.cat"
 
-            delt_sex = time.time() - t0_sex
-            self.logger.debug(f"SourceExtractor: {delt_sex:.3f} sec")
+        if True:  # Always run sextractor for prep
+            self._run_sextractor(precat, prefix="prep")
+        else:
+            self.obs_src_table = Table.read(precat, format="ascii.sextractor")
 
-            line = [s for s in sexout.split("\n") if "RMS" in s]
-            self.skymed = float(line[0].split("Background:")[1].split("RMS:")[0])
-            self.skysig = float(line[0].split("RMS:")[1].split("/")[0])
-            # os.system(f'rm {seg} {aper} {bkg} {sub}'.format(seg, aper, bkg, sub))
+        self.post_match_table = self.match_ref_catalog(
+            snr_cut=False, low_mag_cut=low_mag_cut
+        )
 
-        except Exception as e:
-            self.logger.error(f"Error in Main SExtractor: {e}")
-            return
+        self.header.seeing = np.median(self.post_match_table["FWHM_WORLD"] * 3600)
+        self.header.peeing = self.header.seeing / self.image_info.pixscale
+        self.header.ellipticity = round(
+            np.median(self.post_match_table["ELLIPTICITY"]), 3
+        )
+        self.header.elongation = round(
+            np.median(self.post_match_table["ELONGATION"]), 3
+        )
 
-    def match_refcat(self, reftbl):
-        setbl = Table.read(self.cat, format="ascii.sextractor")
+        self.logger.debug(f"{len(self.post_match_table)} Star-like Sources Found")
+        self.logger.debug(f"SEEING     : {self.header.seeing:.3f} arcsec")
+        self.logger.debug(f"ELONGATION : {self.header.elongation:.3f}")
+        self.logger.debug(f"ELLIPTICITY: {self.header.ellipticity:.3f}")
 
-        # ------------------------------------------------------------
-        # 	Matching
-        # ------------------------------------------------------------
+    def run_sextractor(self) -> None:
+        """
+        Run source extraction on the image.
 
+        Configures and executes SExtractor with appropriate parameters
+        based on seeing conditions and image characteristics.
+        Updates header with sky background statistics.
+        """
+        self.logger.info(f"Start Source Extractor for {self.name}")
+
+        self.logger.debug("Setting Aperture for Photometry.")
+        sex_args = phot_utils.get_sex_args(
+            self.image,
+            self.phot_conf,
+            self.image_info.gain,
+            self.header.peeing,
+            self.image_info.pixscale,
+        )
+        _, outcome = self._run_sextractor(
+            self.file_prefix + ".cat",
+            prefix="main",
+            sex_args=sex_args,
+            return_output=True,
+        )
+        outcome = [s for s in outcome.split("\n") if "RMS" in s][0]
+        self.header.skymed = float(outcome.split("Background:")[1].split("RMS:")[0])
+        self.header.skysig = float(outcome.split("RMS:")[1].split("/")[0])
+
+    def _run_sextractor(
+        self,
+        output: str,
+        prefix: str = "prep",
+        sex_args: Optional[Dict] = None,
+        **kwargs,
+    ) -> Any:
+        """
+        Execute SExtractor on the image.
+
+        Args:
+            output: Path for output catalog
+            prefix: Prefix for temporary files
+            sex_args: Additional arguments for SExtractor
+            **kwargs: Additional keyword arguments for SExtractor
+
+        Returns:
+            SExtractor execution outcome
+        """
+        self.logger.info(f"Run SExtractor ({prefix}) for {self.name}")
+        outcome = external.sextractor(
+            self.image,
+            outcat=output,
+            prefix=prefix,
+            log_file=self.file_prefix + "_sextractor.log",
+            logger=self.logger,
+            sex_args=sex_args,
+            **kwargs,
+        )
+
+        self.obs_src_table = Table.read(output, format="ascii.sextractor")
+        return outcome
+
+    def match_ref_catalog(
+        self,
+        snr_cut: Union[float, bool] = False,
+        low_mag_cut: Union[float, bool] = False,
+        high_mag_cut: Union[float, bool] = False,
+    ) -> Table:
+        """
+        Match detected sources with reference catalog.
+
+        Applies proper motion corrections and performs spatial matching.
+        Filters matches based on separation, signal-to-noise, and magnitude limits.
+
+        Args:
+            snr_cut: Signal-to-noise ratio cut for filtering
+            low_mag_cut: Lower magnitude limit
+            high_mag_cut: Upper magnitude limit
+
+        Returns:
+            Table of matched sources meeting all criteria
+        """
         self.logger.debug("Matching sources with reference catalog.")
 
-        # 	Proper Motion Correction
-        #   Convert the Observation Time to an Astropy Time object
-        obs_time = Time(self.dateobs, format="isot", scale="utc")
-
-        #   Reference Epoch (Gaia DR3 is J2016.0)
-        epoch_gaia = Time(2016.0, format="jyear")
-
-        #   Get the RA, Dec, Proper Motions, and Parallaxes from the Reference Catalogue
-        ra = reftbl["ra"]  # Unit: degrees
-        dec = reftbl["dec"]  # Unit: degrees
-        pmra = reftbl["pmra"]  # Unit: mas/yr
-        pmdec = reftbl["pmdec"]  # Unit: mas/yr
-        parallax = reftbl["parallax"]  # Unit: mas
-
-        #   Check NaN of None Values for Proper Motions and Parallaxes
-        #   If pmra, pmdec, or parallax is NaN, replace it with None
-        pmra = np.where(np.isnan(pmra), None, pmra)
-        pmdec = np.where(np.isnan(pmdec), None, pmdec)
-        parallax = np.where(np.isnan(parallax), None, parallax)
-
-        #   Generate a SkyCoord Object (Sources without proper motions are treated as None)
-        c_ref = SkyCoord(
-            ra=ra * u.deg,
-            dec=dec * u.deg,
-            pm_ra_cosdec=pmra * u.mas / u.yr if pmra is not None else None,
-            pm_dec=pmdec * u.mas / u.yr if pmdec is not None else None,
-            distance=(1 / (parallax * u.mas)) if parallax is not None else None,
-            obstime=epoch_gaia,
-        )  # Designate the Reference Epoch as J2016.0
-
-        #   Apply Proper Motion Correction to the Reference Epoch
-        c_ref_corrected = c_ref.apply_space_motion(new_obstime=obs_time)
-
-        #   Matching with the Reference Catalogue using Corrected Coordinates
-        c_sex = SkyCoord(setbl["ALPHA_J2000"], setbl["DELTA_J2000"], unit="deg")
-
-        #   Do Matching
-        indx_match, sep, _ = c_sex.match_to_catalog_sky(c_ref_corrected)
-
-        # SourceEXtractor Catalog + Reference Catalog
-        _mtbl = hstack([setbl, reftbl[indx_match]])
-        _mtbl["sep"] = sep.arcsec
-        mtbl = _mtbl[_mtbl["sep"] < self.phot_conf.match_radius]
-        mtbl["within_ellipse"] = phot_util.is_within_ellipse(
-            mtbl["X_IMAGE"],
-            mtbl["Y_IMAGE"],
-            self.xcent,
-            self.ycent,
-            self.phot_conf.photfraction * self.hdr["NAXIS1"] / 2,
-            self.phot_conf.photfraction * self.hdr["NAXIS2"] / 2,
+        coord_ref = SkyCoord(
+            ra=self.ref_src_table["ra"] * u.deg,
+            dec=self.ref_src_table["dec"] * u.deg,
+            pm_ra_cosdec=(
+                self.ref_src_table["pmra"] * u.mas / u.yr
+                if not np.isnan(self.ref_src_table["pmra"]).any()
+                else None
+            ),
+            pm_dec=(
+                self.ref_src_table["pmdec"] * u.mas / u.yr
+                if not np.isnan(self.ref_src_table["pmdec"]).any()
+                else None
+            ),
+            distance=(
+                (1 / (self.ref_src_table["parallax"] * u.mas))
+                if not np.isnan(self.ref_src_table["parallax"]).any()
+                else None
+            ),
+            obstime=Time(2016.0, format="jyear"),
         )
 
-        self.logger.info(f"""Matched Sources: {len(mtbl):_} (r={self.phot_conf.match_radius:.3f}")""")  # fmt:skip
+        obs_time = Time(self.image_info.dateobs, format="isot", scale="utc")
+        coord_ref = coord_ref.apply_space_motion(new_obstime=obs_time)
 
-        for _, magkey in enumerate(self.magkeys):
-            suffix = magkey.replace("MAG_", "")
-            mtbl[f"SNR_{suffix}"] = mtbl[f"FLUX_{suffix}"] / mtbl[f"FLUXERR_{suffix}"]
+        coord_obs = SkyCoord(
+            self.obs_src_table["ALPHA_J2000"],
+            self.obs_src_table["DELTA_J2000"],
+            unit="deg",
+        )
+        index_match, sep, _ = coord_obs.match_to_catalog_sky(coord_ref)
 
-        zp_star_idx = np.where(
-            # 	Star-like Source
-            # (mtbl['CLASS_STAR']>0.9) &
-            (mtbl["FLAGS"] == 0)
-            &
-            # 	Within Ellipse
-            (mtbl["within_ellipse"] == True)
-            &
-            # 	SNR cut
-            (mtbl["SNR_AUTO"] > 20)
-            &
-            # 	Magnitude in Ref. Cat
-            # (mtbl[f'{refmagkey}']<refmagupper) &
-            # (mtbl[f'{refmagkey}']>refmaglower) &
-            # (mtbl[f'{refmagerkey}']<refmaglower)
-            #
-            # (mtbl[refmagkey]>11.75) &
-            (mtbl[self.refmagkey] > self.phot_conf.refmaglower)  # &
-            # (mtbl[refmagkey]<18.0)
+        _post_match_table = hstack(
+            [self.obs_src_table, self.ref_src_table[index_match]]
+        )
+        _post_match_table["sep"] = sep.arcsec
+
+        post_match_table = _post_match_table[
+            _post_match_table["sep"] < self.phot_conf.match_radius
+        ]
+        post_match_table["within_ellipse"] = phot_utils.is_within_ellipse(
+            post_match_table["X_IMAGE"],
+            post_match_table["Y_IMAGE"],
+            self.image_info.xcent,
+            self.image_info.ycent,
+            self.phot_conf.photfraction * self.image_info.naxis1 / 2,
+            self.phot_conf.photfraction * self.image_info.naxis2 / 2,
         )
 
-        zptbl = mtbl[zp_star_idx]
+        suffixes = [
+            key.replace("FLUXERR_", "")
+            for key in post_match_table.keys()
+            if "FLUXERR" in key
+        ]
+
+        for suffix in suffixes:
+            post_match_table[f"SNR_{suffix}"] = (
+                post_match_table[f"FLUX_{suffix}"]
+                / post_match_table[f"FLUXERR_{suffix}"]
+            )
+
+        post_match_table = phot_utils.filter_table(post_match_table, "FLAGS", 0)
+        post_match_table = phot_utils.filter_table(
+            post_match_table, "within_ellipse", True
+        )
+
+        if low_mag_cut:
+            post_match_table = phot_utils.filter_table(
+                post_match_table,
+                self.image_info.ref_mag_key,
+                low_mag_cut,
+                method="lower",
+            )
+
+        if high_mag_cut:
+            post_match_table = phot_utils.filter_table(
+                post_match_table,
+                self.image_info.ref_mag_key,
+                high_mag_cut,
+                method="upper",
+            )
+
+        if snr_cut:
+            post_match_table = phot_utils.filter_table(
+                post_match_table, "SNR_AUTO", snr_cut, method="lower"
+            )
+
+        for key in [
+            "source_id",
+            "bp_rp",
+            "phot_g_mean_mag",
+            f"mag_{self.image_info.filter}",
+        ]:
+            valuearr = self.ref_src_table[key][index_match].data
+            masked_valuearr = MaskedColumn(
+                valuearr, mask=(sep.arcsec > self.phot_conf.match_radius)
+            )
+            self.obs_src_table[key] = masked_valuearr
 
         self.logger.info(
-            f"{len(zptbl)} sources to calibration ZP in {self.config.name}"
+            f"""Matched Sources: {len(post_match_table)} (r={self.phot_conf.match_radius:.3f}")"""
         )
 
-        # Return ZP Table, Source Extractor Table, Matched Index, Separation
-        return zptbl, setbl, indx_match, sep
+        return post_match_table
 
-    def calculate_zp(self, zptbl, setbl):
-        # ------------------------------------------------------------
-        # 	ZEROPOINT CALCULATION
-        # ------------------------------------------------------------
+    def calculate_zp(self) -> Tuple[Dict, Dict]:
+        """
+        Calculate photometric zero point.
+
+        Computes zero points and their errors for different apertures,
+        creates diagnostic plots, and calculates limiting magnitudes.
+
+        Args:
+            zp_src_table: Table of matched sources for ZP calculation
+
+        Returns:
+            Tuple of dictionaries containing zero point and aperture information
+        """
+
+        zp_src_table = self.zp_src_table
+        self.logger.info(
+            f"{len(zp_src_table)} sources to calibration ZP in {self.name}"
+        )
         self.logger.info("Calculating zero points.")
 
-        for _, magkey in enumerate(self.magkeys):
-            magerrkey = magkey.replace("MAG", "MAGERR")
+        aperture = phot_utils.get_aperture_dict(
+            self.header.peeing, self.image_info.pixscale
+        )
 
-            sigma = 2.0
+        zp_dict = {}
+        aper_dict = {}
+        for mag_key in aperture.keys():
+            magerr_key = mag_key.replace("MAG", "MAGERR")
 
-            zparr = zptbl[self.refmagkey] - zptbl[magkey]
-            # zperrarr = tool.sqsum(zptbl[magerrkey], zptbl[refmagerrkey])
-            # 	Temperary zeropoint error!!!!!!
-            zperrarr = phot_util.sqsum(zptbl[magerrkey], np.zeros_like(len(zptbl)))
-
-            zparr_clipped = sigma_clip(
-                zparr, sigma=sigma, maxiters=None, cenfunc=np.median, copy=False
+            zp_arr = zp_src_table[self.image_info.ref_mag_key] - zp_src_table[mag_key]
+            zperr_arr = phot_utils.rss(
+                zp_src_table[magerr_key], np.zeros_like(len(zp_src_table))
             )
 
-            indx_alive = np.where(zparr_clipped.mask == False)
-            indx_exile = np.where(zparr_clipped.mask == True)
+            mask = sigma_clip(zp_arr, sigma=2.0).mask
 
-            # 	RE-DEF. ZP LIST AND INDEXING CLIPPED & NON-CLIPPED
-            zptbl_alive = zptbl[indx_alive]
-            zptbl_exile = zptbl[indx_exile]
+            zp, zperr = phot_utils.compute_median_mad(np.array(zp_arr[~mask].value))
 
-            zp, zperr = phot_util.compute_median_mad(zparr[indx_alive])
+            keys = phot_utils.keyset(mag_key, self.image_info.filter)
+            values = phot_utils.zp_correction(
+                self.obs_src_table[mag_key], self.obs_src_table[magerr_key], zp, zperr
+            )
+            for key, val in zip(keys, values):
+                self.obs_src_table[key] = val
+                self.obs_src_table[key].format = ".3f"
 
-            self.plot_zp(
-                magkey, zp, zperr, zptbl, zparr, zperrarr, zptbl_alive, zptbl_exile
+            if mag_key == "MAG_AUTO":
+                ul_3sig, ul_5sig = 0.0, 0.0
+            else:
+                ul_3sig, ul_5sig = phot_utils.limitmag(
+                    np.array([3, 5]), zp, aperture[mag_key][0], self.header.skysig
+                )
+
+            suffix = mag_key.replace("MAG_", "")
+            aper_dict[suffix] = round(aperture[mag_key][0], 3), aperture[mag_key][1]
+
+            suffix = suffix.replace("APER", "0").replace("0_", "")
+            zp_dict.update(
+                {
+                    f"ZP_{suffix}": (round(zp, 3), f"ZERO POINT for {mag_key}"),
+                    f"EZP_{suffix}": (
+                        round(zperr, 3),
+                        f"ZERO POINT ERROR for {mag_key}",
+                    ),
+                    f"UL3_{suffix}": (
+                        round(ul_3sig, 3),
+                        f"3 SIGMA LIMITING MAG FOR {mag_key}",
+                    ),
+                    f"UL5_{suffix}": (
+                        round(ul_5sig, 3),
+                        f"5 SIGMA LIMITING MAG FOR {mag_key}",
+                    ),
+                }
             )
 
-            self.apply_zp(magkey, magerrkey, zp, zperr, setbl)
+            self.plot_zp(mag_key, zp_src_table, zp_arr, zperr_arr, zp, zperr, mask)
 
-            # self.logger.info(f"{inmagkey} ZP: {zp:.3f}+/-{zperr:.3f}")
+        return (zp_dict, aper_dict)
 
     def plot_zp(
-        self, magkey, zp, zperr, zptbl, zparr, zperrarr, zptbl_alive, zptbl_exile
-    ):
-        # plt.errorbar(zptbl[refmagkey], zparr, xerr=zptbl[refmagerkey], yerr=zperrarr, ls='none', c='grey', alpha=0.5)
+        self,
+        mag_key: str,
+        src_table: Table,
+        zp_arr: np.ndarray,
+        zperr_arr: np.ndarray,
+        zp: float,
+        zperr: float,
+        mask: np.ndarray,
+    ) -> None:
+        """Generates and saves a zero-point calibration plot.
+        The plot shows the zero-point values for each source and the final calibrated zero-point.
+        Sources inside and outside the magnitude limits are plotted with different markers.
+        Parameters
+        ----------
+        mag_key : str
+            Key for the magnitude column in the source table
+        src_table : astropy.table.Table
+            Table containing source measurements and reference magnitudes
+        zp_arr : array-like
+            Array of individual zero-point values for each source
+        zperr_arr : array-like
+            Array of zero-point uncertainties for each source
+        zp : float
+            Final calibrated zero-point value
+        zperr : float
+            Uncertainty in the final zero-point
+        mask : numpy.ndarray
+            Boolean mask indicating which sources are within magnitude limits
+        Returns
+        -------
+        None
+            Saves plot as PNG file in the processed/phot_image directory
+        """
+        ref_mag = src_table[self.image_info.ref_mag_key]
+        obs_mag = src_table[mag_key]
+
         plt.errorbar(
-            zptbl[self.refmagkey],
-            zparr,
+            ref_mag,
+            zp_arr,
             xerr=0,
-            yerr=zperrarr,
+            yerr=zperr_arr,
             ls="none",
             c="grey",
             alpha=0.5,
         )
+
         plt.plot(
-            zptbl_alive[self.refmagkey],
-            zptbl_alive[self.refmagkey] - zptbl_alive[magkey],
+            ref_mag[~mask],
+            ref_mag[~mask] - obs_mag[~mask],
             ".",
             c="dodgerblue",
             alpha=0.75,
             zorder=999,
-            label=f"{len(zptbl_alive)}",
+            label=f"{len(ref_mag[~mask])}",
         )
+
         plt.plot(
-            zptbl_exile[self.refmagkey],
-            zptbl_exile[self.refmagkey] - zptbl_exile[magkey],
+            ref_mag[mask],
+            ref_mag[mask] - obs_mag[mask],
             "x",
             c="tomato",
             alpha=0.75,
-            label=f"{len(zptbl_exile)}",
+            label=f"{len(ref_mag[mask])}",
         )
+
         plt.axhline(
             y=zp, ls="-", lw=1, c="grey", zorder=1, label=f"ZP: {zp:.3f}+/-{zperr:.3f}"
         )
         plt.axhspan(
             ymin=zp - zperr, ymax=zp + zperr, color="silver", alpha=0.5, zorder=0
         )
-        plt.xlabel(self.refmagkey)
-        # plt.xlim([8, 16])
-        # plt.xlim([refmaglower-0.5, refmagupper+0.5])
         plt.axvspan(
             xmin=0,
-            xmax=self.phot_conf.refmaglower,
+            xmax=self.phot_conf.ref_mag_lower,
             color="silver",
             alpha=0.25,
             zorder=0,
         )
         plt.axvspan(
-            xmin=self.phot_conf.refmagupper,
+            xmin=self.phot_conf.ref_mag_upper,
             xmax=25,
             color="silver",
             alpha=0.25,
             zorder=0,
         )
+
         plt.xlim([10, 20])
         plt.ylim([zp - 0.25, zp + 0.25])
-        plt.ylabel(f"ZP_{magkey}")
+
+        plt.xlabel(self.image_info.ref_mag_key)
+        plt.ylabel(f"ZP_{mag_key}")
+
         plt.legend(loc="upper center", ncol=3)
         plt.tight_layout()
-        # im_path = Path(f"{self.head}.fits").parent
+
         im_path = os.path.join(self.config.path.path_processed, "phot_image")
+
         if not os.path.exists(im_path):
             os.makedirs(im_path)
-        # im_mag_name = self.head.replace(str(im_path), "")
-        img_stem = os.path.splitext(os.path.basename(self.im))[0]
-        plt.savefig(f"{im_path}/{img_stem}.{magkey}.png", dpi=100)
+
+        img_stem = os.path.splitext(os.path.basename(self.image))[0]
+        plt.savefig(f"{im_path}/{img_stem}.{mag_key}.png", dpi=100)
         plt.close()
 
-    def apply_zp(self, magkey, magerrkey, zp, zperr, setbl):
-        # 	Apply ZP
-        ##	MAG
-        _calmagkey = f"{magkey}_{self.filte}"
-        _calmagerrkey = f"{magerrkey}_{self.filte}"
-        ##	FLUX
-        _calfluxkey = _calmagkey.replace("MAG", "FLUX")
-        _calfluxerrkey = _calmagerrkey.replace("MAG", "FLUX")
-        ##  SNR
-        _calsnrkey = _calmagkey.replace("MAG", "SNR")
+    def update_header(
+        self,
+        zp_dict: Dict[str, Tuple[float, str]],
+        aper_dict: Dict[str, Tuple[float, str]],
+    ) -> None:
+        """
+        Update the FITS image header with photometry information.
 
-        setbl[_calmagkey] = setbl[magkey] + zp
-        setbl[_calmagerrkey] = phot_util.sqsum(setbl[magerrkey], zperr)
+        Combines header information from multiple sources and updates the FITS file header.
+        This includes photometry statistics, aperture information, and zero point data.
 
-        # 	Flux [uJy]
-        setbl[_calfluxkey] = (setbl[_calmagkey].data * u.ABmag).to(u.uJy).value
-        # setbl[_calfluxerrkey] = setbl[_calfluxkey] * (10**(-0.4 * setbl[inmagerrkey]) - 1)
-        # setbl[_calfluxerrkey] = compute_flux_density_error(magerr=setbl[_calmagerrkey], flux_density=setbl[_calfluxkey])
-        setbl[_calfluxerrkey] = (
-            0.4 * np.log(10) * setbl[_calfluxkey] * setbl[_calmagerrkey]
+        Args:
+            zp_dict: Dictionary containing zero point values and descriptions
+                    Format: {'key': (value, description)}
+            aper_dict: Dictionary containing aperture values and descriptions
+                    Format: {'key': (value, description)}
+        """
+        self.logger.debug(f"Updating Header for {self.name}")
+        header_to_add = {}
+        header_to_add.update(self.header.dict)
+        header_to_add.update(aper_dict)
+        header_to_add.update(zp_dict)
+        update_padded_header(self.image, header_to_add)
+
+    def write_photcat(self) -> None:
+        """
+        Write photometry catalog to disk.
+
+        Saves the source detection and photometry results to a catalog file.
+        The catalog includes all detected sources with their measured properties
+        and calculated photometric values.
+        """
+        metadata = self.image_info.metadata
+        metadata["obs"] = self.config.obs.unit
+        self.obs_src_table.meta = metadata
+        self.obs_src_table.write(
+            self.image.replace(".fits", ".phot.cat"), format="ascii.tab", overwrite=True
+        )
+        self.logger.info(f"Header updated for {self.name}")
+
+
+@dataclass
+class ImageHeader:
+    """Stores image header information related to photometry."""
+
+    author: str = "Gregory S.H. Paek"
+    photime: str = datetime.date.today().isoformat()
+    jd: float = 0.0
+    mjd: float = 0.0
+    seeing: float = 0.0
+    peeing: float = 0.0
+    ellipticity: float = 0.0
+    elongation: float = 0.0
+    skysig: float = 0.0
+    skymed: float = 0.0
+    refcat: str = "GaiaXP"
+    maglow: float = 0.0
+    magup: float = 0.0
+    stdnumb: int = 0
+
+    def __repr__(self) -> str:
+        """Returns a string representation of the ImageHeader."""
+        return ",\n".join(
+            f"  {k}: {v}" for k, v in self.__dict__.items() if not k.startswith("_")
         )
 
-        ## SNR
-        setbl[_calsnrkey] = setbl[_calfluxkey] / setbl[_calfluxerrkey]
-
-        # 	Formatting
-        setbl[_calmagkey].format = ".3f"
-        setbl[_calmagerrkey].format = ".3f"
-        setbl[_calfluxkey].format = ".3f"
-        setbl[_calfluxerrkey].format = ".3f"
-
-        # 	Depth Calculation
-        aperture_size = self.aperture_dict[magkey][0]
-        if magkey == "MAG_AUTO":
-            ul_3sig = 0.0
-            ul_5sig = 0.0
-        else:
-            ul_3sig = phot_util.limitmag(3, zp, aperture_size, self.skysig)
-            ul_5sig = phot_util.limitmag(5, zp, aperture_size, self.skysig)
-
-        # ------------------------------------------------------------
-        #   Update ZP Information to Header
-        # ------------------------------------------------------------
-
-        # 	Header keyword
-        if magkey == "MAG_AUTO":
-            _zpkey = magkey.replace("MAG", "ZP")
-            _zperrkey = magerrkey.replace("MAGERR", "EZP")
-            _ul3key = magkey.replace("MAG", "UL3")
-            _ul5key = magkey.replace("MAG", "UL5")
-        elif magkey == "MAG_APER":
-            _zpkey = magkey.replace("MAG", "ZP").replace("APER", "0")
-            _zperrkey = magerrkey.replace("MAGERR", "EZP").replace("APER", "0")
-            _ul3key = magkey.replace("MAG", "UL3").replace("APER", "0")
-            _ul5key = magkey.replace("MAG", "UL5").replace("APER", "0")
-        else:
-            _zpkey = magkey.replace("MAG", "ZP").replace("APER_", "")
-            _zperrkey = magerrkey.replace("MAGERR", "EZP").replace("APER_", "")
-            _ul3key = magkey.replace("MAG", "UL3").replace("APER_", "")
-            _ul5key = magkey.replace("MAG", "UL5").replace("APER_", "")
-
-        self.zp_dict = {
-            _zpkey: (round(zp, 3), f"ZERO POINT for {magkey}"),
-            _zperrkey: (round(zperr, 3), f"ZERO POINT ERROR for {magkey}"),
-            _ul3key: (round(ul_3sig, 3), f"3 SIGMA LIMITING MAG FOR {magkey}"),
-            _ul5key: (round(ul_5sig, 3), f"5 SIGMA LIMITING MAG FOR {magkey}"),
-        }
-
-        # Return Source Extractor Table
-        return setbl
-
-    def update_header(self, inim, zptbl):
-        self.logger.debug(f"Updating Header for {self.config.name}")
-
-        # ------------------------------------------------------------
-        # 	Header
-        # ------------------------------------------------------------
-        self.header_to_add = {
-            "AUTHOR": ("Gregory S.H. Paek", "PHOTOMETRY AUTHOR"),
-            "PHOTIME": (datetime.date.today().isoformat(), "PHTOMETRY TIME [KR]"),
-            # 	Time
+    @property
+    def dict(self) -> Dict[str, Tuple[Any, str]]:
+        """Generates a dictionary of header information for FITS."""
+        return {
+            "AUTHOR": (self.author, "PHOTOMETRY AUTHOR"),
+            "PHOTIME": (self.photime, "PHTOMETRY TIME [KR]"),
             "JD": (self.jd, "Julian Date of the observation"),
             "MJD": (self.mjd, "Modified Julian Date of the observation"),
-            # 	Image Definition
             "SEEING": (round(self.seeing, 3), "SEEING [arcsec]"),
             "PEEING": (round(self.peeing, 3), "SEEING [pixel]"),
             "ELLIP": (round(self.ellipticity, 3), "ELLIPTICITY 1-B/A [0-1]"),
             "ELONG": (round(self.elongation, 3), "ELONGATION A/B [1-]"),
             "SKYSIG": (round(self.skysig, 3), "SKY SIGMA VALUE"),
             "SKYVAL": (round(self.skymed, 3), "SKY MEDIAN VALUE"),
-            # 	Reference Source Conditions for ZP
-            "REFCAT": (self.phot_conf.refcatname, "REFERENCE CATALOG NAME"),
-            "MAGLOW": (self.phot_conf.refmaglower, "REF MAG RANGE, LOWER LIMIT"),
-            "MAGUP": (self.phot_conf.refmagupper, "REF MAG RANGE, UPPER LIMIT"),
-            "STDNUMB": (len(zptbl), "# OF STD STARS TO CALIBRATE ZP"),
+            "REFCAT": (self.refcat, "REFERENCE CATALOG NAME"),
+            "MAGLOW": (self.maglow, "REF MAG RANGE, LOWER LIMIT"),
+            "MAGUP": (self.magup, "REF MAG RANGE, UPPER LIMIT"),
+            "STDNUMB": (self.stdnumb, "# OF STD STARS TO CALIBRATE ZP"),
         }
 
-        self.header_to_add.update(self.add_aperture_dict)
-        self.header_to_add.update(self.zp_dict)
 
-        # ------------------------------------------------------------
-        # 	ADD HEADER INFO
-        # ------------------------------------------------------------
-        update_padded_header(inim, self.header_to_add)
+@dataclass
+class ImageInfo:
+    """Stores information extracted from a FITS image header."""
 
-    def write_photcat(self, reftbl, setbl, indx_match, sep):
-        # 	Add Reference Catalog Information
-        keys_from_refcat = [
-            "source_id",
-            "bp_rp",
-            "phot_g_mean_mag",
-            f"mag_{self.filte}",
-        ]
+    obj: str  # Object name
+    filter: str  # Filter used
+    dateobs: str  # Observation date/time
+    gain: float  # Gain value
+    naxis1: int  # Image width
+    naxis2: int  # Image height
+    ref_mag_key: str  # Reference magnitude key
+    ref_magerr_key: str  # Reference magnitude error key
+    jd: float  # Julian Date
+    mjd: float  # Modified Julian Date
+    racent: float  # RA of image center
+    decent: float  # DEC of image center
+    xcent: float  # X coordinate of image center
+    ycent: float  # Y coordinate of image center
+    n_binning: int  # Binning factor
+    pixscale: float  # Pixel scale [arcsec/pix]
 
-        # 각 키에 대해 매칭된 값들을 처리
-        #   Operate Matched Values for Each Key
-        for key in keys_from_refcat:
-            valuearr = reftbl[key][indx_match].data  # Extract Matched Values
+    def __repr__(self) -> str:
+        """Returns a string representation of the ImageInfo."""
+        return ",\n".join(
+            f"  {k}: {v}" for k, v in self.__dict__.items() if not k.startswith("_")
+        )
 
-            #  Masking Values Exceeding the Matching Radius
-            masked_valuearr = MaskedColumn(
-                valuearr, mask=(sep.arcsec > self.phot_conf.match_radius)
-            )
-
-            #   Add or Update the Results to Source Extractor Table
-            setbl[key] = masked_valuearr
-
-        # 	Meta data
-        meta_dict = {
-            "obs": self.obs,
+    @property
+    def metadata(self) -> Dict[str, Any]:
+        """Returns a dictionary of metadata."""
+        return {
             "object": self.obj,
-            "filter": self.filte,
-            "date-obs": self.hdr["date-obs"],
+            "filter": self.filter,
+            "date-obs": self.dateobs,
             "jd": self.jd,
             "mjd": self.mjd,
         }
-        setbl.meta = meta_dict
-        setbl.write(f"{self.head}.phot.cat", format="ascii.tab", overwrite=True)
-        self.logger.info(f"Header updated for {self.config.name}")
 
+    @classmethod
+    def parse_image_info(cls, image_path: str, pixscale: float = 0.505) -> "ImageInfo":
+        """Parses image information from a FITS header."""
+        hdr = fits.getheader(image_path)
+        w = WCS(image_path)
 
-# if __name__ == "__main__":
-#     test_phot_loc = "/data/pipeline_reform/processed_test_light/2025-01-01_1x1_gain2750/T00176/7DT11/m850/"
-#     if list(glob(f"{test_phot_loc}*.yml")):
-#         config = list(glob(f"{test_phot_loc}*.yml"))[0]
-#         print(f"Configuration file found: {config}")
-#     else:
-#         print("No configuration file found.")
-#         exit()
-#     photo = Photometry(config)
-#     photo.run()
+        xcent, ycent = hdr["NAXIS1"] / 2.0, hdr["NAXIS2"] / 2.0
+        racent, decent = w.all_pix2world(xcent, ycent, 1)
+        racent = float(racent)
+        decent = float(decent)
+
+        time_obj = Time(hdr["DATE-OBS"], format="isot")
+        jd = float(time_obj.jd)
+        mjd = float(time_obj.mjd)
+
+        return cls(
+            obj=hdr["OBJECT"],
+            filter=hdr["FILTER"],
+            dateobs=hdr["DATE-OBS"],
+            gain=float(hdr["EGAIN"]),
+            naxis1=int(hdr["NAXIS1"]),
+            naxis2=int(hdr["NAXIS2"]),
+            ref_mag_key=f"mag_{hdr['FILTER']}",
+            ref_magerr_key=f"magerr_{hdr['FILTER']}",
+            jd=jd,
+            mjd=mjd,
+            racent=racent,
+            decent=decent,
+            xcent=xcent,
+            ycent=ycent,
+            n_binning=hdr["XBINNING"],
+            pixscale=hdr["XBINNING"] * pixscale,
+        )

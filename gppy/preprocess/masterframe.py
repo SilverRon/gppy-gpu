@@ -4,8 +4,6 @@ import numpy as np
 import eclaire as ec
 from astropy.io import fits
 
-from ..logger import Logger
-
 from ..utils import (
     find_raw_path,
     to_datetime_string,

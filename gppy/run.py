@@ -1,17 +1,17 @@
 __package__ = "gppy"
 
 from .config import Configuration
-from .preprocess.calibration import Calibration
 from .astrometry import Astrometry
 from .photometry.photometry import Photometry
 
-from .preprocess.masterframe import MasterFrameGenerator
+from .preprocess import Calibration, MasterFrameGenerator
 from .const import RAWDATA_DIR
 import time
 
 from watchdog.observers import Observer
 
-from .services.monitor import Monitor, CalibrationData, ObservationData
+from .services.monitor import Monitor
+from .data import ObservationDataSet, CalibrationData
 from .services.queue import QueueManager, Priority
 
 from .logger import Logger
@@ -63,28 +63,19 @@ def run_scidata_reduction(obs_params, queue=False, processes = ["calibration", "
     try:
         config = Configuration(obs_params, logger=logger, overwrite=False, **kwargs)
         if not (config.config.flag.calibration) and "calibration" in processes:
-            calib = Calibration(config, logger=config.logger, queue=queue)
+            calib = Calibration(config, queue=queue)
             calib.run()
             del calib
         if not (config.config.flag.astrometry) and "astrometry" in processes:
-            astrm = Astrometry(config, logger=config.logger, queue=queue)
+            astrm = Astrometry(config, queue=queue)
             astrm.run()
             del astrm
         if not (config.config.flag.single_photometry) and "photometry" in processes:
-            phot = Photometry(config, logger=config.logger, queue=queue)
+            phot = Photometry(config, queue=queue)
             phot.run()
             del phot
     except Exception as e:
         logger.error(f"Error during abrupt stop: {e}")
-
-
-# def run_combined_reduction(obs_params, queue=False, **kwargs):
-#     imcom = Imcombine(config)
-#     imcom.run
-#     photo = Photometry(config)
-#     photo.run()
-#     del imcom, photo
-
 
 def run_pipeline(data, queue: QueueManager):
     """
@@ -92,7 +83,7 @@ def run_pipeline(data, queue: QueueManager):
 
     Handles two primary data types:
     1. CalibrationData: Generates master calibration frames
-    2. ObservationData: Processes scientific observations
+    2. ObservationDataSet: Processes scientific observations
 
     Processing includes:
     - Marking data as processed to prevent reprocessing
@@ -100,53 +91,36 @@ def run_pipeline(data, queue: QueueManager):
     - Supporting Time-On-Target (TOO) observations with high priority
 
     Args:
-        data (CalibrationData or ObservationData): Input data to process
+        data (CalibrationData or ObservationDataSet): Input data to process
         queue (QueueManager): Task queue for managing parallel processing
     """
     if isinstance(data, CalibrationData):
         if not data.processed:
             data.mark_as_processed()
 
-            obs_params = {
-                "date": data.date,
-                "unit": data.unit,
-                "n_binning": data.n_binning,
-                "gain": data.gain,
-            }
-
             queue.add_task(
                 run_masterframe_generator,
-                args=(obs_params,),
+                args=(data.obs_params,),
                 kwargs={"queue": False},
                 gpu=True,
-                task_name=f"{obs_params['date']}_{obs_params['n_binning']}x{obs_params['n_binning']}_gain{obs_params['gain']}_{obs_params['unit']}_masterframe",
+                task_name=data.name,
             )
             time.sleep(0.1)
-    elif isinstance(data, ObservationData):
+    elif isinstance(data, ObservationDataSet):
         for obs in data.get_unprocessed():
-            data.mark_as_processed(obs)
-            obj, filte = obs
+            data.mark_as_processed(obs.identifier)
 
-            obs_params = {
-                "date": data.date,
-                "unit": data.unit,
-                "gain": data.gain,
-                "obj": obj,
-                "filter": filte,
-                "n_binning": data.n_binning,
-            }
-            priority = Priority.HIGH if data.too else Priority.MEDIUM
+            priority = Priority.HIGH if obs.too else Priority.MEDIUM
 
             queue.add_task(
                 run_scidata_reduction,
-                args=(obs_params,),
+                args=(obs.obs_params,),
                 kwargs={"queue": False},
                 priority=priority,
-                task_name=f"{obs_params['date']}_{obs_params['n_binning']}x{obs_params['n_binning']}_gain{obs_params['gain']}_{obs_params['obj']}_{obs_params['unit']}_{obs_params['filter']}",
+                task_name=obs.name,
             )
 
             time.sleep(0.1)
-
 
 def start_monitoring():
     """
@@ -184,7 +158,3 @@ def start_monitoring():
         print("\nMonitoring stopped")
 
     observer.join()
-
-
-if __name__ == "__main__":
-    start_monitoring()

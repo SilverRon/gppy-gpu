@@ -1,0 +1,15 @@
+[build-system]
+requires = ["flit_core >=3.11,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "gppy"
+version = "2.0.0"
+authors = [{name = "7DT pipeline team", email = "7dt.pipeline@gmail.com"}]
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+dynamic = ["version", "description"]
+
+[project.urls]
+Home = "https://7ds.snu.ac.kr/"

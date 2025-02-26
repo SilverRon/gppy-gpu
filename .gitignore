@@ -173,3 +173,4 @@ coadd.weight.fits
 
 # test jupyter notebooks
 **/test*.ipynb
+test/*

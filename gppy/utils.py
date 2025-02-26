@@ -353,7 +353,7 @@ def remove_padding(header):
     return header[: i + 1]
 
 
-def read_head(file):
+def read_header(file):
     """
     Read and clean a FITS header file, normalizing unicode and correcting WCS types.
 
@@ -367,22 +367,27 @@ def read_head(file):
         - Removes non-ASCII characters
         - Converts WCS projection type from TAN to TPV
     """
-    import unicodedata
 
-    with open(file, "r", encoding="utf-8") as f:
-        content = f.read()
+    try:
+        import unicodedata
 
-    # Clean non-ASCII characters
-    cleaned_string = (
-        unicodedata.normalize("NFKD", content).encode("ascii", "ignore").decode("ascii")
-    )
+        with open(file, "r", encoding="utf-8") as f:
+            content = f.read()
 
-    # Correct CTYPE (TAN --> TPV)
-    hdr = fits.Header.fromstring(cleaned_string, sep="\n")
-    hdr["CTYPE1"] = ("RA---TPV", "WCS projection type for this axis")
-    hdr["CTYPE2"] = ("DEC--TPV", "WCS projection type for this axis")
-    return hdr
+        # Clean non-ASCII characters
+        cleaned_string = (
+            unicodedata.normalize("NFKD", content).encode("ascii", "ignore").decode("ascii")
+        )
 
+        # Correct CTYPE (TAN --> TPV)
+        hdr = fits.Header.fromstring(cleaned_string, sep="\n")
+        hdr["CTYPE1"] = ("RA---TPV", "WCS projection type for this axis")
+        hdr["CTYPE2"] = ("DEC--TPV", "WCS projection type for this axis")
+        return hdr
+    except:
+        with fits.open(file, mode="readonly") as hdul:
+            hdr = hdul[0].header
+        return hdr
 
 def update_padded_header(target_fits, header_new):
     """
@@ -426,3 +431,53 @@ def update_padded_header(target_fits, header_new):
                 header.insert(i + j, card)
             else:
                 header.append(card, end=True)
+
+
+class Parse7DS:
+    """
+    Parser for 7DT fits files
+    obsdata: 7DT11_20250102_050704_T00223_m425_1x1_100.0s_0001.fits
+    processed: calib_7DT11_T09282_20241017_060927_m425_100.fits
+    """
+
+    def __init__(self, file):
+        self.path = os.path.abspath(file)
+        self.basename = os.path.basename(file)
+        self.stem, self.ext = os.path.splitext(self.basename)
+        if self.ext != ".fits":
+            raise ValueError("Not a FITS file")
+        self.parts = self.stem.split("_")
+
+        self.type = self.identify_type
+        if self.type == "obsdata":
+            self.parse_obsdata()
+        elif self.type == "processed":
+            self.parse_processed()
+        else:
+            return None
+
+    @property
+    def identify_type(self):
+        if self.stem.startswith("7DT"):
+            return "obsdata"
+        elif self.stem.startswith("calib"):
+            return "processed"
+        else:
+            return None
+
+    def parse_obsdata(self):
+        self.unit = self.parts[0]
+        self.date = self.parts[1]
+        self.time = self.parts[2]
+        self.obj = self.parts[3]
+        self.filter = self.parts[4]
+        self.n_binning = self.parts[5]
+        self.exptime = self.parts[6]
+
+    def parse_processed(self):
+        self.unit = self.parts[1]
+        self.obj = self.parts[2]
+        self.date = self.parts[3]
+        self.time = self.parts[4]
+        self.filter = self.parts[5]
+        self.exptime = self.parts[6]

@@ -12,10 +12,8 @@ import numpy as np
 import time
 
 # time.sleep(60*60*2)
-from datetime import datetime
 
 # ------------------------------------------------------------
-from astropy.table import Table
 from astropy.io import fits
 from astropy.time import Time
 
@@ -44,123 +42,21 @@ plt.rc("font", family="serif")
 # testflag = True
 testflag = False
 # ------------------------------------------------------------
-
-
-# ------------------------------------------------------------
-# 	Functions
-# ------------------------------------------------------------
-def extract_date_and_time(date_obs_str, round_seconds=False):
-    """
-    Extract date and time from the 'DATE-OBS' FITS header keyword value.
-
-    Parameters:
-    date_obs_str (str): The DATE-OBS string, usually in the format 'YYYY-MM-DDTHH:MM:SS.sss'
-    round_seconds (bool): Whether to round the seconds to the nearest whole number
-
-    Returns:
-    str, str: Extracted date and time strings in 'YYYYMMDD' and 'HHMMSS' formats
-    """
-    # Convert the DATE-OBS string to an Astropy Time object
-    time_obj = Time(date_obs_str)
-
-    # Extract the date and time components
-    date_str = time_obj.strftime("%Y%m%d")
-    if round_seconds:
-        time_str = time_obj.strftime("%H%M%S")
-    else:
-        time_str = f"{time_obj.datetime.hour:02}{time_obj.datetime.minute:02}{int(time_obj.datetime.second):02}"
-
-    return date_str, time_str
-
-
-def calc_mean_dateloc(dateloclist):
-
-    # 문자열을 datetime 객체로 변환
-    datetime_objects = [datetime.fromisoformat(t) for t in dateloclist]
-
-    # datetime 객체를 POSIX 시간으로 변환
-    posix_times = [dt.timestamp() for dt in datetime_objects]
-
-    # 평균 POSIX 시간 계산
-    mean_posix_time = np.mean(posix_times)
-
-    # 평균 POSIX 시간을 datetime 객체로 변환
-    mean_datetime = datetime.fromtimestamp(mean_posix_time)
-
-    # 필요한 경우, datetime 객체를 ISOT 형식의 문자열로 변환
-    mean_isot_time = mean_datetime.isoformat()
-    return mean_isot_time
-
-
-def inputlist_gen():
-    """
-    A makeshift function for testing.
-    To be deleted in a real pipeline
-    """
-    from glob import glob
-    from pathlib import Path
-
-    datadir = Path("/data3/dhhyun/7DTStackCode/mytest/data/NGC0253/7DT01/m650")
-    filelist = glob(str(datadir / "calib*0.fits"))
-    with open(datadir / "inputlist.txt", "w") as f:
-        f.write("file\n")
-        for filename in filelist:
-            f.write(filename + "\n")
-
-
-def inputlist_parser(imagelist_file_to_stack):
-    if os.path.exists(imagelist_file_to_stack):
-        print(f"{imagelist_file_to_stack} found!")
-    else:
-        print(f"Not Found {imagelist_file_to_stack}!")
-        sys.exit()
-    input_table = Table.read(imagelist_file_to_stack, format="ascii")
-    # input_table = Table.read(imagelist_file_to_stack, format="ascii.commented_header")
-    _files = [f for f in input_table["file"].data]
-    return _files
-
-
-def unpack(packed, type, ex=None):
-    if len(packed) != 1:
-        print(f"There are more than one ({len(packed)}) {type}s")
-        unpacked = input(
-            f"Type {type.upper()} name (e.g. {packed if ex is None else ex}):"
-        )
-    else:
-        unpacked = packed[0]
-    return unpacked
-    # return float(unpacked)
+from ..const import REF_DIR
+from ..config import Configuration
+from .utils import extract_date_and_time, calc_mean_dateloc, inputlist_parser, unpack
 
 
 class SwarpCom:
-    def run(self):
-        # Setting Keywords
-        # - the code should run without it but it allows more control
-        # self.update_keys()
-
-        # also you can do
-        # self.zpkey = 'ZP'
-
-        # sets miscellaneous variables
-        ic = self.set_imcollection()
-
-        # background subtraction
-        self.bkgsub()
-
-        # zero point scaling
-        self.zpscale()
-
-        # swarp imcombine
-        self.swarp_imcom()
-
-    def __init__(self, imagelist_file_to_stack=None) -> None:
+    def __init__(self, imagelist_file=None) -> None:
         # ------------------------------------------------------------
         # 	Path
         # ------------------------------------------------------------
-        self.path_config = "./config"
 
-        if imagelist_file_to_stack is None:
-            imagelist_file_to_stack = input(f"Image List to Stack (/data/data.txt):")
+        if imagelist_file is None:
+            imagelist_file = input(
+                f"Text File Containing Images to Stack (/data/data.txt):"
+            )
 
         # not used?
         # self.path_calib = '/large_data/processed'
@@ -193,7 +89,7 @@ class SwarpCom:
         # 	Universal Facility Name
         self.obs = "7DT"
 
-        self.keys_to_remember = [
+        self.ic_keys = [
             "EGAIN",
             "TELESCOP",
             "EGAIN",
@@ -251,13 +147,33 @@ class SwarpCom:
             "SWCREATE",
         ]
 
-        self._files = inputlist_parser(imagelist_file_to_stack)
+        self._files = inputlist_parser(imagelist_file)
 
         if testflag:
             self._files = self._files[:3]
 
+    def run(self):
+        # Setting Keywords
+        # - the code should run without it but it allows more control
+        # self.update_keys()
+
+        # also you can do
+        # self.zpkey = 'ZP'
+
+        # sets miscellaneous variables
+        ic = self.set_imcollection()
+
+        # background subtraction
+        self.bkgsub()
+
+        # zero point scaling
+        self.zpscale()
+
+        # swarp imcombine
+        self.swarp_imcom()
+
     def update_keys(self, new_keys):
-        self.keys_to_remember = new_keys
+        self.ic_keys = new_keys
 
     def update_keywords(self, new_keywords):
         self.keywords_to_add = new_keywords
@@ -269,7 +185,7 @@ class SwarpCom:
         print(f"Reading images... (takes a few mins)")
 
         # 	Get Image Collection (takes some time)
-        ic = ImageFileCollection(filenames=self._files, keywords=self.keys_to_remember)
+        ic = ImageFileCollection(filenames=self._files, keywords=self.ic_keys)
 
         summary_table = ic.summary
         filtered_table = ic.summary[~ic.summary[self.zpkey].mask]
@@ -467,7 +383,7 @@ class SwarpCom:
         # 	SWarp
         # swarpcom = f"swarp -c {path_config}/7dt.swarp @{path_imagelist} -IMAGEOUT_NAME {comim} -CENTER_TYPE MANUAL -CENTER {center} -SUBTRACT_BACK N -RESAMPLE_DIR {path_resamp} -GAIN_KEYWORD EGAIN -GAIN_DEFAULT {gain_default} -FSCALE_KEYWORD FAKE -WEIGHTOUT_NAME {weightim}"
         swarpcom = (
-            f"swarp -c {self.path_config}/7dt.swarp @{self.path_imagelist} "
+            f"swarp -c {REF_DIR}/7dt.swarp @{self.path_imagelist} "
             f"-IMAGEOUT_NAME {comim} -CENTER_TYPE MANUAL -CENTER {center} "
             f"-SUBTRACT_BACK N -RESAMPLE_DIR {self.path_resamp} "
             f"-GAIN_KEYWORD EGAIN -GAIN_DEFAULT {self.gain_default} "
@@ -545,6 +461,35 @@ class SwarpCom:
         delt_stack = time.time() - t0_stack
 
         print(f"Time to stack {self.n_stack} images: {delt_stack:.3f} sec")
+
+
+class Combine:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def from_list(cls, images):
+        image_list = []
+
+        with open(datadir / "inputlist.txt", "w") as f:
+            f.write("file\n")
+            for filename in filelist:
+                f.write(filename + "\n")
+
+        for image in images:
+            path = Path(image)
+            if not path.is_file():
+                print("The file does not exist.")
+                return None
+            image_list.append(path.parts[-1])
+        working_dir = str(path.parent.absolute())
+        config = Configuration.base_config(working_dir)
+        config.file.processed_files = image_list
+        return cls(config=config)
+
+    @classmethod
+    def from_file(cls, image):
+        return cls.from_list([image])
 
 
 #   Example

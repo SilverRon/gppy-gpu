@@ -1,148 +1,122 @@
-from pathlib import Path
-import datetime
-import yaml
 import numpy as np
+from numba import njit
 from astropy.table import Table, hstack, vstack, unique
 from astropy.coordinates import SkyCoord
-from ..const import REF_DIR, FACTORY_DIR
-
-from dataclasses import dataclass
+from typing import Any, Tuple, Optional, Dict, Union
 
 
-def log2tmp(command, label):
-    path_root = Path(FACTORY_DIR).resolve()
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    path_tmp = path_root / "_tmp"  # MODIFICATION REQUIRED
-    if not path_tmp.exists():
-        path_tmp.mkdir()
-    sexlog = str(path_tmp / f"{label}_{timestamp}.log")
-    # stderr is logged with stdout
-    new_com = f"{command} > {sexlog} 2>&1"
-    return new_com
+@njit
+def rss(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """
+    Calculate Root Sum Square of two arrays.
+
+    Args:
+        a: First input array
+        b: Second input array
+
+    Returns:
+        Root sum square of inputs: sqrt(a^2 + b^2)
+    """
+    return np.sqrt(np.nan_to_num(a) ** 2.0 + np.nan_to_num(b) ** 2.0)
 
 
-def file2dict(path_infile):
-    out_dict = dict()
-    f = open(path_infile)
-    for line in f:
-        key, val = line.split()
-        out_dict[key] = val
-    return out_dict
+@njit
+def is_within_ellipse(
+    x: np.ndarray, y: np.ndarray, center_x: float, center_y: float, a: float, b: float
+) -> np.ndarray:
+    """
+    Check if points lie within an ellipse.
 
+    Args:
+        x, y: Arrays of point coordinates
+        center_x, center_y: Ellipse center coordinates
+        a, b: Semi-major and semi-minor axes
 
-def is_within_ellipse(x, y, center_x, center_y, a, b):
+    Returns:
+        Boolean array indicating points inside ellipse
+    """
     term1 = ((x - center_x) ** 2) / (a**2)
     term2 = ((y - center_y) ** 2) / (b**2)
     return term1 + term2 <= 1
 
 
-def weighted_median(values, errors):
-    #   Calculate weights using the inverse of the errors
-    weights = 1.0 / np.array(errors)
-    #   Calculate the median
-    median = np.median(values)
-    #   Calculate the deviations from the median
-    deviations = np.abs(values - median)
-    #   Calculate the weighted median
-    weighted_median = np.median(deviations * weights)
-    return median, weighted_median
+@njit
+def compute_median_mad(values: np.ndarray) -> tuple:
+    """
+    Compute median and Median Absolute Deviation (MAD).
 
+    Args:
+        values: Input array
 
-def compute_median_mad(values):
-    if isinstance(values, np.ma.MaskedArray):
-        values = values.data
+    Returns:
+        Tuple of (median, MAD)
+    """
     median = np.median(values)
     mad = np.median(np.abs(values - median))
     return median, mad
 
 
-def compute_flux_density_error(magerr, flux_density):
-    flux_density_error = (2.5 / np.log(10)) * (flux_density) * magerr
-    return flux_density_error
-
-
-def correct_flux_excess_factor(bp_rp, phot_bp_rp_excess_factor):
+@njit
+def limitmag(N: np.ndarray, zp: float, aper: float, skysigma: float) -> np.ndarray:
     """
-    Calculate the corrected flux excess factor for the input Gaia EDR3 data.
+    Calculate limiting magnitude.
 
-    Parameters
-    ----------
-
-    bp_rp: float, numpy.ndarray
-        The (BP-RP) colour listed in the Gaia EDR3 archive.
-    phot_bp_rp_excess_factor: float, numpy.ndarray
-        The flux excess factor listed in the Gaia EDR3 archive.
-
-    Returns
-    -------
-
-    The corrected value for the flux excess factor, which is zero for "normal" stars.
-
-    Example
-    -------
-
-    phot_bp_rp_excess_factor_corr = correct_flux_excess_factor(bp_rp, phot_bp_rp_flux_excess_factor)
-    """
-
-    if np.isscalar(bp_rp) or np.isscalar(phot_bp_rp_excess_factor):
-        bp_rp = np.float64(bp_rp)
-        phot_bp_rp_excess_factor = np.float64(phot_bp_rp_excess_factor)
-
-    if bp_rp.shape != phot_bp_rp_excess_factor.shape:
-        raise ValueError("Function parameters must be of the same shape!")
-
-    do_not_correct = np.isnan(bp_rp)
-    bluerange = np.logical_not(do_not_correct) & (bp_rp < 0.5)
-    greenrange = np.logical_not(do_not_correct) & (bp_rp >= 0.5) & (bp_rp < 4.0)
-    redrange = np.logical_not(do_not_correct) & (bp_rp >= 4.0)
-
-    correction = np.zeros_like(bp_rp)
-    correction[bluerange] = (
-        1.154360
-        + 0.033772 * bp_rp[bluerange]
-        + 0.032277 * np.power(bp_rp[bluerange], 2)
-    )
-    correction[greenrange] = (
-        1.162004
-        + 0.011464 * bp_rp[greenrange]
-        + 0.049255 * np.power(bp_rp[greenrange], 2)
-        - 0.005879 * np.power(bp_rp[greenrange], 3)
-    )
-    correction[redrange] = 1.057572 + 0.140537 * bp_rp[redrange]
-
-    return phot_bp_rp_excess_factor - correction
-
-
-def sqsum(a, b):
-    """
-    SQUARE SUM
-    USEFUL FOR CALC. ERROR
-    """
-    return np.sqrt(a**2.0 + b**2.0)
-
-
-def merge_catalogs(
-    target_coord, path_calibration_field, matching_radius=1.0, path_save="./ref.cat"
-):
-    """
-    지정된 좌표 근처의 Gaia DR3 카탈로그 소스를 가져와서 합치는 함수입니다.
-
-    Parameters:
-    - target_coord: astropy.coordinates.SkyCoord, 대상 좌표
-    - field_name: str, 필드 이름
-    - path_calibration_field: str, 카탈로그 파일이 있는 디렉토리 경로
-    - matching_radius: float, 매칭 반경(단위: degree)
-    - filters: list, 사용할 필터 목록. None일 경우 모든 필터 사용
-    - path_save: str, 결과를 저장할 경로. None일 경우 현재 경로에 저장
+    Args:
+        N: Signal-to-noise ratio array
+        zp: Zero point
+        aper: Aperture diameter
+        skysigma: Sky background sigma
 
     Returns:
-    - None
+        Array of limiting magnitudes
     """
-    # Grid table 읽기
+    R = aper / 2.0  # Convert to radius
+    braket = N * skysigma * np.sqrt(np.pi * R**2)
+    upperlimit = zp - 2.5 * np.log10(braket)
+    return np.round(upperlimit, 3)
+
+
+@njit
+def zp_correction(
+    mag: np.ndarray, mag_err: np.ndarray, zp: float, zperr: float
+) -> tuple:
+    """
+    Apply zero point correction to magnitudes.
+
+    Args:
+        mag: Magnitude array
+        mag_err: Magnitude error array
+        zp: Zero point value
+        zperr: Zero point error
+
+    Returns:
+        Tuple of (corrected_mag, corrected_err, flux, flux_err, SNR)
+    """
+    mag = mag + zp
+    mag_err = mag_err + zperr
+    flux = 10 ** ((23.9 - mag) / 2.5)
+    flux_err = 0.4 * np.log(10) * flux * mag_err
+    snr = flux / flux_err
+    return mag, mag_err, flux, flux_err, snr
+
+
+def parse_gaia_catalogs(target_coord, path_calibration_field, matching_radius=1.0):
+    """
+    Merge Gaia DR3 catalog sources near the specified coordinates.
+
+    Parameters:
+        target_coord (astropy.coordinates.SkyCoord): Target coordinates
+        path_calibration_field (str): Directory path containing catalog files
+        matching_radius (float): Matching radius in degrees
+        path_save (str): Path to save the results. If None, saves in current directory
+
+    Returns:
+        astropy.table.Table: Combined reference catalog table
+    """
+
     grid_table = Table.read(f"{path_calibration_field}/grid.csv")
     c_grid = SkyCoord(grid_table["center_ra"], grid_table["center_dec"], unit="deg")
 
-    # 매칭 반경 내에서 grid 찾기
     sep_arr = target_coord.separation(c_grid).deg
     indx_match = np.where(sep_arr < matching_radius)
     matched_grid_table = grid_table[indx_match]
@@ -197,125 +171,118 @@ def merge_catalogs(
     return all_reftbl
 
 
-def sexcom(inim, param_insex, dualmode=False):
-    """Deprecated"""
-
-    with open(f"{REF_DIR}/srcExt/default_sex.yml", "r") as f:
-        param_sex = yaml.safe_load(f)
-
-    for key in param_insex.keys():
-        param_sex[key] = param_insex[key]
-
-    sexcom_normal = "source-extractor -c {} {} ".format(param_sex["CONF_NAME"], inim)
-    sexcom_dual = "source-extractor -c {} {} ".format(param_sex["CONF_NAME"], inim)
-    for key in param_sex.keys():
-        if key != "CONF_NAME":
-            sexcom_normal += "-{} {} ".format(key, param_sex[key])
-
-    return sexcom_normal
-
-
-# -------------------------------------------------------------------------#
-def limitmag(N, zp, aper, skysigma):  # 3? 5?, zp, diameter [pixel], skysigma
-    import numpy as np
-
-    R = float(aper) / 2.0  # to radius
-    braket = N * skysigma * np.sqrt(np.pi * (R**2))
-    upperlimit = float(zp) - 2.5 * np.log10(braket)
-    return round(upperlimit, 3)
-
-
-@dataclass
-class ImageConfig:
-    """Image information extracted from FITS header"""
-
-    obj: str  # Object name
-    filte: str  # Filter used
-    dateobs: str  # Observation date/time
-    gain: float  # Gain value
-    naxis1: int  # Image width
-    naxis2: int  # Image height
-    jd: float  # Julian Date
-    mjd: float  # Modified Julian Date
-    racent: float  # RA of image center
-    decent: float  # DEC of image center
-    xcent: float  # X coordinate of image center
-    ycent: float  # Y coordinate of image center
-    n_binning: int  # Binning factor
-    pixscale: float  # Pixel scale [arcsec/pix]
-
-
-def parse_image_config(image_path, pixscale=0.505):
+def filter_table(table: Table, key: str, value: Any, method: str = "equal") -> Table:
     """
-    Extract and return image information from FITS header.
+    Filter table based on column values.
 
     Args:
-        image_path: Path to the FITS image file
+        table: Input table
+        key: Column name to filter on
+        value: Value to compare against
+        method: Comparison method ('equal', 'lower', or 'upper')
 
     Returns:
-        ImageInfo object containing extracted header information
-
-    Raises:
-        FITSError: If there's an error reading the FITS file
-        WCSError: If there's an error with WCS information
-        HeaderError: If required header keywords are missing
+        Filtered table
     """
-    try:
-        hdr = fits.getheader(image_path)
+    if method == "equal":
+        return table[table[key] == value]
+    elif method == "lower":
+        return table[table[key] > value]
+    elif method == "upper":
+        return table[table[key] < value]
+    else:
+        raise ValueError("method must be 'equal', 'lower', or 'upper'")
 
-        # Initialize WCS
-        try:
-            w = WCS(image_path)
-        except Exception as e:
-            raise WCSError(f"Error initializing WCS: {str(e)}")
 
-        # Extract required header values with validation
-        required_keys = ["OBJECT", "FILTER", "DATE-OBS", "EGAIN", "NAXIS1", "NAXIS2"]
-        missing_keys = [key for key in required_keys if key not in hdr]
+def keyset(mag_key: str, filter: str) -> list:
+    """
+    Generate photometry key names for a given filter.
 
-        if missing_keys:
-            raise HeaderError(
-                f"Missing required header keywords: {', '.join(missing_keys)}"
-            )
+    Args:
+        mag_key: Base magnitude key
+        filter: Filter name
 
-        # Calculate center coordinates
-        xcent, ycent = hdr["NAXIS1"] / 2.0, hdr["NAXIS2"] / 2.0
-        try:
-            racent, decent = w.all_pix2world(xcent, ycent, 1)
-            racent = float(racent)  # Convert from numpy type
-            decent = float(decent)  # Convert from numpy type
-        except Exception as e:
-            raise WCSError(f"Error calculating center coordinates: {str(e)}")
+    Returns:
+        List of keys for magnitude, error, flux, flux error, and SNR
+    """
+    _magkey = f"{mag_key}_{filter}"
+    _magerrkey = _magkey.replace("MAG", "MAGERR")
+    _fluxkey = _magkey.replace("MAG", "FLUX")
+    _fluxerrkey = _magerrkey.replace("MAG", "FLUX")
+    _snrkey = _magkey.replace("MAG", "SNR")
+    return [_magkey, _magerrkey, _fluxkey, _fluxerrkey, _snrkey]
 
-        # Calculate dates
-        try:
-            time_obj = Time(hdr["DATE-OBS"], format="isot")
-            jd = float(time_obj.jd)  # Convert from numpy type
-            mjd = float(time_obj.mjd)  # Convert from numpy type
-        except Exception as e:
-            raise HeaderError(f"Error processing observation date: {str(e)}")
 
-        # Create and return ImageInfo object
-        return ImageConfig(
-            obj=hdr["OBJECT"],
-            filte=hdr["FILTER"],
-            dateobs=hdr["DATE-OBS"],
-            gain=float(hdr["EGAIN"]),
-            naxis1=int(hdr["NAXIS1"]),
-            naxis2=int(hdr["NAXIS2"]),
-            jd=jd,
-            mjd=mjd,
-            racent=racent,
-            decent=decent,
-            xcent=xcent,
-            ycent=ycent,
-            n_binning=hdr["XBINNING"],
-            pixscale=hdr["XBINNING"] * pixscale,
+def get_aperture_dict(peeing: float, pixscale: float) -> dict:
+    """
+    Generate dictionary of aperture configurations.
+
+    Args:
+        peeing: Seeing in pixels
+        pixscale: Pixel scale in arcsec/pixel
+
+    Returns:
+        Dictionary of aperture configurations
+    """
+    aperture_dict = {
+        "MAG_AUTO": (0.0, "MAG_AUTO DIAMETER [pix]"),
+        "MAG_APER": (2 * 0.6731 * peeing, "BEST GAUSSIAN APERTURE DIAMETER [pix]"),
+        "MAG_APER_1": (2 * peeing, "2*SEEING APERTURE DIAMETER [pix]"),
+        "MAG_APER_2": (3 * peeing, "3*SEEING APERTURE DIAMETER [pix]"),
+        "MAG_APER_3": (3 / pixscale, """FIXED 3" APERTURE DIAMETER [pix]"""),
+        "MAG_APER_4": (5 / pixscale, """FIXED 5" APERTURE DIAMETER [pix]"""),
+        "MAG_APER_5": (10 / pixscale, """FIXED 10" APERTURE DIAMETER [pix]"""),
+    }
+    return aperture_dict
+
+
+def get_sex_args(
+    image: str, phot_conf: Any, gain: float, peeing: float, pixscale: float
+) -> list:
+    """
+    Generate SExtractor configuration arguments.
+
+    Args:
+        image: Path to image file
+        phot_conf: Photometry configuration object
+        gain: CCD gain value
+        peeing: Seeing in pixels
+        pixscale: Pixel scale in arcsec/pixel
+
+    Returns:
+        List of SExtractor command line arguments
+    """
+    aperture_dict = get_aperture_dict(peeing, pixscale)
+
+    magkeys = list(aperture_dict.keys())
+    aperlist = [aperture_dict[key][0] for key in magkeys[1:]]
+
+    PHOT_APERTURES = ",".join(map(str, aperlist))
+
+    sex_config = {}
+    sex_config["PHOT_APERTURES"] = PHOT_APERTURES
+    sex_config["SATUR_LEVEL"] = "65000.0"
+    sex_config["GAIN"] = str(gain)
+    sex_config["PIXEL_SCALE"] = str(pixscale)
+    sex_config["SEEING_FWHM"] = "2.0"
+
+    for key in phot_conf.sex_vars.keys():
+        sex_config[key] = phot_conf.sex_vars[key]
+
+    # 	Add Weight Map from SWarp
+    weightim = image.replace("com", "weight")
+    if "com" in image and os.path.exists(weightim):
+        sex_config["WEIGHT_TYPE"] = "MAP_WEIGHT"
+        sex_config["WEIGHT_IMAGE"] = weightim
+    # 	Check Image
+    if phot_conf.check == True:
+        sex_config["CHECKIMAGE_TYPE"] = "SEGMENTATION,APERTURES,BACKGROUND,-BACKGROUND"
+        sex_config["CHECKIMAGE_NAME"] = (
+            f"{self.head}.seg.fits,{self.head}.aper.fits,{self.head}.bkg.fits,{self.head}.sub.fits"
         )
+    else:
+        pass
 
-    except (FITSError, WCSError, HeaderError):
-        # Re-raise these custom exceptions
-        raise
-    except Exception as e:
-        # Catch any other unexpected errors
-        raise FITSError(f"Unexpected error reading FITS file: {str(e)}")
+    sex_args = [s for key, val in sex_config.items() for s in (f"-{key}", f"{val}")]
+
+    return sex_args

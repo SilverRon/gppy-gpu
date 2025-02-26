@@ -1,10 +1,14 @@
 import os
-from typing import Any, List, Tuple, Optional, Union
-from .const import FACTORY_DIR, REF_DIR
+import re
+from typing import Any, List, Tuple, Union
+from pathlib import Path
+import glob
+import time
 from .services.queue import QueueManager, Priority
 from . import external
 from .services.memory import MemoryMonitor
 from .config import Configuration
+from .data import ObservationData
 
 
 class Astrometry:
@@ -40,23 +44,48 @@ class Astrometry:
         # Load Configuration
         if isinstance(config, str):  # In case of File Path
             self.config = Configuration(config_source=config).config
+        elif hasattr(config, "config"):
+            self.config = config.config  # for easy access to config
         else:
-            # for easy access to config
-            self.config = config.config
+            self.config = config
 
         # Setup log
         self.logger = logger or self._setup_logger(config)
-        
+
         # Setup queue
         self.queue = self._setup_queue(queue)
- 
+
         os.makedirs(self.config.path.path_factory, exist_ok=True)
+
+    @classmethod
+    def from_list(cls, images):
+        image_list = []
+        for image in images:
+            path = Path(image)
+            if not path.is_file():
+                print("The file does not exist.")
+                return None
+            image_list.append(path.parts[-1])
+        working_dir = str(path.parent.absolute())
+        config = Configuration.base_config(working_dir)
+        config.file.processed_files = image_list
+        return cls(config=config)
+
+    @classmethod
+    def from_file(cls, image):
+        return cls.from_list([image])
+
+    @classmethod
+    def from_dir(cls, dir_path):
+        image_list = glob.glob(f"{dir_path}/*.fits")
+        return cls.from_list(image_list)
 
     def _setup_logger(self, config):
         if hasattr(config, "logger") and config.logger is not None:
             return config.logger
-        
-        from ..logger import Logger
+
+        from .logger import Logger
+
         return Logger(name="7DT pipeline logger", slack_channel="pipeline_report")
 
     def _setup_queue(self, queue):
@@ -72,7 +101,7 @@ class Astrometry:
         solve_field: bool = True,
         joint_scamp: bool = True,
         use_missfits: bool = False,
-        processes = ["solved_fit", "sextractor", "scamp", "header_update"],
+        processes=["sextractor", "scamp", "header_update"],
         prefix: str = "prep",
     ) -> None:
         """Execute the complete astrometry pipeline.
@@ -89,12 +118,13 @@ class Astrometry:
         """
         try:
             self.logger.info("-" * 80)
+            start_time = time.time()
             self.logger.info(f"Start astrometry for {self.config.name}")
 
             solved_files, soft_links, inims = self.define_paths()
 
             # solve-field
-            if solve_field and "solve_field" in processes:
+            if solve_field:
                 self.run_solve_field(soft_links, solved_files)
             else:
                 # add manual WCS update feature
@@ -108,11 +138,20 @@ class Astrometry:
                 self.run_scamp(solved_files, joint=joint_scamp, prefix=prefix)
 
             if "header_update" in processes:
-                self.update_header( 
-                    solved_files, inims, soft_links, use_missfits=use_missfits, prefix=prefix)
+                self.update_header(
+                    solved_files,
+                    inims,
+                    soft_links,
+                    use_missfits=use_missfits,
+                    prefix=prefix,
+                )
 
             self.config.flag.astrometry = True
-            self.logger.info(f"Astrometry Done for {self.config.name}")
+
+            end_time = time.time()
+            self.logger.info(
+                f"Astrometry Done for {self.config.name} in {end_time - start_time:.2f} seconds"
+            )
             MemoryMonitor.cleanup_memory()
             self.logger.debug(MemoryMonitor.log_memory_usage)
         except Exception as e:
@@ -172,7 +211,7 @@ class Astrometry:
                     dump_dir=self.config.path.path_factory,
                     pixscale=self.config.obs.pixscale,
                 )
-                self.logger.info(f"Completed solve-field for {self.config.name} [{i+1}/{len(solved_files)}]")  # fmt:skip
+                self.logger.info(f"Completed solve-field for {self.config.name} [{i+1}/{len(inputs)}]")  # fmt:skip
                 self.logger.debug(f"input: {slink}, output: {sfile}")  # fmt:skip
 
         self.logger.debug(MemoryMonitor.log_memory_usage)
@@ -214,8 +253,13 @@ class Astrometry:
 
         self.logger.debug(MemoryMonitor.log_memory_usage)
 
-
-    def run_scamp(self, files: List[str], joint: bool = True, prefix: str = "prep") -> None:
+    def run_scamp(
+        self,
+        files: List[str],
+        joint: bool = True,
+        prefix: str = "prep",
+        astrefcat: str = None,
+    ) -> None:
         """Run SCAMP for astrometric calibration.
 
         Performs astrometric calibration using SCAMP, either jointly on all images
@@ -229,9 +273,16 @@ class Astrometry:
         self.logger.debug(MemoryMonitor.log_memory_usage)
 
         presex_cats = [os.path.splitext(s)[0] + f".{prefix}.cat" for s in files]
-        
+
+        # use local astrefcat if tile obs
+        obj = ObservationData(files[0]).obj
+        if re.match(r"T\d{5}", obj):
+            astrefcat = os.path.join(self.config.path.path_astrefcat, f"{obj}.fits")
+            self.config.path.path_astrefcat = astrefcat
+
         # scamp
         if joint:
+            # write target files into a text file
             cat_to_scamp = os.path.join(
                 self.config.path.path_factory, "scamp_input.cat"
             )
@@ -239,14 +290,15 @@ class Astrometry:
                 for precat in presex_cats:
                     f.write(f"{precat}\n")
 
-            external.scamp(cat_to_scamp, joint=joint)
+            # @ is astromatic syntax.
+            external.scamp(cat_to_scamp, local_astref=astrefcat)
 
         elif self.queue:
-            self._submit_task(external.scamp, presex_cats, joint=joint)
+            self._submit_task(external.scamp, presex_cats, local_astref=astrefcat)
 
         else:
             for precat in presex_cats:
-                external.scamp(precat, joint=joint)
+                external.scamp(precat, local_astref=astrefcat)
                 self.logger.info(f"Completed scamp for {precat}]")  # fmt:skip
                 self.logger.debug(f"{precat}")  # fmt:skip
 
@@ -287,12 +339,12 @@ class Astrometry:
                 )  # soft_link changes to a wcs-updated fits file
                 os.system(f"mv {output} {inim}")  # overwrite (inefficient)
         else:
-            from .utils import read_head, update_padded_header
+            from .utils import read_header, update_padded_header
 
             # update img in processed directly
             for solved_head, target_fits in zip(solved_heads, inims):
                 # update_scamp_head(target_fits, head_file)
-                solved_head = read_head(solved_head)
+                solved_head = read_header(solved_head)
                 update_padded_header(target_fits, solved_head)
 
         self.logger.info("Header WCS Updated.")
@@ -326,3 +378,22 @@ class Astrometry:
             task_ids.append(task_id)
 
         self.queue.wait_until_task_complete(task_ids)
+
+
+# ad-hoc
+def astrometry_single(file, ahead=None):
+    from .utils import read_header, update_padded_header
+
+    solved_file = external.solve_field(file)
+
+    outcat = external.sextractor(
+        solved_file, prefix="prep", sex_args=["-catalog_type", "fits_ldac"]
+    )
+
+    solved_head = external.scamp(outcat, ahead=ahead)
+
+    update_padded_header(file, read_header(solved_head))
+
+    outcat = external.sextractor(solved_file, prefix="main")
+
+    return outcat

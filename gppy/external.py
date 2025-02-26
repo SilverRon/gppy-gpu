@@ -124,25 +124,39 @@ def solve_field(
     return outname
 
 
-def scamp(cat, ahead=None, joint=False):
+def scamp(input, ahead=None, local_astref=None, get_command=False):
+    """
+    Input is a fits-ldac catalog or a text file.
+    Supply a text file of filenames to run multiple files jointly.
+    """
     scampconfig = os.path.join(REF_DIR, "7dt.scamp")
     # "/data/pipeline_reform/dhhyun_lab/scamptest/7dt.scamp"
 
     path_ref_scamp = os.path.join(FACTORY_DIR, "ref_scamp")
     # "/data/pipeline_reform/dhhyun_lab/scamptest"
-    log_file = os.path.splitext(cat)[0] + "_scamp.log"
+    log_file = os.path.splitext(input)[0] + "_scamp.log"
 
-    if joint:
-        cat = f"@{cat}"
+    # assumes joint run if input is not fits
+    if os.path.splitext(input)[1] != ".fits":
+        input = f"@{input}"
 
     # scampcom = f’scamp {catname} -c {os.path.join(path_cfg, “kmtnet.scamp”)} -ASTREF_CATALOG FILE -ASTREFCAT_NAME {gaialdac} -POSITION_MAXERR 20.0 -CROSSID_RADIUS 5.0 -DISTORT_DEGREES 3 -PROJECTION_TYPE TPV -AHEADER_GLOBAL {ahead} -STABILITY_TYPE INSTRUMENT’
-    scampcom = f"scamp -c {scampconfig} {cat} -REFOUT_CATPATH {path_ref_scamp}"
+    scampcom = f"scamp -c {scampconfig} {input}"
+
+    if local_astref:
+        scampcom = f"{scampcom} -ASTREF_CATALOG FILE -ASTREFCAT_NAME {local_astref}"
+
+    else:
+        scampcom = f"{scampcom} -REFOUT_CATPATH {path_ref_scamp}"
+
     if ahead:
         # scampcom = f"{scampcom} -AHEADER_NAME {ahead}"
         scampcom = f"{scampcom} -AHEADER_GLOBAL {ahead}"
     scampcom = f"{scampcom} > {log_file} 2>&1"
     # print(scampcom)
 
+    if get_command:
+        return scampcom
     os.system(scampcom)
     # scampcom = f"scamp -c {scampconfig} {outcat} -REFOUT_CATPATH {path_ref_scamp} -AHEADER_NAME {ahead_file}"
     # subprocess.run(f"{scampcom} > {log_file} 2>&1", shell=True, text=True)
@@ -156,7 +170,7 @@ def scamp(cat, ahead=None, joint=False):
     # except subprocess.CalledProcessError as e:
     #     print(f"Command failed with error code {e.returncode}")
     #     print(f"stderr output: {e.stderr.decode()}")
-    return os.path.splitext(cat)[0] + ".head"
+    return os.path.splitext(input)[0] + ".head"
 
 
 def missfits(inim):
@@ -182,7 +196,7 @@ def sextractor(
     sex_args: list = None,
     config=None,  # supply config.config
     logger=None,
-    get_output=False,
+    return_output=False,
 ):
     """
     e.g., override default by supplying sex_args like ["-PIXEL_SCALE", f"{pixscale}"]
@@ -198,14 +212,14 @@ def sextractor(
         postfix = ["sex", "param", "conv", "nnw"]
         return [os.path.join(ref_path, f"{prefix}.{pf}") for pf in postfix]
 
-    def log(message):
+    def chatter(message):
         if logger:
             logger.debug(message)
         else:
             print(message)
 
     if config:
-        log("Using Configuration Class")
+        chatter("Using Configuration Class")
         sex = config.sex.sex
         param = config.sex.param
         nnw = config.sex.nnw
@@ -230,10 +244,11 @@ def sextractor(
     if sex_args:
         sexcom = sexcom + sex_args
 
-    log(f"Sextractor output catalog: {outcat}")
-    log(f"Sextractor Log: {log_file}")
+    chatter(f"Sextractor output catalog: {outcat}")
+    chatter(f"Sextractor Log: {log_file}")
+
     sexcom = " ".join(sexcom)
-    log(f"Sextractor Command: {sexcom}")
+    chatter(f"Sextractor Command: {sexcom}")
 
     sexout = subprocess.getoutput(sexcom)
     # result = subprocess.run(sexcom, shell=True, capture_output=True, text=True, stderr=subprocess.STDOUT)
@@ -267,8 +282,9 @@ def sextractor(
     #     DEVNUL tricks SEx to think its running non-interactively
     #     subprocess.run(sexcom, stdout=f, stderr=f, text=True, stdin=subprocess.DEVNULL)
 
-    log(f"Sextractor completed")
+    chatter(f"Sextractor completed")
 
-    if get_output:
+    if return_output:
         return outcat, sexout
-    return outcat
+    else:
+        return outcat

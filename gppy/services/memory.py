@@ -8,7 +8,6 @@ from . import utils
 import threading
 from contextlib import contextmanager
 from datetime import datetime
-import numpy as np
 from astropy.table import Table
 
 @contextmanager
@@ -163,7 +162,7 @@ class MemoryMonitor:
         return f"MemoryMonitor(state={self.memory_state}, usage={self.log_memory_usage})"
 
     @classmethod
-    def cleanup_memory(self):
+    def cleanup_memory(cls):
         """
         Perform system-wide memory cleanup.
 
@@ -383,7 +382,7 @@ class MemoryMonitor:
         stop_callback()
 
     @utils.classmethodproperty
-    def current_memory(self): 
+    def current_memory(cls): 
         """
         Get current CPU memory usage statistics.
 
@@ -400,7 +399,7 @@ class MemoryMonitor:
         }
 
     @utils.classmethodproperty
-    def current_gpu_memory(self) -> Dict:
+    def current_gpu_memory(cls) -> Dict:
         """
         Get GPU memory statistics for all available devices.
 
@@ -424,17 +423,17 @@ class MemoryMonitor:
         return gpu_stats
 
     @utils.classmethodproperty
-    def current_memory_percent(self):
+    def current_memory_percent(cls):
         """
         Get current CPU memory usage percentage.
 
         Returns:
             float: Percentage of CPU memory used
         """
-        return self.current_memory['percent']
+        return cls.current_memory['percent']
     
     @utils.classmethodproperty
-    def current_gpu_memory_percent(self):
+    def current_gpu_memory_percent(cls):
         """
         Get current GPU memory usage percentages.
 
@@ -442,18 +441,18 @@ class MemoryMonitor:
             List[float]: Memory usage percentage for each GPU device
         """
         gpu_percentages = [
-            stats['percent'] for _, stats in self.current_gpu_memory.items()
+            stats['percent'] for _, stats in cls.current_gpu_memory.items()
         ]
         return gpu_percentages
 
     @utils.classmethodproperty
-    def log_memory_usage(self):
+    def log_memory_usage(cls):
         """
         Generate a comprehensive memory usage log string.
 
         Returns:
             str: Formatted string with CPU and GPU memory usage percentages
         """
-        gpu_summary = [f"{device}: {percent:.2f}%" for device, percent in enumerate(self.current_gpu_memory_percent)]
+        gpu_summary = [f"{device}: {percent:.2f}%" for device, percent in enumerate(cls.current_gpu_memory_percent)]
         gpu_info = f", GPU [{', '.join(gpu_summary)}]"
-        return f"System [{self.current_memory_percent:.2f}%]{gpu_info}"
+        return f"System [{cls.current_memory_percent:.2f}%]{gpu_info}"

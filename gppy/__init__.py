@@ -22,6 +22,8 @@ import warnings
 
 import numpy as np
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+load_dotenv()
 
 # Ignore common warnings that are not harmful
 warnings.filterwarnings('ignore', message='.*datfix.*')

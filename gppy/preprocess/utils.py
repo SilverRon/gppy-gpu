@@ -1,13 +1,11 @@
 import os
 import time
 import gc
-import numpy as np
 import cupy as cp
 from astropy.io import fits
 from contextlib import contextmanager
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-
 
 def write_link(fpath, content):
     """path to the link, and the path link is pointing"""

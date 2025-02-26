@@ -11,7 +11,7 @@ from .utils import (
     define_output_dir,
     get_camera,
 )
-from .const import SCRIPT_DIR, FACTORY_DIR, PROCESSED_DIR, MASTER_FRAME_DIR, REF_DIR
+from .const import FACTORY_DIR, PROCESSED_DIR, MASTER_FRAME_DIR, REF_DIR
 
 
 class Configuration:
@@ -30,7 +30,16 @@ class Configuration:
     - Configuration file versioning
     """
 
-    def __init__(self, obs_params=None, config_source=None, logger=None, overwrite=True, **kwargs):
+    def __init__(
+        self,
+        obs_params=None,
+        config_source=None,
+        logger=None,
+        overwrite=True,
+        return_base=False,
+        verbose=True,
+        **kwargs,
+    ):
         """
         Initialize configuration with comprehensive observation metadata.
 
@@ -49,34 +58,52 @@ class Configuration:
 
         self._load_config(config_source, **kwargs)
         self._initialized = False
-        
-        if obs_params is None:
-            self._initialized = True
+
+        if not return_base:
+            if obs_params is None:
+                self._initialized = True
+            else:
+                self.initialize(obs_params)
+
+            self.logger = self._setup_logger(logger, verbose=verbose)
+            self.write_config()
+            self.config.flag.configuration = True
+            self.logger.info(f"Configuration initialized")
+            self.logger.debug(f"Configuration file: {self.config_file}")
+
+    def __repr__(self):
+        return self.config.__repr__()
+
+    @classmethod
+    def base_config(cls, working_dir=None):
+        """Return the base (base.yml) configuration instance."""
+        config = cls(return_base=True).config
+        if working_dir is None:
+            config.name = "user-input"
+            return config
         else:
-            self.initialize(obs_params)
+            config.path.path_processed = working_dir
+            os.makedirs(os.path.join(working_dir, "factory"), exist_ok=True)
+            config.path.path_factory = os.path.join(working_dir, "factory")
+            config.name = "user-input"
+            return config
 
-        self.logger = logger or self._setup_logger()
-        
-        self.write_config()
+    def _setup_logger(self, logger=None, overwrite=True, verbose=True):
+        if logger is None:
+            from .logger import Logger
 
-        self.config.flag.configuration = True
-        self.logger.info(f"Configuration initialized")
-        self.logger.debug(f"Configuration file: {self.config_file}")
+            logger = Logger(name="7DT pipeline logger", slack_channel="pipeline_report")
 
-    def _setup_logger(self, overwrite=True):
-        from .logger import Logger
-        logger = Logger(
-            name="7DT pipeline logger", slack_channel="pipeline_report"
-        )
         filename = f"{self.output_name}.log"
         log_file = os.path.join(self.config.path.path_processed, filename)
         self.config.logging.file = log_file
-        self.logger.set_output_file(log_file, overwrite=overwrite)
-        self.logger.set_format(self.config.logging.format)
-        self.logger.set_pipeline_name(self.output_name)
+        logger.set_output_file(log_file, overwrite=overwrite)
+        logger.set_format(self.config.logging.format)
+        logger.set_pipeline_name(self.output_name)
+        if not (verbose):
+            logger.set_level("WARNING")
 
         return logger
-
 
     def _load_config(self, config_source, **kwargs):
         # Load configuration from file or dict
@@ -98,13 +125,13 @@ class Configuration:
         """Find the configuration file in the processed directory."""
         base_dir = kwargs.get("path_processed", PROCESSED_DIR)
         tmp_path = define_output_dir(
-            obs_params["date"], 
-            obs_params["n_binning"], 
-            obs_params["gain"], 
-            obj=obs_params["obj"], 
-            unit=obs_params["unit"], 
-            filt=obs_params["filter"]
-            )
+            obs_params["date"],
+            obs_params["n_binning"],
+            obs_params["gain"],
+            obj=obs_params["obj"],
+            unit=obs_params["unit"],
+            filt=obs_params["filter"],
+        )
         base_dir = os.path.join(base_dir, tmp_path)
         config_files = glob.glob(f"{base_dir}/*.yml")
         if len(config_files) == 0:
@@ -249,7 +276,7 @@ class Configuration:
             self.config.obs.n_binning,
             self.config.obs.gain,
         )
-        self.config.path.path_sex = os.path.join(SCRIPT_DIR, "gppy/refer/sex")
+        self.config.path.path_sex = os.path.join(REF_DIR, "srcExt")
         self._add_metadata(metadata_path)
 
     def _add_metadata(self, metadata_path):
@@ -362,13 +389,15 @@ class Configuration:
         if not self.is_initialized:
             return
 
-        self._config_in_dict["info"]["last_update_datetime"] = datetime.now().isoformat()
+        self._config_in_dict["info"][
+            "last_update_datetime"
+        ] = datetime.now().isoformat()
 
         filename = f"{self.output_name}.yml"
 
         config_file = os.path.join(self.config.path.path_processed, filename)
         self.config_file = config_file
-        
+
         with open(config_file, "w") as f:
             yaml.dump(self.config_in_dict, f)
 
@@ -402,11 +431,23 @@ class ConfigurationInstance:
 
         super().__setattr__(name, value)
 
-    def __repr__(self):
-        return (
-            "{\n"
-            + ",\n".join(
-                f"  {k}: {v}" for k, v in self.__dict__.items() if not k.startswith("_")
-            )
-            + "\n}"
-        )
+    def __repr__(self, indent_level=0):
+        indent = "  " * indent_level
+        repr_lines = []
+
+        for k, v in self.__dict__.items():
+            if k.startswith("_"):
+                continue
+
+            # Handle nested ConfigurationInstance
+            if isinstance(v, ConfigurationInstance):
+                repr_lines.append(f"{indent}  {k}:")
+                repr_lines.append(v.__repr__(indent_level + 1))
+            elif isinstance(v, dict):
+                repr_lines.append(f"{indent}  {k}:")
+                for dict_k, dict_v in v.items():
+                    repr_lines.append(f"{indent}    {dict_k}: {dict_v}")
+            else:
+                repr_lines.append(f"{indent}  {k}: {v}")
+
+        return "\n".join(repr_lines)
