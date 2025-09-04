@@ -170,3 +170,6 @@ coadd.weight.fits
 **/scamp.xml
 **/swarp.xml
 mprofile_*.dat
+
+# Private
+**/keys.dat
