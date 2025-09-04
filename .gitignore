@@ -171,6 +171,11 @@ coadd.weight.fits
 **/swarp.xml
 mprofile_*.dat
 
+# Test files
+**/*test*
+**/*TEST*
+**/*Test*
+
 # Keys and Tokens
 **/keys.dat
 config/keys.dat
