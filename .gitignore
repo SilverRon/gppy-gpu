@@ -173,5 +173,4 @@ mprofile_*.dat
 
 # Keys and Tokens
 **/keys.dat
-
-
+config/keys.dat
