@@ -57,7 +57,7 @@ def folder_check(datalist, path_raw, path_factory):
 	#	MOVE NEW FILE TO FACTORY FOLDER
 	for data in newlist:
 		#	PREVENT OVERWRITE
-		if path_factory+'/'+os.path.basename(data) in glob.glob(path_factory+'/*'):
+		if path_factory+'/'+os.psath.basename(data) in glob.glob(path_factory+'/*'):
 			rmcom = 'rm -rf '+path_factory+'/'+os.path.basename(data)
 			print(rmcom) ; os.system(rmcom)
 		cpcom = 'cp -r '+data+' '+path_factory

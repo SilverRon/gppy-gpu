@@ -835,8 +835,8 @@ def calculate_magnitude_error(flux, flux_error):
     magnitude_error = 2.5*np.log10(1+(1/snr))    
     return magnitude_error
 #-------------------------------------------------------------------------#
-from gaiaxpy import generate, PhotometricSystem
-from gaiaxpy import PhotometricSystem, load_additional_systems
+# from gaiaxpy import generate, PhotometricSystem
+# from gaiaxpy import PhotometricSystem, load_additional_systems
 from astroquery.gaia import GaiaClass
 import pandas as pd
 # path_to_filterset = '../config/filterset'
@@ -973,9 +973,9 @@ def query_gaiaxp_continuous_raw(radeg, decdeg, query_radius, fname, mode='defaul
 #-------------------------------------------------------------------------#
 # path_to_filterset = '/home/gp/gppy/config/filterset'
 path_to_filterset = str(path_root / 'config/filterset')
-PhotometricSystem = load_additional_systems(path_to_filterset)
+# PhotometricSystem = load_additional_systems(path_to_filterset)
 #-------------------------------------------------------------------------#
-def convert_gaiaxp_to_7DT_synphot(fname, metadf,):
+"""def convert_gaiaxp_to_7DT_synphot(fname, metadf,):
 	#
 	#============================================================
 	#	Synthetic Photometry
@@ -1137,7 +1137,7 @@ def convert_gaiaxp_to_7DT_synphot(fname, metadf,):
 	#	Final Dataframe
 	#------------------------------------------------------------
 	merged_df.rename(columns=key_to_rename_dict, inplace=True)
-	return merged_df
+	return merged_df"""
 #-------------------------------------------------------------------------#
 def querybox_7dt(radeg, decdeg, query_radius, fname, verbose=True, mode='default'):
 	if verbose:

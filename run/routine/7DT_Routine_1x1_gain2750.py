@@ -1241,7 +1241,7 @@ for oo, obj in enumerate(objarr):
 		print(result.stdout.decode())  # 명령어 실행 결과 출력
 	except subprocess.CalledProcessError as e:
 		print(f"Command failed with error code {e.returncode}")
-		print(f"stderr output: {e.stderr.decode()}")
+		print(f"stderr output: {e.stderr.decode('utf-8', 'ignore')}")
 
 
 #	Rename afdz*.head --> fdz*.head

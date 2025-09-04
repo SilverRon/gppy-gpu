@@ -56,7 +56,7 @@ FWHM_WORLD               FWHM assuming a gaussian core                          
 #VECTOR_SOMFIT            Position vector of the winning SOM node                  
 #KRON_RADIUS              Kron apertures in units of A or B                        
 #PETRO_RADIUS             Petrosian apertures in units of A or B                   
-#FLUX_MAX                 Peak flux above background                                [count]
+FLUX_MAX                 Peak flux above background                                [count]
 # ISOAREA_IMAGE            Isophotal area above Analysis threshold                   [pixel**2]
 # ISOAREAF_IMAGE           Isophotal area (filtered) above Detection threshold       [pixel**2]
 #XMIN_IMAGE               Minimum x-coordinate among detected pixels                [pixel]

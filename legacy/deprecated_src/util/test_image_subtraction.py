@@ -42,14 +42,14 @@ def create_ds9_region_file(ra_array, dec_array, radius, filename="ds9_regions.re
 # %%
 #	Path
 #------------------------------------------------------------
-path_data = '/large_data/processed_1x1_gain2750'
-path_ref = '/large_data/factory/ref_frame/r'
+path_data = '/lyman/data1/processed_1x1_gain2750'
+path_ref = '/lyman/data1/factory/ref_frame/r'
 #============================================================
 #	Setting
 #------------------------------------------------------------
-obj = 'T09614'
+obj = 'T12400'
 filte = 'r'
-tel = '7DT03'
+tel = '7DT07'
 path_sci = f'{path_data}/{obj}/{tel}/{filte}'
 #
 aperture_suffix = 'AUTO'
@@ -64,13 +64,14 @@ region_radius = 10
 #------------------------------------------------------------
 #	Science
 #------------------------------------------------------------
-inim = f'{path_sci}/calib_7DT03_T09614_20240423_020757_r_360.com.fits'
+# inim = f'{path_sci}/calib_7DT03_T09614_20240423_020757_r_360.com.fits'
+inim = sorted(glob.glob(f'{path_sci}/calib_*com.fits'))[-1]
 inhdr = fits.getheader(inim)
 infilter = inhdr['FILTER']
 ingain = inhdr['EGAIN']
 inskyval = inhdr['SKYVAL']
 inskysig = inhdr['SKYSIG']
-incat = inim.replace("fits", "phot.cat")
+incat = inim.replace("/calib", "/phot/calib").replace("fits", "phot.cat")
 intbl = Table.read(incat, format='ascii')
 #------------------------------------------------------------
 #	Select substamp sources
@@ -87,7 +88,8 @@ print(f"{len(selected_intbl)} selected from {len(intbl)} ({len(selected_intbl)/l
 # %%
 #	Reference
 #------------------------------------------------------------
-refim = f'{path_ref}/ref_PS1_T09614_00000000_000000_r_0.fits'
+# refim = f'{path_ref}/ref_SkyMapper_T12400_00000000_000000_r_0.fits'
+refim = f'{path_ref}/calib_7DT05_T12400_20240423_030648_r_360.com.fits'
 refhdr = fits.getheader(refim)
 # reffilter = refhdr['FILTER']
 # refgain = refhdr['EGAIN']
@@ -205,7 +207,8 @@ tl, tu = -60000000, 60000000
 nrx, nry = 3, 2
 #	Run
 com = (
-	f"hotpants -c t -n i "
+	# f"hotpants -c t -n i "
+	f"hotpants -c i -n t "
 	f"-iu {iu} -il {il} -tu {tu} -tl {tl} "
 	f"-inim {inim} -tmplim {refim} -outim {outim} -oci {convim} "
 	f"-imi {inmask_image} -tmi {refmask_image} "

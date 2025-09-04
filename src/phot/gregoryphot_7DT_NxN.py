@@ -134,6 +134,15 @@ def phot_routine(inim):
 	part = os.path.basename(inim).split('_')
 	head = inim.replace('.fits', '')
 
+	#
+	#	Stacked Image
+	if 'com.fits' in inim:
+		saturation_lv = hdr["SATURATE"] * (1-saturation_margin)
+	#	Single Image
+	else:
+		saturation_lv = 60.*1e3
+	#
+
 	obs = part[1]
 	obj = hdr['OBJECT']
 	filte = hdr['FILTER']
@@ -273,7 +282,19 @@ def phot_routine(inim):
 	#	Pre-Source EXtractor
 	#------------------------------------------------------------
 	precat = f"{head}.pre.cat"
-	presexcom = f"source-extractor -c {conf_simple} {inim} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PARAMETERS_NAME {param_simple} -CATALOG_NAME {precat}"
+	# presexcom = f"source-extractor -c {conf_simple} {inim} -FILTER_NAME {conv_simple} -STARNNW_NAME {nnw_simple} -PARAMETERS_NAME {param_simple} -CATALOG_NAME {precat}"
+	presexcom_list = [
+		"source-extractor",
+		f"-c {conf_simple}",
+		f"{inim}",
+		f"-FILTER_NAME {conv_simple}",
+		f"-STARNNW_NAME {nnw_simple}",
+		f"-PARAMETERS_NAME {param_simple}",
+		f"-CATALOG_NAME {precat}",
+		f"-SATUR_LEVEL {saturation_lv}",
+		f"-SEEING_FWHM {seeing_assume.value}",
+	]
+	presexcom = " ".join(presexcom_list)
 	print(presexcom)
 	# os.system(presexcom)
 	os.system(log2tmp(presexcom, "presex"))  # stderr is logged with stdout
@@ -412,14 +433,15 @@ def phot_routine(inim):
 						#	MAG_APER_2	SEEINGx2
 						#	...
 						PHOT_APERTURES = PHOT_APERTURES,
-						SATUR_LEVEL  = '65000.0',
+						SATUR_LEVEL = str(saturation_lv),
 						# GAIN = str(gain.value),
 						GAIN = str(gain),
 						PIXEL_SCALE = str(pixscale.value),
 						#------------------------------
 						#	STAR/GALAXY SEPARATION
 						#------------------------------
-						SEEING_FWHM = str(seeing_assume.value),
+						# SEEING_FWHM = str(seeing_assume.value),
+						SEEING_FWHM = str(seeing),
 						#------------------------------
 						#	BACKGROUND
 						#------------------------------
@@ -588,6 +610,8 @@ def phot_routine(inim):
 		'MAGLOW': (refmaglower, 'REF MAG RANGE, LOWER LIMIT'),
 		'MAGUP': (refmagupper, 'REF MAG RANGE, UPPER LIMIT'),
 		'STDNUMB': (len(zptbl), '# OF STD STARS TO CALIBRATE ZP'),
+		#
+		'SATLV': (saturation_lv, 'APPLIED SATURATION LEVEL'),
 	}
 
 	header_to_add.update(add_aperture_dict)
@@ -825,6 +849,13 @@ inmagerupper = float(gphot_dict['inmagerupper'])
 flagcut = int(gphot_dict['flagcut'])
 check = (gphot_dict['check'] == 'True')
 
+# Handle optional saturation_margin key
+if 'saturation_margin' in gphot_dict:
+    saturation_margin = float(gphot_dict['saturation_margin'])
+else:
+    saturation_margin = 0.08 # 8%.
+
+
 DETECT_MINAREA = gphot_dict['DETECT_MINAREA']
 DETECT_THRESH = gphot_dict['DETECT_THRESH']
 DEBLEND_NTHRESH = gphot_dict['DEBLEND_NTHRESH']
@@ -843,12 +874,16 @@ try:
 except:
 	ncore = 1
 
-if ("@" in imkey) & (type(sys.argv[2]) == int):
+# print(sys.argv[2])
+
+if ("@" in imkey):# & (type(sys.argv[2]) == int):
+	print(f"Input: Use image list.")
 	image_list_file = imkey[1:]
 	# 파일을 읽어서 각 줄을 리스트로 변환
 	with open(image_list_file, 'r') as f:
 		imlist = [line.strip() for line in f if line.strip()]  # 빈 줄이 있을 경우 제거
 else:
+	print(f"Input: Wild Card.")
 	imlist = sorted(glob.glob(imkey))
 
 #	Temperary functionality
