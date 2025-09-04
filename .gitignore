@@ -175,6 +175,8 @@ mprofile_*.dat
 **/*test*
 **/*TEST*
 **/*Test*
+**/*bkg
+tmp/
 
 # Keys and Tokens
 **/keys.dat
