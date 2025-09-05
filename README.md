@@ -1,10 +1,10 @@
-# gppy-gpu — A GPU-Accelerated Imaging Pipeline for the 7-Dimensional Telescope (7DT) and Sky Survey (7DS)
+# $\texttt{gppy-gpu}$: A GPU-Accelerated Imaging Pipeline for the 7-Dimensional Telescope and Sky Survey
 
 > **Entrypoints**
 > - **Watcher:** `run/routine/gpwatch_7DT_gain2750.py`  
 > - **Main pipeline:** `run/routine/7DT_Routine_1x1_gain2750.py`
 
-This repository provides an automated, production-grade imaging pipeline for the 7-Day Transient (7DT) program. It covers **directory watching, calibration, astrometry (SCAMP), stacking, PSF matching and image subtraction (HOTPANTS), transient detection & photometry, artifact masking, product curation, and Slack notifications**. When available, numerically intensive steps are **GPU-accelerated via CuPy**; CPU-only fallbacks are supported.
+This repository provides an automated, production-grade imaging pipeline for The 7-Dimensional Telescope (7DT) and Sky Survey (7DS; [official website](http://7ds.snu.ac.kr/)). It covers **directory watching, calibration, astrometry (SCAMP), stacking (SWarp), PSF matching and image subtraction (HOTPANTS), transient detection (TBD), photometry, artifact masking, product curation, and Slack notifications**. When available, numerically intensive steps are **GPU-accelerated via CuPy**; CPU-only fallbacks are supported.
 
 The codebase is intended for unattended operation in observatory environments where new data arrive in episodic batches, and can also be run **ad hoc** on specific nights or targets.
 
@@ -35,7 +35,7 @@ gppy-gpu/
 │     ├─ gppy_tmux.sh                     # optional tmux launcher for multi-watch
 │     └─ (stack helpers, if any)
 ├─ config/
-│  ├─ *.sex / *.param / *.conv / *.nnw    # Source Extractor configs
+│  ├─ *.sex / *.param / *.conv / *.nnw    # Source Extractor configs  
 │  ├─ 7dt.scamp                           # SCAMP config
 │  ├─ obs.dat, ccd.dat, fringe.dat        # site/CCD/fringe metadata
 │  ├─ alltarget.dat, changehdr.dat        # target list, header rewrite rules
@@ -59,10 +59,12 @@ gppy-gpu/
 
 ### External Binaries
 
-- **Source Extractor** (`sex` or `source-extractor`)
-- **SCAMP** and **MissFITS**
-- **HOTPANTS**
-- **imhead** (e.g., from `wcstools`) for quick header snapshots
+- **$\texttt{Source Extractor}$** (`sex` or `source-extractor`) [Bertin & Arnouts 1996](https://ui.adsabs.harvard.edu/abs/1996A%26AS..117..393B/abstract)  
+- **$\texttt{SCAMP}$** [Bertin 2006](https://ui.adsabs.harvard.edu/abs/2006ASPC..351..112B/abstract)  
+- **$\texttt{MissFITS}$** ([Terapix software page](https://www.astromatic.net/software/missfits/))  
+- **$\texttt{Swarp}$** [Bertin et al. 2002](https://ui.adsabs.harvard.edu/abs/2002ASPC..281..228B/abstract)  
+- **$\texttt{HOTPANTS}$** ([Becker 2015, GitHub](https://github.com/acbecker/hotpants))  
+- **$\texttt{imhead}$** (e.g., from `wcstools`) for quick header snapshots  
 - (Optional) **SAOImage DS9** for visual inspection of `*.reg` overlays
 
 Ensure these tools are discoverable on your `PATH`.
@@ -153,10 +155,10 @@ A folder is considered “ready” when its size remains unchanged for a grace p
 
 ```bash
 cd run/routine
-python 7DT_Routine_1x1_gain2750.py 7DT03 /large_data/obsdata/7DT03/2024-04-23_gain2750
+python 7DT_Routine_1x1_gain2750.py 7DT07 /large_data/obsdata/7DT07/2024-04-23_gain2750
 ```
 
-- `arg1`: observatory code (e.g., `7DT03`)  
+- `arg1`: observatory code (e.g., `7DT07`)  
 - `arg2`: target night directory. If omitted, the script can search for the most recent stabilized folder.
 
 ### B. Continuous operations (watcher)
@@ -185,17 +187,122 @@ bash run/routine/gppy_tmux.sh  # edit the observations array inside if needed
 3. **Pre-detection & astrometry**  
    Run Source Extractor with `config/*.sex/param/conv/nnw` to generate pre-cata*
 
+## Data Management & Folder Structure
+
+The 7DT/7DS pipeline is designed to interface with a standardized data hierarchy on the `proton` server and associated factory directories. This ensures reproducibility and traceability from raw acquisition to calibrated products.
+
+### Raw Data
+Located under `/large_data/obsdata/`, with observatory codes and nightly subfolders:
+```
+/large_data/obsdata/
+├── 7DT01
+│   ├── 2023-10-09
+│   ├── 2023-10-10
+│   ├── 2023-10-11
+├── 7DT02
+├── 7DT03
+...
+```
+
+### Master Frames
+Bias, dark, and flat masters are stored separately by unit:
+```
+/large_data/factory/master_frame/
+├── 7DT01
+│   ├── dark
+│   ├── flat
+│   └── zero
+├── 7DT02
+│   ├── dark
+│   ├── flat
+│   └── zero
+...
+```
+
+### Reference Catalogs
+```
+/large_data/factory/ref_cat/
+```
+
+- Gaia XP continuous spectra (e.g., `XP_CONTINUOUS_RAW_<OBJECT>`.csv)
+- Synthetic photometry (e.g., `gaiaxp_dr3_synphot_<OBJECT>.csv`)
+
+### Calibrated Products
+Processed data are stored under:
+```
+/large_data/processed_1x1_gain2750/
+├── UDS
+│   ├── 7DT01
+│   │   ├── m400/ ── calib*.fits, calib*com.fits
+│   │   ├── m425/phot/ ── calib*.phot.cat
+│   │   └── m675/
+│   ├── 7DT02
+│   │   ├── m450/, m475/, m700/
+│   ├── 7DT03
+│   │   ├── m500/, m525/, m725/
+...
+```
+
+- Single and stacked frames (`calib*.fits`, `calib*com.fits`)
+- Photometry catalogs (`*.phot.cat`) per filter
+
+### Outputs
+
+The pipeline produces standardized image and catalog products:
+- Calibrated images
+
+  ```
+  calib_<unit>_<field>_<date>_<time>_<filter>_<exptime>.fits
+  ```
+
+  Example: `calib_7DT01_UDS_20231105_003915_m400_60.fits`
+
+- Photometry catalogs (`*.phot.cat`)
+  Readable via `astropy.table`:
+
+  ```
+  from astropy.table import Table
+  tbl = Table.read("calib_...phot.cat", format="ascii")
+  ```
+
+  Key columns include:
+  - `MAG_APER`, `MAGERR_APER`: instrumental magnitudes and errors
+  - `MAG_APER_m650`: ZP-corrected magnitude
+  - `FLUX_APER[_m650]`, `SNR_APER_m650`: fluxes and SNR
+
+- Apertures (suffix convention):
+  - `AUTO`: SExtractor auto magnitude
+  - `APER`: seeing × 2 × 0.673
+  - `APER_1`: seeing × 2
+  - `APER_2`: seeing × 3
+  - `APER_3`: fixed 3″
+  - `APER_4`: fixed 5″
+  - `APER_5`: fixed 10″
+
+Example usage:
+  ```
+  # From Header
+  gethead calib_*.fits ZP_1
+  ```
+
+  ```
+  # From Table
+  print(tbl['MAG_APER_1_m650'])
+  ```
+
+
+
 ## Authors & Maintainers
 
 If you are interested in `7DT`/`7DS`, or need support, please reach out.
 
-| Name                    | GitHub            | Role (CRediT-style)                                                                                           | Affiliation                                              | ORCID                                | Contact                                   |
-|-------------------------|-------------------|---------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|---------------------------------------|-------------------------------------------|
-| **Gregory S. H. Paek**  | @SilverRon        | **Conceptualization; Software; Architecture; Methodology; Data curation; Documentation; Founding developer; Maintainer (v1.x)** | University of Hawaiʻi, Institute for Astronomy (IfA); formerly SNU | `https://orcid.org/XXXX-XXXX-XXXX-XXXX` | `gregorypaek94 [at] gmail [dot] com`      |
-| **Donghwan Hyun**       | @renormalization2 | Software (stacking-module refactoring); Code maintenance; Packaging; **Co-maintainer (v2.0)**                 | Seoul National University (SNU)                           | `https://orcid.org/XXXX-XXXX-XXXX-XXXX` | —                                         |
-| **Won-Hyeong Lee**      | @Yicircle         | Software; Integration; Testing; **Co-maintainer (v2.0)**                                                      | Seoul National University (SNU)                           | `https://orcid.org/XXXX-XXXX-XXXX-XXXX` | —                                         |
-| **Myungshin Im**        | —                 | Supervision; Funding acquisition; Investigation; Resources                                                    | Seoul National University (SNU)                           | `https://orcid.org/XXXX-XXXX-XXXX-XXXX` | —                                         |
-| **Ji Hoon Kim**         | —                 | Project administration; Resources; Investigation                                                              | Seoul National University (SNU)                           | `https://orcid.org/XXXX-XXXX-XXXX-XXXX` | —                                         |
+| Name                    | GitHub            | Role                                                                                           | Affiliation                                              | ORCID                                | Contact                                   |
+|-------------------------|-------------------|--------------------------------------------------------------------------------------------------|----------------------------------------------------------|---------------------------------------|-------------------------------------------|
+| **Gregory S. H. Paek**  | @SilverRon        | **Conceptualization; Software; Architecture; Methodology; Data curation; Documentation; Founding developer; Maintainer (v1.x)** | University of Hawaiʻi in Manoa, Institute for Astronomy (IfA); formerly Seoul National University (SNU) | `https://orcid.org/0000-0002-6639-6533` | `gregorypaek94 [at] gmail [dot] com`      |
+| **Donghwan Hyun**       | @renormalization2 | Software (stacking-module refactoring); Code maintenance; Packaging; **Co-maintainer (v2.0)**                 | Seoul National University (SNU)                           | `https://orcid.org/0009-0009-4501-5285` | hdhd333 [at] gmail [dot] com                                         |
+| **Won-Hyeong Lee**      | @Yicircle         | Software; Integration; Testing; **Co-maintainer (v2.0)**                                                      | Seoul National University (SNU)                           | `https://orcid.org/0009-0005-6140-8303` | wohy1220 [at] gmail [dot] com                                         |
+| **Myungshin Im**        | —                 | Supervision; Funding acquisition; Investigation; Resources                                                    | Seoul National University (SNU)                           | `https://orcid.org/0000-0002-8537-6714` | myungshin.im [at] gmail [dot] com                                         |
+<!-- | **Ji Hoon Kim**         | —                 | Project administration; Resources; Investigation                                                              | Seoul National University (SNU)                           | `https://orcid.org/XXXX-XXXX-XXXX-XXXX` | —                                         | -->
 
 **Corresponding / Maintainer:** Gregory S. H. Paek (`gregorypaek94 [at] gmail [dot] com`)
 
@@ -203,7 +310,7 @@ If you are interested in `7DT`/`7DS`, or need support, please reach out.
 
 - **v1.x (foundational)** — Designed and implemented by **Gregory S. H. Paek** (sole author of the initial framework and architecture).  
 - **Refactoring & transition** — **Donghwan Hyun** contributed targeted **refactoring of the stacking modules** and participated in the handover.  
-- **v2.0 (in progress)** — Currently being developed **independently (separate repository)** by **Donghwan Hyun** and **Won-Hyeong Lee** following the handover, while this repository tracks the stable **v1.x** line.
+- **v2.0 (in progress)** — Developed **independently (separate repository)** by **Donghwan Hyun** following the handover. While inheriting most of the functionality and philosophy of **v1.x**, this version introduces **structural changes for parallel execution**, integrates support for **various weights and error maps**, and updates for **seamless database connectivity**. This repository continues to track the stable **v1.x** line.
 
 ### Contributors
 
@@ -211,9 +318,31 @@ If you are interested in `7DT`/`7DS`, or need support, please reach out.
 - @renormalization2 — **Donghwan Hyun**  
 - @Yicircle — **Won-Hyeong Lee**
 
+## Suggested Reading
+
+- **7-Dimensional Sky Survey (7DS)**  
+  *Im, Myungshin* — *43rd COSPAR Scientific Assembly*, Jan 2021.  
+  **Citation:** Im, M. (2021), *43rd COSPAR Scientific Assembly*, E1537.  
+  **ADS:** https://ui.adsabs.harvard.edu/abs/2021cosp...43E1537I/abstract
+  
+- **Introduction to the 7-Dimensional Telescope: commissioning procedures and data characteristics**  
+  *Kim, Ji Hoon; Im, Myungshin; Lee, Hyungmok; Chang, Seo-Won; Choi, Hyeonho; Paek, Gregory S. H.* — *Proceedings of SPIE, Volume 13094, id. 130940X* (Aug 2024).  
+  **Citation:** Kim, J. H., Im, M., Lee, H., Chang, S.-W., Choi, H., & Paek, G. S. H. (2024), *Proc. SPIE 13094, id. 130940X, 11 pp.*  
+  **DOI:** [10.1117/12.3019546](https://doi.org/10.1117/12.3019546)  
+  **ADS:** [2024SPIE13094E..0XK](https://ui.adsabs.harvard.edu/abs/2024SPIE13094E..0XK/abstract)
+
+
+- **TCSpy: Multiple Telescope Control System for 7 Dimensional Telescope (7DT)**  
+  *Choi, Hyeonho; Im, Myungshin; Kim, Ji Hoon* — *IAU General Assembly*, Aug 2024.  
+  **Citation:** Choi, H., Im, M., & Kim, J. H. (2024), *IAU General Assembly*, 32, P1281.  
+  **ADS:** https://ui.adsabs.harvard.edu/abs/2024IAUGA..32P1281C/abstract
+
+
+
 ### Acknowledgements
 
-This repository extends and refines code originally developed by **Dr. Yujin Yang (KASI, 2022)**. We gratefully acknowledge her contributions and the broader 7DT/7DS collaboration.
+...
+<!-- This repository extends and refines code originally developed by **Dr. Yujin Yang (KASI, 2022)**. We gratefully acknowledge her contributions and the broader 7DT/7DS collaboration. -->
 
 <!-- > **Notes**
 > - Roles follow the **CRediT** taxonomy for academic clarity.  
