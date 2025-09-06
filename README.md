@@ -1,5 +1,7 @@
 # $\texttt{gppy-gpu}$: A GPU-Accelerated Imaging Pipeline for the 7-Dimensional Telescope and Sky Survey
 
+[![DOI](https://zenodo.org/badge/829262247.svg)](https://doi.org/10.5281/zenodo.17065902)
+
 > **Entrypoints**
 > - **Watcher:** `run/routine/gpwatch_7DT_gain2750.py`  
 > - **Main pipeline:** `run/routine/7DT_Routine_1x1_gain2750.py`
